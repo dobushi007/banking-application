@@ -1,0 +1,23 @@
+version: "3.8"
+
+services:
+  app:
+    container_name: "banking-application"
+    image: "banking-app"
+    build: .
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysqldb
+  mysqldb:
+    container_name: "mysqldb"
+    image: "mysql"
+    restart: always
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_DATABASE: bank-db
+      MYSQL_USER: username
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: password

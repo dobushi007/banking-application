@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: jdbc:mysql://mysqldb:3306/bank-db?allowPublicKeyRetrieval=true&useSSL=false
+    username: username
+    password: password
+    driverClassName: com.mysql.cj.jdbc.Driver
+  data:
+    hibernate:
+      ddl-auto: update
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: update
+      show-sql: true
