@@ -8,6 +8,8 @@ services:
     restart: always
     ports:
       - "8080:8080"
+    networks:
+      - banking-network
     depends_on:
       - mysqldb
   mysqldb:
@@ -16,8 +18,12 @@ services:
     restart: always
     ports:
       - "3307:3306"
+    networks:
+      - banking-network
     environment:
       MYSQL_DATABASE: bank-db
       MYSQL_USER: username
       MYSQL_PASSWORD: password
       MYSQL_ROOT_PASSWORD: password
+networks:
+  banking-network:

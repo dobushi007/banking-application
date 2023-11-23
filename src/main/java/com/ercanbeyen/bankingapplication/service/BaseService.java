@@ -10,5 +10,5 @@ public interface BaseService<T extends BaseDto> {
     Optional<T> findById(Integer id);
     T create(T request);
     T update(Integer id, T request);
-    String delete(Integer id);
+    void delete(Integer id);
 }

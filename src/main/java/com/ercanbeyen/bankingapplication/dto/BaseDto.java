@@ -1,7 +1,11 @@
 package com.ercanbeyen.bankingapplication.dto;
 
+import jakarta.persistence.MappedSuperclass;
+
 import java.time.LocalDateTime;
 
-public record BaseDto(LocalDateTime creationDate, LocalDateTime updateTime) {
-
+@MappedSuperclass
+public class BaseDto {
+    LocalDateTime creationDate;
+    LocalDateTime updateTime;
 }

@@ -1,6 +1,7 @@
 package com.ercanbeyen.bankingapplication.controller;
 
 import com.ercanbeyen.bankingapplication.dto.BaseDto;
+import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import com.ercanbeyen.bankingapplication.service.BaseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,7 +21,7 @@ public abstract class BaseController<T extends BaseDto> {
     public ResponseEntity<?> getById(@PathVariable Integer id) {
         return baseService.findById(id)
                 .map(t -> new ResponseEntity<>(t, HttpStatus.OK))
-                .orElse(new ResponseEntity<>(null, HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
     }
 
     @PostMapping
@@ -36,7 +37,10 @@ public abstract class BaseController<T extends BaseDto> {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Integer id) {
         return baseService.findById(id)
-                .map(t -> new ResponseEntity<>(baseService.delete(id), HttpStatus.OK))
-                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND.getReasonPhrase(), HttpStatus.NOT_FOUND));
+                .map(t -> {
+                    baseService.delete(id);
+                    return new ResponseEntity<>("Successfully deleted", HttpStatus.OK);
+                })
+                .orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
     }
 }
