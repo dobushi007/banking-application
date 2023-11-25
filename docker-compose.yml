@@ -13,7 +13,7 @@ services:
     depends_on:
       - mysqldb
   mysqldb:
-    container_name: "mysqldb"
+    container_name: "bank-database"
     image: "mysql"
     restart: always
     ports:
@@ -21,7 +21,7 @@ services:
     networks:
       - banking-network
     environment:
-      MYSQL_DATABASE: bank-db
+      MYSQL_DATABASE: bank
       MYSQL_USER: username
       MYSQL_PASSWORD: password
       MYSQL_ROOT_PASSWORD: password

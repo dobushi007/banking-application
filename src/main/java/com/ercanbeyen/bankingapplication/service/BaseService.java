@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface BaseService<T extends BaseDto> {
-    List<T> findAll();
-    Optional<T> findById(Integer id);
-    T create(T request);
-    T update(Integer id, T request);
-    void delete(Integer id);
+    List<T> getEntities();
+    Optional<T> getEntity(Integer id);
+    T createEntity(T request);
+    T updateEntity(Integer id, T request);
+    void deleteEntity(Integer id);
 }

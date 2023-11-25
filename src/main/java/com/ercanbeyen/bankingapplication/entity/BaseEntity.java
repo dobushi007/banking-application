@@ -20,8 +20,8 @@ public abstract class BaseEntity {
     private Integer id;
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "creation_time", columnDefinition = "TIMESTAMP DEFAULT NOW()")
-    private LocalDateTime creationTime;
+    @Column(name = "create_time", columnDefinition = "TIMESTAMP DEFAULT NOW()")
+    private LocalDateTime createTime;
     @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "update_time", columnDefinition = "TIMESTAMP DEFAULT NOW()")

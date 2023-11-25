@@ -1,5 +1,7 @@
 package com.ercanbeyen.bankingapplication.service;
 
+import com.ercanbeyen.bankingapplication.constant.LogMessages;
+import com.ercanbeyen.bankingapplication.constant.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.CustomerDto;
 import com.ercanbeyen.bankingapplication.entity.Customer;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
@@ -21,8 +23,8 @@ public class CustomerService implements BaseService<CustomerDto> {
     private final CustomerMapper customerMapper;
 
     @Override
-    public List<CustomerDto> findAll() {
-        log.info("We are in findAll");
+    public List<CustomerDto> getEntities() {
+        log.info(LogMessages.ECHO_MESSAGE, "customerService", "getEntities");
         List<CustomerDto> customerDtoList = new ArrayList<>();
 
         customerRepository.findAll()
@@ -32,34 +34,34 @@ public class CustomerService implements BaseService<CustomerDto> {
     }
 
     @Override
-    public Optional<CustomerDto> findById(Integer id) {
-        log.info("We are in findById");
+    public Optional<CustomerDto> getEntity(Integer id) {
+        log.info(LogMessages.ECHO_MESSAGE, "customerService", "getEntity");
         Optional<Customer> customerOptional = customerRepository.findById(id);
         return customerOptional.map(customerMapper::customerToDto);
     }
 
     @Override
-    public CustomerDto create(CustomerDto request) {
-        log.info("We are in create");
+    public CustomerDto createEntity(CustomerDto request) {
+        log.info(LogMessages.ECHO_MESSAGE, "customerService", "createEntity");
         Customer customer = customerMapper.dtoToCustomer(request);
         return customerMapper.customerToDto(customerRepository.save(customer));
     }
 
     @Override
-    public CustomerDto update(Integer id, CustomerDto request) {
-        log.info("We are in update");
+    public CustomerDto updateEntity(Integer id, CustomerDto request) {
+        log.info(LogMessages.ECHO_MESSAGE, "customerService", "updateEntity");
         Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Customer is not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
 
         customer.setName(request.getName());
-        customer.setSurname(customer.getSurname());
+        customer.setSurname(request.getSurname());
 
         return customerMapper.customerToDto(customerRepository.save(customer));
     }
 
     @Override
-    public void delete(Integer id) {
-        log.info("We are in delete");
+    public void deleteEntity(Integer id) {
+        log.info(LogMessages.ECHO_MESSAGE, "customerService", "deleteEntity");
         customerRepository.deleteById(id);
     }
 }

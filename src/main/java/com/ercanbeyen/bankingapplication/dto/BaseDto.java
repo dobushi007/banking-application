@@ -5,9 +5,9 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
-@MappedSuperclass
 @Data
+@MappedSuperclass
 public class BaseDto {
-    LocalDateTime creationTime;
+    LocalDateTime createTime;
     LocalDateTime updateTime;
 }
