@@ -2,7 +2,6 @@ package com.ercanbeyen.bankingapplication.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Data;
 
@@ -10,8 +9,8 @@ import lombok.Data;
 @Entity
 @Table(name = "customers")
 public class Customer extends BaseEntity {
-    @Column(name = "first_name")
+    @Column(name = "name")
     private String name;
-    @Column(name = "last_name")
+    @Column(name = "surname")
     private String surname;
 }

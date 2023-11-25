@@ -14,6 +14,4 @@ public class CustomerController extends BaseController<CustomerDto> {
         super(customerService);
         this.customerService = customerService;
     }
-
-    // TODO: Test customer api
 }
