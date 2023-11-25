@@ -18,6 +18,12 @@ public abstract class BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    private LocalDateTime creationDate;
-    private LocalDateTime updateDate;
+    @CreationTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "creation_time", columnDefinition = "TIMESTAMP DEFAULT NOW()")
+    private LocalDateTime creationTime;
+    @UpdateTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "update_time", columnDefinition = "TIMESTAMP DEFAULT NOW()")
+    private LocalDateTime updateTime;
 }
