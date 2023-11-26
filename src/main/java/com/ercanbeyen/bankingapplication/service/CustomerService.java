@@ -1,7 +1,7 @@
 package com.ercanbeyen.bankingapplication.service;
 
-import com.ercanbeyen.bankingapplication.constant.LogMessages;
-import com.ercanbeyen.bankingapplication.constant.ResponseMessages;
+import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
+import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.CustomerDto;
 import com.ercanbeyen.bankingapplication.entity.Customer;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
@@ -55,6 +55,9 @@ public class CustomerService implements BaseService<CustomerDto> {
 
         customer.setName(request.getName());
         customer.setSurname(request.getSurname());
+        customer.setPhoneNumber(request.getPhoneNumber());
+        customer.setEmail(request.getEmail());
+        customer.setBirthDate(request.getBirthDate());
 
         return customerMapper.customerToDto(customerRepository.save(customer));
     }

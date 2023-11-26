@@ -1,29 +1,26 @@
 package com.ercanbeyen.bankingapplication.entity;
 
 
+import com.ercanbeyen.bankingapplication.constant.query.SqlQueries;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @MappedSuperclass
-public abstract class BaseEntity {
+public abstract sealed class BaseEntity permits Customer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "create_time", columnDefinition = "TIMESTAMP DEFAULT NOW()")
+    @Column(name = "create_time", columnDefinition = SqlQueries.GET_NOW_TIMESTAMP)
     private LocalDateTime createTime;
     @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "update_time", columnDefinition = "TIMESTAMP DEFAULT NOW()")
+    @Column(name = "update_time", columnDefinition = SqlQueries.GET_NOW_TIMESTAMP)
     private LocalDateTime updateTime;
 }
