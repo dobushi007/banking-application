@@ -21,4 +21,6 @@ public non-sealed class Customer extends BaseEntity {
     private Gender gender;
     @Column(name = "birth_date")
     private LocalDate birthDate;
+    @OneToOne
+    private Address address;
 }

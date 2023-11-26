@@ -13,4 +13,5 @@ public non-sealed class CustomerDto extends BaseDto {
     private String email;
     private Gender gender;
     private LocalDate birthDate;
+    private AddressDto addressDto;
 }

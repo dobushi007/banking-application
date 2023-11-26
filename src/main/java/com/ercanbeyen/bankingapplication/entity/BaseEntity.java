@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 
 @Data
 @MappedSuperclass
-public abstract sealed class BaseEntity permits Customer {
+public abstract sealed class BaseEntity permits Customer, Address {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;

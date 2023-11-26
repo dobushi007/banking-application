@@ -3,6 +3,7 @@ package com.ercanbeyen.bankingapplication.service;
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.CustomerDto;
+import com.ercanbeyen.bankingapplication.entity.Address;
 import com.ercanbeyen.bankingapplication.entity.Customer;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import com.ercanbeyen.bankingapplication.mapper.CustomerMapper;
@@ -21,6 +22,7 @@ import java.util.Optional;
 public class CustomerService implements BaseService<CustomerDto> {
     private final CustomerRepository customerRepository;
     private final CustomerMapper customerMapper;
+    private final AddressService addressService;
 
     @Override
     public List<CustomerDto> getEntities() {
@@ -44,6 +46,8 @@ public class CustomerService implements BaseService<CustomerDto> {
     public CustomerDto createEntity(CustomerDto request) {
         log.info(LogMessages.ECHO_MESSAGE, "customerService", "createEntity");
         Customer customer = customerMapper.dtoToCustomer(request);
+        Address address = addressService.createAddress(request.getAddressDto());
+        customer.setAddress(address);
         return customerMapper.customerToDto(customerRepository.save(customer));
     }
 
@@ -57,6 +61,7 @@ public class CustomerService implements BaseService<CustomerDto> {
         customer.setSurname(request.getSurname());
         customer.setPhoneNumber(request.getPhoneNumber());
         customer.setEmail(request.getEmail());
+        customer.setGender(request.getGender());
         customer.setBirthDate(request.getBirthDate());
 
         return customerMapper.customerToDto(customerRepository.save(customer));
