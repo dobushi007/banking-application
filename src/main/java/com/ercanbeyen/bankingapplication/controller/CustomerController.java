@@ -1,7 +1,7 @@
 package com.ercanbeyen.bankingapplication.controller;
 
 import com.ercanbeyen.bankingapplication.dto.CustomerDto;
-import com.ercanbeyen.bankingapplication.service.CustomerService;
+import com.ercanbeyen.bankingapplication.service.impl.CustomerService;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 

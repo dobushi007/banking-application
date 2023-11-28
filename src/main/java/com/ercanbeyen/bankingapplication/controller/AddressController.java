@@ -1,7 +1,7 @@
 package com.ercanbeyen.bankingapplication.controller;
 
 import com.ercanbeyen.bankingapplication.dto.AddressDto;
-import com.ercanbeyen.bankingapplication.service.AddressService;
+import com.ercanbeyen.bankingapplication.service.impl.AddressService;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
