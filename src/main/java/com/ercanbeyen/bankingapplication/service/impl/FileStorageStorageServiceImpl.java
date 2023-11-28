@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -37,5 +38,12 @@ public class FileStorageStorageServiceImpl implements FileStorageService {
         log.info(LogMessages.ECHO_MESSAGE, "FileStorageService", "getFile");
         return fileRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
+    }
+
+    @Override
+    public Stream<File> getAllFiles() {
+        log.info(LogMessages.ECHO_MESSAGE, "FileStorageService", "getAllFiles");
+        return fileRepository.findAll()
+                .stream();
     }
 }

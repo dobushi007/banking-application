@@ -2,6 +2,7 @@ package com.ercanbeyen.bankingapplication.controller;
 
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.entity.File;
+import com.ercanbeyen.bankingapplication.response.FileResponse;
 import com.ercanbeyen.bankingapplication.response.MessageResponse;
 import com.ercanbeyen.bankingapplication.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/files")
@@ -52,5 +56,29 @@ public class FileStorageController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
                 .body(file.getData());
+    }
+
+    @GetMapping
+    public ResponseEntity<?> getFileList() {
+        log.info(LogMessages.ECHO_MESSAGE, "FileStorageController", "getFileList");
+        List<FileResponse> fileResponseList = fileStorageService.getAllFiles()
+                .map(file -> {
+                    String fileDownloadUri = ServletUriComponentsBuilder
+                            .fromCurrentContextPath()
+                            .path("/api/v1/files/")
+                            .path(file.getId())
+                            .toUriString();
+
+                    return new FileResponse(
+                            file.getName(),
+                            fileDownloadUri,
+                            file.getType(),
+                            file.getData().length
+                    );
+                })
+                .toList();
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(fileResponseList);
     }
 }
