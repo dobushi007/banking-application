@@ -1,5 +1,6 @@
 package com.ercanbeyen.bankingapplication.advice;
 
+import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
 import com.ercanbeyen.bankingapplication.response.ExceptionResponse;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 
 @RestControllerAdvice
@@ -16,6 +18,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> handleResourceNotFoundException(Exception exception) {
         ExceptionResponse response = new ExceptionResponse(HttpStatus.NOT_FOUND.value(), exception.getMessage(), LocalDateTime.now());
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(ResourceConflictException.class)
+    public ResponseEntity<?> handleResourceConflictException(Exception exception) {
+        ExceptionResponse response = new ExceptionResponse(HttpStatus.CONFLICT.value(),exception.getMessage(), LocalDateTime.now());
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)

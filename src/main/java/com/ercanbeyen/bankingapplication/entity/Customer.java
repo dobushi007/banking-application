@@ -21,6 +21,8 @@ public non-sealed class Customer extends BaseEntity {
     private Gender gender;
     @Column(name = "birth_date")
     private LocalDate birthDate;
-    @OneToOne
+    @OneToOne(cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Address address;
+    @OneToOne(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private File photo;
 }

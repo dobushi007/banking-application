@@ -23,14 +23,16 @@ public class FileStorageStorageServiceImpl implements FileStorageService {
     private final FileRepository fileRepository;
 
     @Override
-    public void storeFile(MultipartFile multipartFile) throws IOException {
+    public File storeFile(MultipartFile multipartFile) throws IOException {
         log.info(LogMessages.ECHO_MESSAGE, "FileStorageService", "storeFile");
         String fileName = StringUtils.cleanPath(Objects.requireNonNull(multipartFile.getOriginalFilename()));
 
         File file = new File(fileName, multipartFile.getContentType(), multipartFile.getBytes());
-        fileRepository.save(file);
+        File savedFile = fileRepository.save(file);
         log.info("file.getName(): {}", file.getName());
         log.info("File is successfully stored");
+
+        return savedFile;
     }
 
     @Override

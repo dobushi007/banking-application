@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.stream.Stream;
 
 public interface FileStorageService {
-    void storeFile(MultipartFile file) throws IOException;
+    File storeFile(MultipartFile file) throws IOException;
     File getFile(String id);
     Stream<File> getAllFiles();
 }
