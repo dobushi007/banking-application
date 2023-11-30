@@ -1,6 +1,6 @@
 package com.ercanbeyen.bankingapplication.advice;
 
-import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
+import com.ercanbeyen.bankingapplication.exception.ResourceExpectationFailedException;
 import com.ercanbeyen.bankingapplication.response.ExceptionResponse;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 
 @RestControllerAdvice
@@ -20,15 +19,9 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(ResourceConflictException.class)
-    public ResponseEntity<?> handleResourceConflictException(Exception exception) {
-        ExceptionResponse response = new ExceptionResponse(HttpStatus.CONFLICT.value(),exception.getMessage(), LocalDateTime.now());
-        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
-    }
-
-    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    @ExceptionHandler({MaxUploadSizeExceededException.class, ResourceExpectationFailedException.class})
     public ResponseEntity<?> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException exception) {
-        ExceptionResponse response = new ExceptionResponse(HttpStatus.EXPECTATION_FAILED.value(), "File is too large to upload", LocalDateTime.now());
+        ExceptionResponse response = new ExceptionResponse(HttpStatus.EXPECTATION_FAILED.value(), exception.getMessage(), LocalDateTime.now());
         return new ResponseEntity<>(response, HttpStatus.EXPECTATION_FAILED);
     }
 

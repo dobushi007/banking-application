@@ -9,6 +9,6 @@ import java.time.LocalDateTime;
 @MappedSuperclass
 public sealed class BaseDto permits CustomerDto, AddressDto {
     private Integer id;
-    LocalDateTime createTime;
-    LocalDateTime updateTime;
+    private LocalDateTime createTime;
+    private LocalDateTime updateTime;
 }

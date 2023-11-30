@@ -26,21 +26,19 @@ public class CustomerController extends BaseController<CustomerDto> {
     @PostMapping("/{id}")
     public ResponseEntity<?> uploadPhoto(@PathVariable("id") Integer id, @RequestParam("file") MultipartFile file) {
         log.info(LogMessages.ECHO_MESSAGE, "CustomerController", "uploadPhoto");
-        String message = "";
+        String message;
         HttpStatus httpStatus;
-        MessageResponse response;
 
         try {
             message = customerService.uploadPhoto(id, file);
             httpStatus = HttpStatus.OK;
-            message = "Uploaded the file successfully: " + file.getOriginalFilename();
         } catch (Exception exception) {
+            log.error("Unable to upload photo. Message: {}", exception.getMessage());
             httpStatus = HttpStatus.EXPECTATION_FAILED;
             message = "Could not upload the file: " + file.getOriginalFilename() + "!";
-        } finally {
-            log.info("Upload operation is over");
-            response = new MessageResponse(message);
         }
+
+        MessageResponse response = new MessageResponse(message);
 
         return new ResponseEntity<>(response, httpStatus);
     }

@@ -13,6 +13,7 @@ import com.ercanbeyen.bankingapplication.mapper.CustomerMapper;
 import com.ercanbeyen.bankingapplication.repository.CustomerRepository;
 import com.ercanbeyen.bankingapplication.service.BaseService;
 import com.ercanbeyen.bankingapplication.service.FileStorageService;
+import com.ercanbeyen.bankingapplication.util.PhotoUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -93,11 +94,14 @@ public class CustomerService implements BaseService<CustomerDto> {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
 
+        PhotoUtils.checkPhoto(file);
+        log.info("control checkPhoto is passed");
+
         File photo = fileStorageService.storeFile(file);
         customer.setPhoto(photo);
         customerRepository.save(customer);
 
-        return "File successfully uploaded";
+        return "Uploaded the file successfully: " + file.getOriginalFilename();
     }
 
     public File downloadPhoto(Integer id) {
