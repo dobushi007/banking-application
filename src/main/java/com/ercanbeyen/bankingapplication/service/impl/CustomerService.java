@@ -2,6 +2,8 @@ package com.ercanbeyen.bankingapplication.service.impl;
 
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
+import com.ercanbeyen.bankingapplication.constant.names.BaseMethods;
+import com.ercanbeyen.bankingapplication.constant.names.ClassNames;
 import com.ercanbeyen.bankingapplication.dto.AddressDto;
 import com.ercanbeyen.bankingapplication.dto.CustomerDto;
 import com.ercanbeyen.bankingapplication.entity.Address;
@@ -36,7 +38,7 @@ public class CustomerService implements BaseService<CustomerDto> {
 
     @Override
     public List<CustomerDto> getEntities() {
-        log.info(LogMessages.ECHO_MESSAGE, "customerService", "getEntities");
+        log.info(LogMessages.ECHO_MESSAGE, ClassNames.CUSTOMER_SERVICE, BaseMethods.GET_ENTITIES);
         List<CustomerDto> customerDtoList = new ArrayList<>();
 
         customerRepository.findAll()
@@ -47,14 +49,14 @@ public class CustomerService implements BaseService<CustomerDto> {
 
     @Override
     public Optional<CustomerDto> getEntity(Integer id) {
-        log.info(LogMessages.ECHO_MESSAGE, "customerService", "getEntity");
+        log.info(LogMessages.ECHO_MESSAGE, ClassNames.CUSTOMER_SERVICE, BaseMethods.GET_ENTITY);
         Optional<Customer> customerOptional = customerRepository.findById(id);
         return customerOptional.map(customerMapper::customerToDto);
     }
 
     @Override
     public CustomerDto createEntity(CustomerDto request) {
-        log.info(LogMessages.ECHO_MESSAGE, "customerService", "createEntity");
+        log.info(LogMessages.ECHO_MESSAGE, ClassNames.CUSTOMER_SERVICE, BaseMethods.CREATE_ENTITY);
         Customer customer = customerMapper.dtoToCustomer(request);
 
         AddressDto addressDto = addressService.createEntity(request.getAddressDto());
@@ -66,7 +68,7 @@ public class CustomerService implements BaseService<CustomerDto> {
 
     @Override
     public CustomerDto updateEntity(Integer id, CustomerDto input) {
-        log.info(LogMessages.ECHO_MESSAGE, "customerService", "updateEntity");
+        log.info(LogMessages.ECHO_MESSAGE, ClassNames.CUSTOMER_SERVICE, BaseMethods.UPDATE_ENTITY);
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
 
@@ -85,12 +87,12 @@ public class CustomerService implements BaseService<CustomerDto> {
 
     @Override
     public void deleteEntity(Integer id) {
-        log.info(LogMessages.ECHO_MESSAGE, "customerService", "deleteEntity");
+        log.info(LogMessages.ECHO_MESSAGE, ClassNames.CUSTOMER_SERVICE, BaseMethods.DELETE_ENTITY);
         customerRepository.deleteById(id);
     }
 
     public String uploadPhoto(Integer id, MultipartFile file) throws IOException {
-        log.info(LogMessages.ECHO_MESSAGE, "customerService", "uploadPhoto");
+        log.info(LogMessages.ECHO_MESSAGE, ClassNames.CUSTOMER_SERVICE, "uploadPhoto");
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
 

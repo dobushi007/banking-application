@@ -2,6 +2,8 @@ package com.ercanbeyen.bankingapplication.service.impl;
 
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
+import com.ercanbeyen.bankingapplication.constant.names.BaseMethods;
+import com.ercanbeyen.bankingapplication.constant.names.ClassNames;
 import com.ercanbeyen.bankingapplication.dto.AddressDto;
 import com.ercanbeyen.bankingapplication.entity.Address;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
@@ -27,7 +29,7 @@ public class AddressService implements BaseService<AddressDto> {
 
     @Override
     public List<AddressDto> getEntities() {
-        log.info(LogMessages.ECHO_MESSAGE, "addressService", "getEntities");
+        log.info(LogMessages.ECHO_MESSAGE, ClassNames.ADDRESS_SERVICE, BaseMethods.GET_ENTITIES);
         List<AddressDto> addressDtoList = new ArrayList<>();
 
         addressRepository.findAll()
@@ -38,21 +40,21 @@ public class AddressService implements BaseService<AddressDto> {
 
     @Override
     public Optional<AddressDto> getEntity(Integer id) {
-        log.info(LogMessages.ECHO_MESSAGE, "addressService", "getEntity");
+        log.info(LogMessages.ECHO_MESSAGE, ClassNames.ADDRESS_SERVICE, BaseMethods.GET_ENTITY);
         Optional<Address> addressOptional = addressRepository.findById(id);
         return addressOptional.map(addressMapper::addressToDto);
     }
 
     @Override
     public AddressDto createEntity(AddressDto request) {
-        log.info(LogMessages.ECHO_MESSAGE, "addressService", "createEntity");
+        log.info(LogMessages.ECHO_MESSAGE, ClassNames.ADDRESS_SERVICE, BaseMethods.CREATE_ENTITY);
         Address address = createAddress(request);
         return addressMapper.addressToDto(address);
     }
 
     @Override
     public AddressDto updateEntity(Integer id, AddressDto request) {
-        log.info(LogMessages.ECHO_MESSAGE, "addressService", "updateEntity");
+        log.info(LogMessages.ECHO_MESSAGE, ClassNames.ADDRESS_SERVICE, BaseMethods.UPDATE_ENTITY);
         Address address = addressRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
 
@@ -65,11 +67,12 @@ public class AddressService implements BaseService<AddressDto> {
 
     @Override
     public void deleteEntity(Integer id) {
-        log.info(LogMessages.ECHO_MESSAGE, "addressService", "deleteEntity");
+        log.info(LogMessages.ECHO_MESSAGE, ClassNames.ADDRESS_SERVICE, BaseMethods.DELETE_ENTITY);
         customerRepository.deleteById(id);
     }
 
     public Address createAddress(AddressDto addressDto) {
+        log.info(LogMessages.ECHO_MESSAGE, ClassNames.ADDRESS_SERVICE, "createAddress");
         Address address = addressMapper.dtoToAddress(addressDto);
         return addressRepository.save(address);
     }

@@ -1,6 +1,7 @@
 package com.ercanbeyen.bankingapplication.controller;
 
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
+import com.ercanbeyen.bankingapplication.constant.names.ClassNames;
 import com.ercanbeyen.bankingapplication.dto.CustomerDto;
 import com.ercanbeyen.bankingapplication.entity.File;
 import com.ercanbeyen.bankingapplication.response.MessageResponse;
@@ -25,7 +26,7 @@ public class CustomerController extends BaseController<CustomerDto> {
 
     @PostMapping("/{id}")
     public ResponseEntity<?> uploadPhoto(@PathVariable("id") Integer id, @RequestParam("file") MultipartFile file) {
-        log.info(LogMessages.ECHO_MESSAGE, "CustomerController", "uploadPhoto");
+        log.info(LogMessages.ECHO_MESSAGE, ClassNames.CUSTOMER_CONTROLLER, "uploadPhoto");
         String message;
         HttpStatus httpStatus;
 
@@ -45,10 +46,10 @@ public class CustomerController extends BaseController<CustomerDto> {
 
     @GetMapping("/{id}/photo")
     public ResponseEntity<?> downloadPhoto(@PathVariable("id") Integer id) {
-        log.info(LogMessages.ECHO_MESSAGE, "CustomerController", "downloadPhoto");
+        log.info(LogMessages.ECHO_MESSAGE,  ClassNames.CUSTOMER_CONTROLLER, "downloadPhoto");
         File file = customerService.downloadPhoto(id);
         String fileName = file.getName();
-        log.info("file.getName(): {}", fileName);
+        log.info("file.getName() and its length: {} - {}", fileName, fileName.length());
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")

@@ -2,6 +2,7 @@ package com.ercanbeyen.bankingapplication.service.impl;
 
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
+import com.ercanbeyen.bankingapplication.constant.names.ClassNames;
 import com.ercanbeyen.bankingapplication.entity.File;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import com.ercanbeyen.bankingapplication.repository.FileRepository;
@@ -24,7 +25,7 @@ public class FileStorageStorageServiceImpl implements FileStorageService {
 
     @Override
     public File storeFile(MultipartFile multipartFile) throws IOException {
-        log.info(LogMessages.ECHO_MESSAGE, "FileStorageService", "storeFile");
+        log.info(LogMessages.ECHO_MESSAGE, ClassNames.FILE_STORAGE_SERVICE, "storeFile");
         String fileName = StringUtils.cleanPath(Objects.requireNonNull(multipartFile.getOriginalFilename()));
 
         File file = new File(fileName, multipartFile.getContentType(), multipartFile.getBytes());
@@ -37,14 +38,14 @@ public class FileStorageStorageServiceImpl implements FileStorageService {
 
     @Override
     public File getFile(String id) {
-        log.info(LogMessages.ECHO_MESSAGE, "FileStorageService", "getFile");
+        log.info(LogMessages.ECHO_MESSAGE, ClassNames.FILE_STORAGE_SERVICE, "getFile");
         return fileRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
     }
 
     @Override
     public Stream<File> getAllFiles() {
-        log.info(LogMessages.ECHO_MESSAGE, "FileStorageService", "getAllFiles");
+        log.info(LogMessages.ECHO_MESSAGE, ClassNames.FILE_STORAGE_SERVICE, "getAllFiles");
         return fileRepository.findAll()
                 .stream();
     }

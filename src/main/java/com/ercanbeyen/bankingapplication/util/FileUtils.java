@@ -15,25 +15,24 @@ public class FileUtils {
     }
 
     public static void checkLengthOfFileName(MultipartFile file) {
-        String fileName = file.getName();
-        log.info("File name and its length: {} - {}", fileName, fileName.length());
-
         String originalFileName = file.getOriginalFilename();
 
         if (originalFileName == null) {
             throw new ResourceExpectationFailedException("File name should not be empty!");
         }
 
-        log.info("File original name and its length: {} - {}", originalFileName, originalFileName.length());
+        int lengthOfOriginalFileName = originalFileName.length();
+        log.info("File original name and its length: {} - {}", originalFileName, lengthOfOriginalFileName);
 
-        String[] originalFileNameSplit = originalFileName.split("\\.");
-        log.info("originalFileNameSplit array: {}", (Object) originalFileNameSplit);
+        String contentType = file.getContentType();
+        assert contentType != null;
 
-        if (originalFileNameSplit.length > 2) {
-            throw new ResourceExpectationFailedException("Plain file name should not include dot character");
-        }
+        String[] contentTypeSplitArray = contentType.split("/");
+        String plainContentType = contentTypeSplitArray[1];
 
-        String plainFileName = originalFileNameSplit[0];
+        int lengthOfPlainContentType = plainContentType.length();
+        int endIndex = lengthOfOriginalFileName - (1 + lengthOfPlainContentType); // full stop + plain content type -> .pdf
+        String plainFileName = originalFileName.substring(0, endIndex);
         log.info("Plain file name: {}", plainFileName);
 
         if (plainFileName.length() > FILE_NAME_LENGTH_THRESHOLD) {
