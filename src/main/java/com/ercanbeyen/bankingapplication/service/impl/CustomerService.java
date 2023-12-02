@@ -100,7 +100,7 @@ public class CustomerService implements BaseService<CustomerDto> {
         log.info("control checkPhoto is passed");
 
         File photo = fileStorageService.storeFile(file);
-        customer.setPhoto(photo);
+        customer.setProfilePhoto(photo);
         customerRepository.save(customer);
 
         return "Uploaded the file successfully: " + file.getOriginalFilename();
@@ -110,6 +110,9 @@ public class CustomerService implements BaseService<CustomerDto> {
         log.info(LogMessages.ECHO_MESSAGE, "customerService", "downloadPhoto");
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
-        return customer.getPhoto();
+        log.info("Customer is found");
+
+        return customer.getProfilePhoto()
+                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
     }
 }

@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class FileStorageStorageServiceImpl implements FileStorageService {
+public class FileStorageServiceImpl implements FileStorageService {
     private final FileRepository fileRepository;
 
     @Override
