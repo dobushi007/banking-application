@@ -91,8 +91,8 @@ public class CustomerService implements BaseService<CustomerDto> {
         customerRepository.deleteById(id);
     }
 
-    public String uploadPhoto(Integer id, MultipartFile file) throws IOException {
-        log.info(LogMessages.ECHO_MESSAGE, ClassNames.CUSTOMER_SERVICE, "uploadPhoto");
+    public String uploadProfilePhoto(Integer id, MultipartFile file) throws IOException {
+        log.info(LogMessages.ECHO_MESSAGE, ClassNames.CUSTOMER_SERVICE, "uploadProfilePhoto");
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
 
@@ -106,13 +106,24 @@ public class CustomerService implements BaseService<CustomerDto> {
         return "Uploaded the file successfully: " + file.getOriginalFilename();
     }
 
-    public File downloadPhoto(Integer id) {
-        log.info(LogMessages.ECHO_MESSAGE, "customerService", "downloadPhoto");
+    public File downloadProfilePhoto(Integer id) {
+        log.info(LogMessages.ECHO_MESSAGE, ClassNames.CUSTOMER_SERVICE, "downloadProfilePhoto");
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
         log.info("Customer is found");
 
         return customer.getProfilePhoto()
                 .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
+    }
+
+    public String deleteProfilePhoto(Integer id) {
+        log.info(LogMessages.ECHO_MESSAGE, ClassNames.CUSTOMER_SERVICE, "deleteProfilePhoto");
+
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
+        customer.setProfilePhoto(null);
+        customerRepository.save(customer);
+
+        return "Deleted the file successfully";
     }
 }

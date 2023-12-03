@@ -25,13 +25,13 @@ public class CustomerController extends BaseController<CustomerDto> {
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<?> uploadPhoto(@PathVariable("id") Integer id, @RequestParam("file") MultipartFile file) {
-        log.info(LogMessages.ECHO_MESSAGE, ClassNames.CUSTOMER_CONTROLLER, "uploadPhoto");
+    public ResponseEntity<?> uploadProfilePhoto(@PathVariable("id") Integer id, @RequestParam("file") MultipartFile file) {
+        log.info(LogMessages.ECHO_MESSAGE, ClassNames.CUSTOMER_CONTROLLER, "uploadProfilePhoto");
         String message;
         HttpStatus httpStatus;
 
         try {
-            message = customerService.uploadPhoto(id, file);
+            message = customerService.uploadProfilePhoto(id, file);
             httpStatus = HttpStatus.OK;
         } catch (Exception exception) {
             log.error("Unable to upload photo. Message: {}", exception.getMessage());
@@ -45,14 +45,24 @@ public class CustomerController extends BaseController<CustomerDto> {
     }
 
     @GetMapping("/{id}/photo")
-    public ResponseEntity<?> downloadPhoto(@PathVariable("id") Integer id) {
-        log.info(LogMessages.ECHO_MESSAGE,  ClassNames.CUSTOMER_CONTROLLER, "downloadPhoto");
-        File file = customerService.downloadPhoto(id);
+    public ResponseEntity<?> downloadProfilePhoto(@PathVariable("id") Integer id) {
+        log.info(LogMessages.ECHO_MESSAGE,  ClassNames.CUSTOMER_CONTROLLER, "downloadProfilePhoto");
+        File file = customerService.downloadProfilePhoto(id);
+
         String fileName = file.getName();
         log.info("file.getName() and its length: {} - {}", fileName, fileName.length());
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
                 .body(file.getData());
+    }
+
+    @DeleteMapping("{id}/photo")
+    public ResponseEntity<?> deleteProfilePhoto(@PathVariable("id") Integer id) {
+        log.info(LogMessages.ECHO_MESSAGE,  ClassNames.CUSTOMER_CONTROLLER, "downloadProfilePhoto");
+        String message = customerService.deleteProfilePhoto(id);
+        MessageResponse response = new MessageResponse(message);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
