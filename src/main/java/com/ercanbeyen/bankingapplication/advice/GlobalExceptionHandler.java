@@ -20,7 +20,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({MaxUploadSizeExceededException.class, ResourceExpectationFailedException.class})
-    public ResponseEntity<?> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException exception) {
+    public ResponseEntity<?> handleResourceExpectationFailedException(Exception exception) {
         ExceptionResponse response = new ExceptionResponse(HttpStatus.EXPECTATION_FAILED.value(), exception.getMessage(), LocalDateTime.now());
         return new ResponseEntity<>(response, HttpStatus.EXPECTATION_FAILED);
     }

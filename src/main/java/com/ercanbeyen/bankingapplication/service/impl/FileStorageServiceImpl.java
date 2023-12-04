@@ -4,6 +4,7 @@ import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.constant.names.ClassNames;
 import com.ercanbeyen.bankingapplication.entity.File;
+import com.ercanbeyen.bankingapplication.exception.ResourceExpectationFailedException;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import com.ercanbeyen.bankingapplication.repository.FileRepository;
 import com.ercanbeyen.bankingapplication.service.FileStorageService;
@@ -41,6 +42,25 @@ public class FileStorageServiceImpl implements FileStorageService {
         log.info(LogMessages.ECHO_MESSAGE, ClassNames.FILE_STORAGE_SERVICE, "getFile");
         return fileRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
+    }
+
+    @Override
+    public void deleteFile(String id) {
+        log.info(LogMessages.ECHO_MESSAGE, ClassNames.FILE_STORAGE_SERVICE, "deleteFile");
+
+        fileRepository.findById(id).ifPresentOrElse(file -> {
+            log.info("File is found in file repository");
+            try {
+                fileRepository.delete(file);
+                log.info("File is successfully deleted");
+            } catch (Exception exception) {
+                String message = "File is a profile photo. So, it might only be deleted from customer api";
+                throw new ResourceExpectationFailedException(message);
+            }
+        }, () -> {
+            log.error("File is not found in file repository");
+            throw new ResourceNotFoundException(ResponseMessages.NOT_FOUND);
+        });
     }
 
     @Override

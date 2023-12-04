@@ -58,6 +58,17 @@ public class FileStorageController {
                 .body(file.getData());
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteFile(@PathVariable("id") String id) {
+        log.info(LogMessages.ECHO_MESSAGE, ClassNames.FILE_STORAGE_CONTROLLER, "deleteFile");
+        fileStorageService.deleteFile(id);
+
+        String message = "Uploaded the file successfully: " + id;
+        MessageResponse response = new MessageResponse(message);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @GetMapping
     public ResponseEntity<?> getFileList() {
         log.info(LogMessages.ECHO_MESSAGE, ClassNames.FILE_STORAGE_CONTROLLER, "getFileList");
