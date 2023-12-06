@@ -2,8 +2,6 @@ package com.ercanbeyen.bankingapplication.service.impl;
 
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
-import com.ercanbeyen.bankingapplication.constant.names.BaseMethods;
-import com.ercanbeyen.bankingapplication.constant.names.ClassNames;
 import com.ercanbeyen.bankingapplication.dto.AddressDto;
 import com.ercanbeyen.bankingapplication.dto.CustomerDto;
 import com.ercanbeyen.bankingapplication.entity.Address;
@@ -15,6 +13,7 @@ import com.ercanbeyen.bankingapplication.mapper.CustomerMapper;
 import com.ercanbeyen.bankingapplication.repository.CustomerRepository;
 import com.ercanbeyen.bankingapplication.service.BaseService;
 import com.ercanbeyen.bankingapplication.service.FileStorageService;
+import com.ercanbeyen.bankingapplication.util.LoggingUtils;
 import com.ercanbeyen.bankingapplication.util.PhotoUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +37,11 @@ public class CustomerService implements BaseService<CustomerDto> {
 
     @Override
     public List<CustomerDto> getEntities() {
-        log.info(LogMessages.ECHO_MESSAGE, ClassNames.CUSTOMER_SERVICE, BaseMethods.GET_ENTITIES);
+        log.info(LogMessages.ECHO_MESSAGE,
+                LoggingUtils.getClassName(this),
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
+        );
+
         List<CustomerDto> customerDtoList = new ArrayList<>();
 
         customerRepository.findAll()
@@ -49,14 +52,22 @@ public class CustomerService implements BaseService<CustomerDto> {
 
     @Override
     public Optional<CustomerDto> getEntity(Integer id) {
-        log.info(LogMessages.ECHO_MESSAGE, ClassNames.CUSTOMER_SERVICE, BaseMethods.GET_ENTITY);
+        log.info(LogMessages.ECHO_MESSAGE,
+                LoggingUtils.getClassName(this),
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
+        );
+
         Optional<Customer> customerOptional = customerRepository.findById(id);
         return customerOptional.map(customerMapper::customerToDto);
     }
 
     @Override
     public CustomerDto createEntity(CustomerDto request) {
-        log.info(LogMessages.ECHO_MESSAGE, ClassNames.CUSTOMER_SERVICE, BaseMethods.CREATE_ENTITY);
+        log.info(LogMessages.ECHO_MESSAGE,
+                LoggingUtils.getClassName(this),
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
+        );
+
         Customer customer = customerMapper.dtoToCustomer(request);
 
         AddressDto addressDto = addressService.createEntity(request.getAddressDto());
@@ -68,7 +79,11 @@ public class CustomerService implements BaseService<CustomerDto> {
 
     @Override
     public CustomerDto updateEntity(Integer id, CustomerDto input) {
-        log.info(LogMessages.ECHO_MESSAGE, ClassNames.CUSTOMER_SERVICE, BaseMethods.UPDATE_ENTITY);
+        log.info(LogMessages.ECHO_MESSAGE,
+                LoggingUtils.getClassName(this),
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
+        );
+
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
 
@@ -87,12 +102,20 @@ public class CustomerService implements BaseService<CustomerDto> {
 
     @Override
     public void deleteEntity(Integer id) {
-        log.info(LogMessages.ECHO_MESSAGE, ClassNames.CUSTOMER_SERVICE, BaseMethods.DELETE_ENTITY);
+        log.info(LogMessages.ECHO_MESSAGE,
+                LoggingUtils.getClassName(this),
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
+        );
+
         customerRepository.deleteById(id);
     }
 
-    public String uploadPhoto(Integer id, MultipartFile file) throws IOException {
-        log.info(LogMessages.ECHO_MESSAGE, ClassNames.CUSTOMER_SERVICE, "uploadPhoto");
+    public String uploadProfilePhoto(Integer id, MultipartFile file) throws IOException {
+        log.info(LogMessages.ECHO_MESSAGE,
+                LoggingUtils.getClassName(this),
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
+        );
+
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
 
@@ -100,16 +123,38 @@ public class CustomerService implements BaseService<CustomerDto> {
         log.info("control checkPhoto is passed");
 
         File photo = fileStorageService.storeFile(file);
-        customer.setPhoto(photo);
+        customer.setProfilePhoto(photo);
         customerRepository.save(customer);
 
         return "Uploaded the file successfully: " + file.getOriginalFilename();
     }
 
-    public File downloadPhoto(Integer id) {
-        log.info(LogMessages.ECHO_MESSAGE, "customerService", "downloadPhoto");
+    public File downloadProfilePhoto(Integer id) {
+        log.info(LogMessages.ECHO_MESSAGE,
+                LoggingUtils.getClassName(this),
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
+        );
+
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
-        return customer.getPhoto();
+
+        log.info("Customer is found");
+
+        return customer.getProfilePhoto()
+                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
+    }
+
+    public String deleteProfilePhoto(Integer id) {
+        log.info(LogMessages.ECHO_MESSAGE,
+                LoggingUtils.getClassName(this),
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
+        );
+
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
+        customer.setProfilePhoto(null);
+        customerRepository.save(customer);
+
+        return "Deleted the file successfully";
     }
 }
