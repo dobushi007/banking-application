@@ -2,12 +2,12 @@ package com.ercanbeyen.bankingapplication.service.impl;
 
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
-import com.ercanbeyen.bankingapplication.constant.names.ClassNames;
 import com.ercanbeyen.bankingapplication.entity.File;
 import com.ercanbeyen.bankingapplication.exception.ResourceExpectationFailedException;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import com.ercanbeyen.bankingapplication.repository.FileRepository;
 import com.ercanbeyen.bankingapplication.service.FileStorageService;
+import com.ercanbeyen.bankingapplication.util.LoggingUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,11 +26,15 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     @Override
     public File storeFile(MultipartFile multipartFile) throws IOException {
-        log.info(LogMessages.ECHO_MESSAGE, ClassNames.FILE_STORAGE_SERVICE, "storeFile");
-        String fileName = StringUtils.cleanPath(Objects.requireNonNull(multipartFile.getOriginalFilename()));
+        log.info(LogMessages.ECHO_MESSAGE,
+                LoggingUtils.getClassName(this),
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
+        );
 
+        String fileName = StringUtils.cleanPath(Objects.requireNonNull(multipartFile.getOriginalFilename()));
         File file = new File(fileName, multipartFile.getContentType(), multipartFile.getBytes());
         File savedFile = fileRepository.save(file);
+
         log.info("file.getName(): {}", file.getName());
         log.info("File is successfully stored");
 
@@ -39,14 +43,21 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     @Override
     public File getFile(String id) {
-        log.info(LogMessages.ECHO_MESSAGE, ClassNames.FILE_STORAGE_SERVICE, "getFile");
+        log.info(LogMessages.ECHO_MESSAGE,
+                LoggingUtils.getClassName(this),
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
+        );
+
         return fileRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
     }
 
     @Override
     public void deleteFile(String id) {
-        log.info(LogMessages.ECHO_MESSAGE, ClassNames.FILE_STORAGE_SERVICE, "deleteFile");
+        log.info(LogMessages.ECHO_MESSAGE,
+                LoggingUtils.getClassName(this),
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
+        );
 
         fileRepository.findById(id).ifPresentOrElse(file -> {
             log.info("File is found in file repository");
@@ -65,7 +76,11 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     @Override
     public Stream<File> getAllFiles() {
-        log.info(LogMessages.ECHO_MESSAGE, ClassNames.FILE_STORAGE_SERVICE, "getAllFiles");
+        log.info(LogMessages.ECHO_MESSAGE,
+                LoggingUtils.getClassName(this),
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
+        );
+
         return fileRepository.findAll()
                 .stream();
     }

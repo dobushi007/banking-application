@@ -1,7 +1,5 @@
 package com.ercanbeyen.bankingapplication.controller;
 
-import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
-import com.ercanbeyen.bankingapplication.constant.names.ClassNames;
 import com.ercanbeyen.bankingapplication.dto.CustomerDto;
 import com.ercanbeyen.bankingapplication.entity.File;
 import com.ercanbeyen.bankingapplication.response.MessageResponse;
@@ -26,7 +24,6 @@ public class CustomerController extends BaseController<CustomerDto> {
 
     @PostMapping("/{id}")
     public ResponseEntity<?> uploadProfilePhoto(@PathVariable("id") Integer id, @RequestParam("file") MultipartFile file) {
-        log.info(LogMessages.ECHO_MESSAGE, ClassNames.CUSTOMER_CONTROLLER, "uploadProfilePhoto");
         String message;
         HttpStatus httpStatus;
 
@@ -46,7 +43,6 @@ public class CustomerController extends BaseController<CustomerDto> {
 
     @GetMapping("/{id}/photo")
     public ResponseEntity<?> downloadProfilePhoto(@PathVariable("id") Integer id) {
-        log.info(LogMessages.ECHO_MESSAGE,  ClassNames.CUSTOMER_CONTROLLER, "downloadProfilePhoto");
         File file = customerService.downloadProfilePhoto(id);
 
         String fileName = file.getName();
@@ -59,7 +55,6 @@ public class CustomerController extends BaseController<CustomerDto> {
 
     @DeleteMapping("{id}/photo")
     public ResponseEntity<?> deleteProfilePhoto(@PathVariable("id") Integer id) {
-        log.info(LogMessages.ECHO_MESSAGE,  ClassNames.CUSTOMER_CONTROLLER, "downloadProfilePhoto");
         String message = customerService.deleteProfilePhoto(id);
         MessageResponse response = new MessageResponse(message);
 
