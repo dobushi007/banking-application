@@ -69,7 +69,7 @@ public class FileStorageController {
         List<FileResponse> fileResponseList = fileStorageService.getAllFiles()
                 .map(file -> {
                     String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                            .path("/api/v1/files/")
+                            .path("/api/v1/files")
                             .path(file.getId())
                             .toUriString();
 

@@ -74,6 +74,8 @@ public class AddressService implements BaseService<AddressDto> {
         Address address = addressRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
 
+        log.info(LogMessages.RESOURCE_FOUND, LogMessages.ResourceNames.ADDRESS);
+
         address.setCity(request.getCity());
         address.setPostCode(request.getPostCode());
         address.setDetails(request.getDetails());
