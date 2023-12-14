@@ -121,6 +121,8 @@ public class CustomerService implements BaseService<CustomerDto> {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
 
+        log.info(LogMessages.RESOURCE_FOUND, LogMessages.ResourceNames.CUSTOMER);
+
         PhotoUtils.checkPhoto(file);
         log.info("control checkPhoto is passed");
 

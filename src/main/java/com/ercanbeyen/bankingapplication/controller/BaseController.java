@@ -4,6 +4,7 @@ import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.BaseDto;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import com.ercanbeyen.bankingapplication.service.BaseService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -28,12 +29,12 @@ public abstract class BaseController<T extends BaseDto> {
     }
 
     @PostMapping
-    public ResponseEntity<?> createEntity(@RequestBody T request) {
+    public ResponseEntity<?> createEntity(@RequestBody @Valid T request) {
         return new ResponseEntity<>(baseService.createEntity(request), HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateEntity(@PathVariable("id") Integer id, @RequestBody T request) {
+    public ResponseEntity<?> updateEntity(@PathVariable("id") Integer id, @RequestBody @Valid T request) {
         return new ResponseEntity<>(baseService.updateEntity(id, request), HttpStatus.OK);
     }
 
