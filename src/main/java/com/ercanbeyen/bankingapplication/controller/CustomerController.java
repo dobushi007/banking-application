@@ -4,6 +4,7 @@ import com.ercanbeyen.bankingapplication.dto.CustomerDto;
 import com.ercanbeyen.bankingapplication.entity.File;
 import com.ercanbeyen.bankingapplication.response.MessageResponse;
 import com.ercanbeyen.bankingapplication.service.impl.CustomerService;
+import com.ercanbeyen.bankingapplication.util.PhotoUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,7 @@ public class CustomerController extends BaseController<CustomerDto> {
 
     @PostMapping("/{id}")
     public ResponseEntity<?> uploadProfilePhoto(@PathVariable("id") Integer id, @RequestParam("file") MultipartFile file) {
+        PhotoUtils.checkPhoto(file);
         String message = customerService.uploadProfilePhoto(id, file);
         MessageResponse response = new MessageResponse(message);
         return new ResponseEntity<>(response, HttpStatus.OK);

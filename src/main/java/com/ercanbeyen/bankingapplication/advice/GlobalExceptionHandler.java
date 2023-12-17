@@ -30,26 +30,26 @@ public class GlobalExceptionHandler {
                     errors.put(field, message);
                 });
 
-        return constructResponse(errors.toString(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<?> handleResourceNotFoundException(Exception exception) {
-        return constructResponse(exception.getMessage(), HttpStatus.NOT_FOUND);
+        return constructResponse(exception, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler({MaxUploadSizeExceededException.class, ResourceExpectationFailedException.class})
     public ResponseEntity<?> handleResourceExpectationFailedException(Exception exception) {
-        return constructResponse(exception.getMessage(), HttpStatus.EXPECTATION_FAILED);
+        return constructResponse(exception, HttpStatus.EXPECTATION_FAILED);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleGeneralException(Exception exception) {
-        return constructResponse(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        return constructResponse(exception, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    private ResponseEntity<?> constructResponse(String message, HttpStatus httpStatus) {
-        ExceptionResponse response = new ExceptionResponse(httpStatus.value(), message, LocalDateTime.now());
+    private ResponseEntity<?> constructResponse(Exception exception, HttpStatus httpStatus) {
+        ExceptionResponse response = new ExceptionResponse(httpStatus.value(), exception.getMessage(), LocalDateTime.now());
         return new ResponseEntity<>(response, httpStatus);
     }
 }

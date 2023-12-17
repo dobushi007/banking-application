@@ -14,7 +14,6 @@ import com.ercanbeyen.bankingapplication.repository.CustomerRepository;
 import com.ercanbeyen.bankingapplication.service.BaseService;
 import com.ercanbeyen.bankingapplication.service.FileStorageService;
 import com.ercanbeyen.bankingapplication.util.LoggingUtils;
-import com.ercanbeyen.bankingapplication.util.PhotoUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -57,7 +56,6 @@ public class CustomerService implements BaseService<CustomerDto> {
         );
 
         Optional<Customer> customerOptional = customerRepository.findById(id);
-
         return customerOptional.map(customerMapper::customerToDto);
     }
 
@@ -78,7 +76,7 @@ public class CustomerService implements BaseService<CustomerDto> {
     }
 
     @Override
-    public CustomerDto updateEntity(Integer id, CustomerDto customerDto) {
+    public CustomerDto updateEntity(Integer id, CustomerDto request) {
         log.info(LogMessages.ECHO_MESSAGE,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
@@ -88,8 +86,7 @@ public class CustomerService implements BaseService<CustomerDto> {
                 .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
 
         log.info(LogMessages.RESOURCE_FOUND, LogMessages.ResourceNames.CUSTOMER);
-
-        Customer requestCustomer = customerMapper.dtoToCustomer(customerDto);
+        Customer requestCustomer = customerMapper.dtoToCustomer(request);
 
         customer.setName(requestCustomer.getName());
         customer.setSurname(requestCustomer.getSurname());
@@ -97,7 +94,7 @@ public class CustomerService implements BaseService<CustomerDto> {
         customer.setEmail(requestCustomer.getEmail());
         customer.setGender(requestCustomer.getGender());
         customer.setBirthDate(requestCustomer.getBirthDate());
-        addressService.updateEntity(customer.getAddress().getId(), customerDto.getAddressDto());
+        addressService.updateEntity(customer.getAddress().getId(), request.getAddressDto());
 
         return customerMapper.customerToDto(customerRepository.save(customer));
     }
@@ -121,17 +118,11 @@ public class CustomerService implements BaseService<CustomerDto> {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
 
-        log.info(LogMessages.RESOURCE_FOUND, LogMessages.ResourceNames.CUSTOMER);
-
-        PhotoUtils.checkPhoto(file);
-        log.info("control checkPhoto is passed");
-
-        // Upload the profile photo
         File photo = fileStorageService.storeFile(file);
-        customer.setProfilePhoto(photo);
+        customer.setProfilePhoto(photo); // Profile photo upload
         customerRepository.save(customer);
 
-        return "Uploaded the file successfully: " + file.getOriginalFilename();
+        return ResponseMessages.FILE_UPLOAD_SUCCESS;
     }
 
     public File downloadProfilePhoto(Integer id) {
@@ -158,10 +149,9 @@ public class CustomerService implements BaseService<CustomerDto> {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
 
-        // Remove profile photo
-        customer.setProfilePhoto(null);
+        customer.setProfilePhoto(null); // Profile photo deletion
         customerRepository.save(customer);
 
-        return "Deleted the file successfully";
+        return ResponseMessages.FILE_DELETE_SUCCESS;
     }
 }

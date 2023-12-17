@@ -36,11 +36,10 @@ public class FileStorageServiceImpl implements FileStorageService {
         try {
             File file = new File(fileName, multipartFile.getContentType(), multipartFile.getBytes());
             savedFile = fileRepository.save(file);
-            log.info("file.getName(): {}", savedFile.getName());
             log.info("File is successfully stored");
         } catch (Exception exception) {
-            log.error("Exception message: {}", exception.getMessage());
-            String message = "Unable to upload file. Exception message: " + exception.getMessage();
+            log.error(LogMessages.EXCEPTION_MESSAGE, exception.getMessage());
+            String message = ResponseMessages.FILE_UPLOAD_ERROR;
             throw new ResourceExpectationFailedException(message);
         }
 
@@ -59,7 +58,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public void deleteFile(String id) {
+    public String deleteFile(String id) {
         log.info(LogMessages.ECHO_MESSAGE,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
@@ -67,10 +66,11 @@ public class FileStorageServiceImpl implements FileStorageService {
 
         fileRepository.findById(id).ifPresentOrElse(file -> {
             log.info(LogMessages.RESOURCE_FOUND, LogMessages.ResourceNames.FILE);
+
             try {
                 fileRepository.delete(file);
-                log.info("File is successfully deleted");
             } catch (Exception exception) {
+                log.error(LogMessages.EXCEPTION_MESSAGE, exception.getMessage());
                 String message = "File is a profile photo. So, it might only be deleted from customer api";
                 throw new ResourceExpectationFailedException(message);
             }
@@ -78,6 +78,8 @@ public class FileStorageServiceImpl implements FileStorageService {
             log.error(LogMessages.RESOURCE_NOT_FOUND, LogMessages.ResourceNames.FILE);
             throw new ResourceNotFoundException(ResponseMessages.NOT_FOUND);
         });
+
+        return ResponseMessages.FILE_DELETE_SUCCESS;
     }
 
     @Override
