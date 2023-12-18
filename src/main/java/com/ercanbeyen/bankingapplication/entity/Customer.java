@@ -17,6 +17,7 @@ public non-sealed class Customer extends BaseEntity {
     @Getter
     private String surname;
     @Getter
+    @Column(unique = true)
     private String phoneNumber;
     @Getter
     private String email;

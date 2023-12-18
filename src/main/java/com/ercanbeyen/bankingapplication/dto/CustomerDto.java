@@ -1,5 +1,6 @@
 package com.ercanbeyen.bankingapplication.dto;
 
+import com.ercanbeyen.bankingapplication.annotation.PhoneNumberRequest;
 import com.ercanbeyen.bankingapplication.constant.enums.Gender;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -15,7 +16,7 @@ public non-sealed class CustomerDto extends BaseDto {
     String name;
     @NotBlank(message = "Name should not be blank")
     String surname;
-    @NotBlank(message = "Phone number should not be blank")
+    @PhoneNumberRequest
     private String phoneNumber;
     @NotBlank(message = "Email should not be blank")
     @Email(message = "Invalid email")
