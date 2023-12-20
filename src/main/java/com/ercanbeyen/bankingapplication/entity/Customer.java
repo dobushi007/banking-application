@@ -17,7 +17,7 @@ public non-sealed class Customer extends BaseEntity {
     @Getter
     private String surname;
     @Getter
-    @Column(unique = true)
+    @Column(name = "phone_number", unique = true)
     private String phoneNumber;
     @Getter
     private String email;
@@ -31,6 +31,7 @@ public non-sealed class Customer extends BaseEntity {
     @OneToOne(cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Address address;
     @OneToOne(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @JoinColumn(name = "profile_photo")
     private File profilePhoto;
 
     public Optional<File> getProfilePhoto() {

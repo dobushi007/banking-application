@@ -77,7 +77,7 @@ public class AddressService implements BaseService<AddressDto> {
         log.info(LogMessages.RESOURCE_FOUND, LogMessages.ResourceNames.ADDRESS);
 
         address.setCity(request.getCity());
-        address.setPostCode(request.getPostCode());
+        address.setZipCode(request.getZipCode());
         address.setDetails(request.getDetails());
 
         return addressMapper.addressToDto(addressRepository.save(address));
