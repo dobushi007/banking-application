@@ -4,6 +4,7 @@ import com.ercanbeyen.bankingapplication.dto.CustomerDto;
 import com.ercanbeyen.bankingapplication.entity.File;
 import com.ercanbeyen.bankingapplication.response.MessageResponse;
 import com.ercanbeyen.bankingapplication.service.impl.CustomerService;
+import com.ercanbeyen.bankingapplication.util.PhotoUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -24,21 +25,10 @@ public class CustomerController extends BaseController<CustomerDto> {
 
     @PostMapping("/{id}")
     public ResponseEntity<?> uploadProfilePhoto(@PathVariable("id") Integer id, @RequestParam("file") MultipartFile file) {
-        String message;
-        HttpStatus httpStatus;
-
-        try {
-            message = customerService.uploadProfilePhoto(id, file);
-            httpStatus = HttpStatus.OK;
-        } catch (Exception exception) {
-            log.error("Unable to upload photo. Message: {}", exception.getMessage());
-            httpStatus = HttpStatus.EXPECTATION_FAILED;
-            message = "Could not upload the file: " + file.getOriginalFilename() + "!";
-        }
-
+        PhotoUtils.checkPhoto(file);
+        String message = customerService.uploadProfilePhoto(id, file);
         MessageResponse response = new MessageResponse(message);
-
-        return new ResponseEntity<>(response, httpStatus);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/{id}/photo")
@@ -57,7 +47,6 @@ public class CustomerController extends BaseController<CustomerDto> {
     public ResponseEntity<?> deleteProfilePhoto(@PathVariable("id") Integer id) {
         String message = customerService.deleteProfilePhoto(id);
         MessageResponse response = new MessageResponse(message);
-
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

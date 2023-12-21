@@ -11,7 +11,7 @@ import lombok.Data;
 public final class Address extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private City city;
-    @Column(name = "post_code")
-    private Integer postCode;
+    @Column(name = "zip_code")
+    private Integer zipCode;
     private String details;
 }

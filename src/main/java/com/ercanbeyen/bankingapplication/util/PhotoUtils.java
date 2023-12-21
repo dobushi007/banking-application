@@ -18,7 +18,8 @@ public class PhotoUtils {
 
     private static void checkContentTypeOfPhoto(MultipartFile file) {
         if (!validContentTypeList.contains(file.getContentType())) {
-            throw new ResourceExpectationFailedException("Invalid content type for photo. Valid content types are " + validContentTypeList);
+            List<String> plainContentTypeList = FileUtils.getPlainContentTypes(validContentTypeList);
+            throw new ResourceExpectationFailedException("Invalid content type for photo. Valid content types are " + plainContentTypeList);
         }
     }
 }

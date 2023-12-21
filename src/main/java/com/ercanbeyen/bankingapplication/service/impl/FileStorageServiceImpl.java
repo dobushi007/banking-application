@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -25,18 +24,24 @@ public class FileStorageServiceImpl implements FileStorageService {
     private final FileRepository fileRepository;
 
     @Override
-    public File storeFile(MultipartFile multipartFile) throws IOException {
+    public File storeFile(MultipartFile multipartFile) {
         log.info(LogMessages.ECHO_MESSAGE,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
 
         String fileName = StringUtils.cleanPath(Objects.requireNonNull(multipartFile.getOriginalFilename()));
-        File file = new File(fileName, multipartFile.getContentType(), multipartFile.getBytes());
-        File savedFile = fileRepository.save(file);
+        File savedFile;
 
-        log.info("file.getName(): {}", file.getName());
-        log.info("File is successfully stored");
+        try {
+            File file = new File(fileName, multipartFile.getContentType(), multipartFile.getBytes());
+            savedFile = fileRepository.save(file);
+            log.info("File is successfully stored");
+        } catch (Exception exception) {
+            log.error(LogMessages.EXCEPTION_MESSAGE, exception.getMessage());
+            String message = ResponseMessages.FILE_UPLOAD_ERROR;
+            throw new ResourceExpectationFailedException(message);
+        }
 
         return savedFile;
     }
@@ -53,25 +58,28 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public void deleteFile(String id) {
+    public String deleteFile(String id) {
         log.info(LogMessages.ECHO_MESSAGE,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
 
         fileRepository.findById(id).ifPresentOrElse(file -> {
-            log.info("File is found in file repository");
+            log.info(LogMessages.RESOURCE_FOUND, LogMessages.ResourceNames.FILE);
+
             try {
                 fileRepository.delete(file);
-                log.info("File is successfully deleted");
             } catch (Exception exception) {
+                log.error(LogMessages.EXCEPTION_MESSAGE, exception.getMessage());
                 String message = "File is a profile photo. So, it might only be deleted from customer api";
                 throw new ResourceExpectationFailedException(message);
             }
         }, () -> {
-            log.error("File is not found in file repository");
+            log.error(LogMessages.RESOURCE_NOT_FOUND, LogMessages.ResourceNames.FILE);
             throw new ResourceNotFoundException(ResponseMessages.NOT_FOUND);
         });
+
+        return ResponseMessages.FILE_DELETE_SUCCESS;
     }
 
     @Override

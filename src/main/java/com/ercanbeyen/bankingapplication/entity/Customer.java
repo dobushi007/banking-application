@@ -8,36 +8,30 @@ import lombok.Setter;
 import java.time.LocalDate;
 import java.util.Optional;
 
+@Setter
 @Entity
 @Table(name = "customers")
 public non-sealed class Customer extends BaseEntity {
     @Getter
-    @Setter
     private String name;
     @Getter
-    @Setter
     private String surname;
     @Getter
-    @Setter
-    @Column(name = "phone_number")
+    @Column(name = "phone_number", unique = true)
     private String phoneNumber;
     @Getter
-    @Setter
     private String email;
     @Getter
-    @Setter
     @Enumerated(EnumType.STRING)
     private Gender gender;
     @Getter
-    @Setter
     @Column(name = "birth_date")
     private LocalDate birthDate;
     @Getter
-    @Setter
     @OneToOne(cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Address address;
-    @Setter
     @OneToOne(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @JoinColumn(name = "profile_photo")
     private File profilePhoto;
 
     public Optional<File> getProfilePhoto() {

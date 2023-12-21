@@ -1,5 +1,6 @@
 package com.ercanbeyen.bankingapplication.controller;
 
+import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.entity.File;
 import com.ercanbeyen.bankingapplication.response.FileResponse;
 import com.ercanbeyen.bankingapplication.response.MessageResponse;
@@ -24,23 +25,10 @@ public class FileStorageController {
 
     @PostMapping
     public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file) {
-        String message = "";
-        HttpStatus httpStatus;
-        MessageResponse response;
+        fileStorageService.storeFile(file);
+        MessageResponse response = new MessageResponse(ResponseMessages.FILE_UPLOAD_SUCCESS);
 
-        try {
-            fileStorageService.storeFile(file);
-            httpStatus = HttpStatus.OK;
-            message = "Uploaded the file successfully: " + file.getOriginalFilename();
-        } catch (Exception exception) {
-            httpStatus = HttpStatus.EXPECTATION_FAILED;
-            message = "Could not upload the file: " + file.getOriginalFilename() + "!";
-        } finally {
-            log.info("Upload operation is over");
-            response = new MessageResponse(message);
-        }
-
-        return new ResponseEntity<>(response, httpStatus);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
@@ -56,9 +44,7 @@ public class FileStorageController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteFile(@PathVariable("id") String id) {
-        fileStorageService.deleteFile(id);
-
-        String message = "Uploaded the file successfully: " + id;
+        String message = fileStorageService.deleteFile(id);
         MessageResponse response = new MessageResponse(message);
 
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -69,7 +55,7 @@ public class FileStorageController {
         List<FileResponse> fileResponseList = fileStorageService.getAllFiles()
                 .map(file -> {
                     String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                            .path("/api/v1/files/")
+                            .path("/api/v1/files")
                             .path(file.getId())
                             .toUriString();
 
