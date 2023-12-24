@@ -8,6 +8,7 @@ public class LogMessages {
 
     public static class ResourceNames {
         public static final String CUSTOMER = "Customer";
+        public static final String ACCOUNT = "Account";
         public static final String ADDRESS = "Address";
         public static final String FILE = "File";
     }

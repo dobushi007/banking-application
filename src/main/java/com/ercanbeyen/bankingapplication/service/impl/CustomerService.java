@@ -56,6 +56,7 @@ public class CustomerService implements BaseService<CustomerDto> {
         );
 
         Optional<Customer> customerOptional = customerRepository.findById(id);
+
         return customerOptional.map(customerMapper::customerToDto);
     }
 
@@ -67,9 +68,9 @@ public class CustomerService implements BaseService<CustomerDto> {
         );
 
         Customer customer = customerMapper.dtoToCustomer(request);
-
         AddressDto addressDto = addressService.createEntity(request.getAddressDto());
         Address address = addressMapper.dtoToAddress(addressDto);
+
         customer.setAddress(address);
 
         return customerMapper.customerToDto(customerRepository.save(customer));
@@ -106,7 +107,10 @@ public class CustomerService implements BaseService<CustomerDto> {
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
 
-        customerRepository.deleteById(id);
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
+
+        customerRepository.delete(customer);
     }
 
     public String uploadProfilePhoto(Integer id, MultipartFile file) {
@@ -153,5 +157,10 @@ public class CustomerService implements BaseService<CustomerDto> {
         customerRepository.save(customer);
 
         return ResponseMessages.FILE_DELETE_SUCCESS;
+    }
+
+    public Customer findCustomerById(Integer id) {
+        return customerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
     }
 }
