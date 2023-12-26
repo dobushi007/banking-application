@@ -62,7 +62,7 @@ public class AccountService implements BaseService<AccountDto> {
 
 
         Account account = accountMapper.dtoToAccount(request);
-        Customer customer = customerService.findCustomerById(request.getCustomerId());
+        Customer customer = customerService.findCustomerByNationalId(request.getCustomerNationalId());
 
         log.info(LogMessages.RESOURCE_FOUND, LogMessages.ResourceNames.CUSTOMER);
 
@@ -78,9 +78,7 @@ public class AccountService implements BaseService<AccountDto> {
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
 
-        Account account = accountRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
-
+        Account account = findAccountById(id);
         log.info(LogMessages.RESOURCE_FOUND, LogMessages.ResourceNames.ACCOUNT);
 
         account.setCity(request.getCity());
@@ -97,9 +95,14 @@ public class AccountService implements BaseService<AccountDto> {
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
 
-        Account account = accountRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
+        Account account = findAccountById(id);
+        log.info(LogMessages.RESOURCE_FOUND, LogMessages.ResourceNames.ACCOUNT);
 
         accountRepository.delete(account);
+    }
+
+    private Account findAccountById(Integer id) {
+        return accountRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
     }
 }

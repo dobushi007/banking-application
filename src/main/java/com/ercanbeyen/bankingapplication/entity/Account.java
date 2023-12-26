@@ -10,7 +10,7 @@ import lombok.Data;
 @Table(name = "accounts")
 public non-sealed class Account extends BaseEntity {
     @ManyToOne
-    @JoinColumn(name = "customer_id", referencedColumnName = "id")
+    @JoinColumn(name = "customer_national_id", referencedColumnName = "national_id")
     private Customer customer;
     private City city;
     @Enumerated(EnumType.STRING)

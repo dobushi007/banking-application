@@ -19,7 +19,10 @@ public non-sealed class Customer extends BaseEntity {
     @Getter
     private String surname;
     @Getter
-    @Column(name = "phone_number", unique = true)
+    @Column(name = "national_id", length = 11, unique = true)
+    private String nationalId;
+    @Getter
+    @Column(name = "phone_number", length = 13, unique = true)
     private String phoneNumber;
     @Getter
     private String email;

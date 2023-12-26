@@ -53,8 +53,7 @@ public class FileStorageServiceImpl implements FileStorageService {
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
 
-        return fileRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
+        return findFileById(id);
     }
 
     @Override
@@ -91,5 +90,10 @@ public class FileStorageServiceImpl implements FileStorageService {
 
         return fileRepository.findAll()
                 .stream();
+    }
+
+    private File findFileById(String id) {
+        return fileRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
     }
 }

@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 public non-sealed class AccountDto extends BaseDto {
-    private Integer customerId;
+    private String customerNationalId;
     private City city;
     private Currency currency;
     private Double balance;

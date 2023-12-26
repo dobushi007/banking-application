@@ -71,9 +71,7 @@ public class AddressService implements BaseService<AddressDto> {
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
 
-        Address address = addressRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
-
+        Address address = findAddressById(id);
         log.info(LogMessages.RESOURCE_FOUND, LogMessages.ResourceNames.ADDRESS);
 
         address.setCity(request.getCity());
@@ -102,5 +100,10 @@ public class AddressService implements BaseService<AddressDto> {
         Address address = addressMapper.dtoToAddress(addressDto);
 
         return addressRepository.save(address);
+    }
+
+    private Address findAddressById(Integer id) {
+        return addressRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
     }
 }

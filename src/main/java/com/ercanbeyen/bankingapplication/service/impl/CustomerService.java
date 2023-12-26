@@ -83,10 +83,9 @@ public class CustomerService implements BaseService<CustomerDto> {
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
 
-        Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
-
+        Customer customer = findCustomerById(id);
         log.info(LogMessages.RESOURCE_FOUND, LogMessages.ResourceNames.CUSTOMER);
+
         Customer requestCustomer = customerMapper.dtoToCustomer(request);
 
         customer.setName(requestCustomer.getName());
@@ -107,8 +106,8 @@ public class CustomerService implements BaseService<CustomerDto> {
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
 
-        Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
+        Customer customer = findCustomerById(id);
+        log.info(LogMessages.RESOURCE_FOUND, LogMessages.ResourceNames.CUSTOMER);
 
         customerRepository.delete(customer);
     }
@@ -119,8 +118,7 @@ public class CustomerService implements BaseService<CustomerDto> {
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
 
-        Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
+        Customer customer = findCustomerById(id);
 
         File photo = fileStorageService.storeFile(file);
         customer.setProfilePhoto(photo); // Profile photo upload
@@ -135,9 +133,7 @@ public class CustomerService implements BaseService<CustomerDto> {
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
 
-        Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
-
+        Customer customer = findCustomerById(id);
         log.info(LogMessages.RESOURCE_FOUND, LogMessages.ResourceNames.CUSTOMER);
 
         return customer.getProfilePhoto()
@@ -150,8 +146,7 @@ public class CustomerService implements BaseService<CustomerDto> {
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
 
-        Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
+        Customer customer = findCustomerById(id);
 
         customer.setProfilePhoto(null); // Profile photo deletion
         customerRepository.save(customer);
@@ -159,7 +154,17 @@ public class CustomerService implements BaseService<CustomerDto> {
         return ResponseMessages.FILE_DELETE_SUCCESS;
     }
 
-    public Customer findCustomerById(Integer id) {
+    /**
+     *
+     * @param nationalId
+     * @return customer corresponds to that nationalId
+     */
+    public Customer findCustomerByNationalId(String nationalId) {
+        return customerRepository.findByNationalId(nationalId)
+                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
+    }
+
+    private Customer findCustomerById(Integer id) {
         return customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
     }
