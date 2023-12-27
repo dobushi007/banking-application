@@ -9,6 +9,7 @@ import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import com.ercanbeyen.bankingapplication.mapper.AccountMapper;
 import com.ercanbeyen.bankingapplication.repository.AccountRepository;
 import com.ercanbeyen.bankingapplication.service.BaseService;
+import com.ercanbeyen.bankingapplication.util.AccountUtils;
 import com.ercanbeyen.bankingapplication.util.LoggingUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,10 +61,10 @@ public class AccountService implements BaseService<AccountDto> {
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
 
-
+        AccountUtils.checkAccountConstruction(request);
         Account account = accountMapper.dtoToAccount(request);
-        Customer customer = customerService.findCustomerByNationalId(request.getCustomerNationalId());
 
+        Customer customer = customerService.findCustomerByNationalId(request.getCustomerNationalId());
         log.info(LogMessages.RESOURCE_FOUND, LogMessages.ResourceNames.CUSTOMER);
 
         account.setCustomer(customer);
