@@ -11,6 +11,7 @@ import com.ercanbeyen.bankingapplication.repository.AccountRepository;
 import com.ercanbeyen.bankingapplication.service.BaseService;
 import com.ercanbeyen.bankingapplication.util.AccountUtils;
 import com.ercanbeyen.bankingapplication.util.LoggingUtils;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -100,6 +101,26 @@ public class AccountService implements BaseService<AccountDto> {
         log.info(LogMessages.RESOURCE_FOUND, LogMessages.ResourceNames.ACCOUNT);
 
         accountRepository.delete(account);
+    }
+
+    @Transactional
+    public String addMoney(Integer id, Double amount) {
+        log.info(LogMessages.ECHO_MESSAGE,
+                LoggingUtils.getClassName(this),
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
+        );
+
+        Account account = findAccountById(id);
+        log.info(LogMessages.RESOURCE_FOUND, LogMessages.ResourceNames.ACCOUNT);
+
+        Double previousBalance = account.getBalance();
+        Double nextBalance = previousBalance + amount;
+        log.info("Previous Balance: {} and Next Balance: {}", previousBalance, nextBalance);
+
+        account.setBalance(nextBalance);
+        accountRepository.save(account);
+
+        return amount + " " + account.getCurrency() + " is successfully added to the account";
     }
 
     private Account findAccountById(Integer id) {
