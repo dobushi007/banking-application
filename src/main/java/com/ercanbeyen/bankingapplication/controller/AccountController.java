@@ -1,6 +1,8 @@
 package com.ercanbeyen.bankingapplication.controller;
 
+import com.ercanbeyen.bankingapplication.constant.enums.UnidirectionalAccountOperation;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
+import com.ercanbeyen.bankingapplication.response.MessageResponse;
 import com.ercanbeyen.bankingapplication.service.impl.AccountService;
 import com.ercanbeyen.bankingapplication.util.AccountUtils;
 import jakarta.validation.Valid;
@@ -33,13 +35,10 @@ public class AccountController extends BaseController<AccountDto> {
         return new ResponseEntity<>(accountService.updateEntity(id, request), HttpStatus.OK);
     }
 
-    @PutMapping("/add/{id}")
-    public ResponseEntity<?> addMoney(@PathVariable("id") Integer id, @Valid @RequestParam("amount") @Min(value = 1, message = "Minimum amount should be {value}") Double amount) {
-        return new ResponseEntity<>(accountService.addMoney(id, amount), HttpStatus.OK);
-    }
-
-    @PutMapping("/withdraw/{id}")
-    public ResponseEntity<?> withdrawMoney(@PathVariable("id") Integer id, @Valid @RequestParam("amount") @Min(value = 1, message = "Minimum amount should be {value}") Double amount) {
-        return new ResponseEntity<>(accountService.withdrawMoney(id, amount), HttpStatus.OK);
+    @PutMapping("/{id}/individual")
+    public ResponseEntity<?> updateBalance(@PathVariable("id") Integer id, @RequestParam("operation") UnidirectionalAccountOperation operation, @Valid @RequestParam("amount") @Min(value = 1, message = "Minimum amount should be {value}") Double amount) {
+        String message = accountService.applyUnidirectionalAccountOperation(id, operation, amount);
+        MessageResponse response = new MessageResponse(message);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

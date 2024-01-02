@@ -2,6 +2,7 @@ package com.ercanbeyen.bankingapplication.util;
 
 import com.ercanbeyen.bankingapplication.constant.enums.AccountType;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
+import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.exception.ResourceExpectationFailedException;
 import lombok.extern.slf4j.Slf4j;
 
@@ -14,6 +15,12 @@ public class AccountUtils {
     public static void checkAccountConstruction(AccountDto accountDto) {
         checkAccountType(accountDto);
         checkDepositPeriod(accountDto);
+    }
+
+    public static void checkBalance(Account account, Double amount) {
+        if (account.getBalance() < amount) {
+            throw new ResourceExpectationFailedException("Insufficient funds");
+        }
     }
 
     private static void checkAccountType(AccountDto accountDto) {
