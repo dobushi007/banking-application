@@ -37,4 +37,9 @@ public class AccountController extends BaseController<AccountDto> {
     public ResponseEntity<?> addMoney(@PathVariable("id") Integer id, @Valid @RequestParam("amount") @Min(value = 1, message = "Minimum amount should be {value}") Double amount) {
         return new ResponseEntity<>(accountService.addMoney(id, amount), HttpStatus.OK);
     }
+
+    @PutMapping("/withdraw/{id}")
+    public ResponseEntity<?> withdrawMoney(@PathVariable("id") Integer id, @Valid @RequestParam("amount") @Min(value = 1, message = "Minimum amount should be {value}") Double amount) {
+        return new ResponseEntity<>(accountService.withdrawMoney(id, amount), HttpStatus.OK);
+    }
 }

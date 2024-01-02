@@ -5,6 +5,7 @@ import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
 import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.entity.Customer;
+import com.ercanbeyen.bankingapplication.exception.ResourceExpectationFailedException;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import com.ercanbeyen.bankingapplication.mapper.AccountMapper;
 import com.ercanbeyen.bankingapplication.repository.AccountRepository;
@@ -120,7 +121,31 @@ public class AccountService implements BaseService<AccountDto> {
         account.setBalance(nextBalance);
         accountRepository.save(account);
 
-        return amount + " " + account.getCurrency() + " is successfully added to the account";
+        return amount + " " + account.getCurrency() + " is successfully added to the account " + id;
+    }
+
+    @Transactional
+    public String withdrawMoney(Integer id, Double amount) {
+        log.info(LogMessages.ECHO_MESSAGE,
+                LoggingUtils.getClassName(this),
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
+        );
+
+        Account account = findAccountById(id);
+        log.info(LogMessages.RESOURCE_FOUND, LogMessages.ResourceNames.ACCOUNT);
+
+        if (account.getBalance() < amount) {
+            throw new ResourceExpectationFailedException("Insufficient funds");
+        }
+
+        Double previousBalance = account.getBalance();
+        Double nextBalance = previousBalance - amount;
+        log.info("Previous Balance: {} and Next Balance: {}", previousBalance, nextBalance);
+
+        account.setBalance(nextBalance);
+        accountRepository.save(account);
+
+        return amount + " " + account.getCurrency() + " is successfully withdrawn from the account " + id;
     }
 
     private Account findAccountById(Integer id) {
