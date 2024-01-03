@@ -2,6 +2,7 @@ package com.ercanbeyen.bankingapplication.controller;
 
 import com.ercanbeyen.bankingapplication.constant.enums.UnidirectionalAccountOperation;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
+import com.ercanbeyen.bankingapplication.dto.request.MoneyTransferRequest;
 import com.ercanbeyen.bankingapplication.response.MessageResponse;
 import com.ercanbeyen.bankingapplication.service.impl.AccountService;
 import com.ercanbeyen.bankingapplication.util.AccountUtils;
@@ -38,6 +39,13 @@ public class AccountController extends BaseController<AccountDto> {
     @PutMapping("/{id}/individual")
     public ResponseEntity<?> updateBalance(@PathVariable("id") Integer id, @RequestParam("operation") UnidirectionalAccountOperation operation, @Valid @RequestParam("amount") @Min(value = 1, message = "Minimum amount should be {value}") Double amount) {
         String message = accountService.applyUnidirectionalAccountOperation(id, operation, amount);
+        MessageResponse response = new MessageResponse(message);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PutMapping("/transfer")
+    public ResponseEntity<?> transferMoney(@RequestBody @Valid MoneyTransferRequest request) {
+        String message = accountService.transferMoney(request);
         MessageResponse response = new MessageResponse(message);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

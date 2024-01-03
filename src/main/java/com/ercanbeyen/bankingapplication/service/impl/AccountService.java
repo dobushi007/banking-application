@@ -4,6 +4,7 @@ import com.ercanbeyen.bankingapplication.constant.enums.UnidirectionalAccountOpe
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
+import com.ercanbeyen.bankingapplication.dto.request.MoneyTransferRequest;
 import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.entity.Customer;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
@@ -117,6 +118,48 @@ public class AccountService implements BaseService<AccountDto> {
             case UnidirectionalAccountOperation.ADD -> addMoney(account, amount);
             case UnidirectionalAccountOperation.WITHDRAW -> withdrawMoney(account, amount);
         };
+    }
+
+    public String transferMoney(MoneyTransferRequest request) {
+        log.info(LogMessages.ECHO_MESSAGE,
+                LoggingUtils.getClassName(this),
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
+        );
+
+        Account senderAccount = findAccountById(request.senderId());
+        log.info(LogMessages.RESOURCE_FOUND, LogMessages.ResourceNames.ACCOUNT);
+
+        Account receiverAccount = findAccountById(request.receiverId());
+        log.info(LogMessages.RESOURCE_FOUND, LogMessages.ResourceNames.ACCOUNT);
+
+        AccountUtils.checkCurrenciesForMoneyTransfer(senderAccount, receiverAccount);
+
+        Double amount = request.amount();
+
+        /*
+            Money transfer flow:
+            1) Withdraw requested money amount from the sender account
+            2) Add requested money amount to the receiver account
+            3) Rollback the withdrawal of sender account, if any error occurred during money add to receiver account
+         */
+
+        String message = withdrawMoney(senderAccount, amount);
+        log.info(LogMessages.TRANSACTION_MESSAGE, message);
+
+        try {
+            message = addMoney(receiverAccount, amount);
+            log.info(LogMessages.TRANSACTION_MESSAGE, message);
+        } catch (Exception exception) {
+            log.error("Unable to transfer the money");
+            message = addMoney(senderAccount, amount); // rollback
+            log.info(LogMessages.TRANSACTION_MESSAGE, message);
+            throw new RuntimeException("Money transfer operation is unsuccessfully completed");
+        }
+
+        message = amount + " " + senderAccount.getCurrency() + " is successfully transferred from account "
+                + senderAccount.getId() + " to account " + receiverAccount.getId();
+
+        return message;
     }
 
     @Transactional

@@ -3,6 +3,7 @@ package com.ercanbeyen.bankingapplication.util;
 import com.ercanbeyen.bankingapplication.constant.enums.AccountType;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
 import com.ercanbeyen.bankingapplication.entity.Account;
+import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
 import com.ercanbeyen.bankingapplication.exception.ResourceExpectationFailedException;
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,6 +21,12 @@ public class AccountUtils {
     public static void checkBalance(Account account, Double amount) {
         if (account.getBalance() < amount) {
             throw new ResourceExpectationFailedException("Insufficient funds");
+        }
+    }
+
+    public static void checkCurrenciesForMoneyTransfer(Account senderAccount, Account receiverAccount) {
+        if (senderAccount.getCurrency() != receiverAccount.getCurrency()) {
+            throw new ResourceConflictException("Currencies of the accounts must be same");
         }
     }
 
