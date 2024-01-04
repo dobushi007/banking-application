@@ -35,7 +35,7 @@ public class CustomerService implements BaseService<CustomerDto> {
 
     @Override
     public List<CustomerDto> getEntities() {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
@@ -50,7 +50,7 @@ public class CustomerService implements BaseService<CustomerDto> {
 
     @Override
     public Optional<CustomerDto> getEntity(Integer id) {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
@@ -62,7 +62,7 @@ public class CustomerService implements BaseService<CustomerDto> {
 
     @Override
     public CustomerDto createEntity(CustomerDto request) {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
@@ -78,7 +78,7 @@ public class CustomerService implements BaseService<CustomerDto> {
 
     @Override
     public CustomerDto updateEntity(Integer id, CustomerDto request) {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
@@ -101,7 +101,7 @@ public class CustomerService implements BaseService<CustomerDto> {
 
     @Override
     public void deleteEntity(Integer id) {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
@@ -113,7 +113,7 @@ public class CustomerService implements BaseService<CustomerDto> {
     }
 
     public String uploadProfilePhoto(Integer id, MultipartFile file) {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
@@ -128,7 +128,7 @@ public class CustomerService implements BaseService<CustomerDto> {
     }
 
     public File downloadProfilePhoto(Integer id) {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
@@ -141,7 +141,7 @@ public class CustomerService implements BaseService<CustomerDto> {
     }
 
     public String deleteProfilePhoto(Integer id) {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
@@ -156,7 +156,7 @@ public class CustomerService implements BaseService<CustomerDto> {
 
     /**
      *
-     * @param nationalId
+     * @param nationalId is national identity which is unique for each customer
      * @return customer corresponds to that nationalId
      */
     public Customer findCustomerByNationalId(String nationalId) {

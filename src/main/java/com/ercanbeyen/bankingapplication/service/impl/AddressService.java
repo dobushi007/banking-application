@@ -28,7 +28,7 @@ public class AddressService implements BaseService<AddressDto> {
 
     @Override
     public List<AddressDto> getEntities() {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
@@ -42,7 +42,7 @@ public class AddressService implements BaseService<AddressDto> {
 
     @Override
     public Optional<AddressDto> getEntity(Integer id) {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
@@ -54,7 +54,7 @@ public class AddressService implements BaseService<AddressDto> {
 
     @Override
     public AddressDto createEntity(AddressDto request) {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
@@ -66,7 +66,7 @@ public class AddressService implements BaseService<AddressDto> {
 
     @Override
     public AddressDto updateEntity(Integer id, AddressDto request) {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
@@ -83,7 +83,7 @@ public class AddressService implements BaseService<AddressDto> {
 
     @Override
     public void deleteEntity(Integer id) {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
@@ -92,7 +92,7 @@ public class AddressService implements BaseService<AddressDto> {
     }
 
     public Address createAddress(AddressDto addressDto) {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );

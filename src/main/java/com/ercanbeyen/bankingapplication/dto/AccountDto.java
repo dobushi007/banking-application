@@ -15,7 +15,7 @@ public non-sealed class AccountDto extends BaseDto {
     @NotBlank(message = "National identity should not be blank")
     @Pattern(regexp = "\\d{11}", message = "Length of national identity is not 11")
     private String customerNationalId;
-    private City city;
+    private City branchLocation;
     private Currency currency;
     @NotNull(message = "Balance should not be null")
     @Min(value = 0, message = "Minimum balance should be {value}")

@@ -13,7 +13,8 @@ public non-sealed class Account extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "customer_national_id", referencedColumnName = "national_id")
     private Customer customer;
-    private City city;
+    @Enumerated(EnumType.STRING)
+    private City branchLocation;
     @Enumerated(EnumType.STRING)
     private Currency currency;
     private Double balance;

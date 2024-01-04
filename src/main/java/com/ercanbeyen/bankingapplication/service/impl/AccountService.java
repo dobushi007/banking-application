@@ -32,7 +32,7 @@ public class AccountService implements BaseService<AccountDto> {
 
     @Override
     public List<AccountDto> getEntities() {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
@@ -47,7 +47,7 @@ public class AccountService implements BaseService<AccountDto> {
 
     @Override
     public Optional<AccountDto> getEntity(Integer id) {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
@@ -59,7 +59,7 @@ public class AccountService implements BaseService<AccountDto> {
 
     @Override
     public AccountDto createEntity(AccountDto request) {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
@@ -77,7 +77,7 @@ public class AccountService implements BaseService<AccountDto> {
 
     @Override
     public AccountDto updateEntity(Integer id, AccountDto request) {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
@@ -85,16 +85,14 @@ public class AccountService implements BaseService<AccountDto> {
         Account account = findAccountById(id);
         log.info(LogMessages.RESOURCE_FOUND, LogMessages.ResourceNames.ACCOUNT);
 
-        account.setCity(request.getCity());
-        account.setBalance(request.getBalance());
-        account.setCurrency(account.getCurrency());
+        account.setBranchLocation(request.getBranchLocation());
 
         return accountMapper.accountToDto(accountRepository.save(account));
     }
 
     @Override
     public void deleteEntity(Integer id) {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
@@ -106,7 +104,7 @@ public class AccountService implements BaseService<AccountDto> {
     }
 
     public String applyUnidirectionalAccountOperation(Integer id, UnidirectionalAccountOperation operation, Double amount) {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
@@ -121,7 +119,7 @@ public class AccountService implements BaseService<AccountDto> {
     }
 
     public String transferMoney(MoneyTransferRequest request) {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
@@ -164,24 +162,24 @@ public class AccountService implements BaseService<AccountDto> {
 
     @Transactional
     private String addMoney(Account account, Double amount) {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
 
         Double previousBalance = account.getBalance();
         Double nextBalance = previousBalance + amount;
-        log.info("Previous Balance: {} and Next Balance: {}", previousBalance, nextBalance);
+        log.info(LogMessages.BALANCE_UPDATE, previousBalance, nextBalance);
 
         account.setBalance(nextBalance);
         accountRepository.save(account);
 
-        return amount + " " + account.getCurrency() + " is successfully added to account " + account.getId();
+        return AccountUtils.constructResponseMessageForUnidirectionalAccountOperations(UnidirectionalAccountOperation.ADD, amount, account);
     }
 
     @Transactional
     private String withdrawMoney(Account account, Double amount) {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
@@ -190,16 +188,17 @@ public class AccountService implements BaseService<AccountDto> {
 
         Double previousBalance = account.getBalance();
         Double nextBalance = previousBalance - amount;
-        log.info("Previous Balance: {} and Next Balance: {}", previousBalance, nextBalance);
+        log.info(LogMessages.BALANCE_UPDATE, previousBalance, nextBalance);
 
         account.setBalance(nextBalance);
         accountRepository.save(account);
 
-        return amount + " " + account.getCurrency() + " is successfully withdrawn from account " + account.getId();
+        return AccountUtils.constructResponseMessageForUnidirectionalAccountOperations(UnidirectionalAccountOperation.WITHDRAW, amount, account);
     }
 
     private Account findAccountById(Integer id) {
         return accountRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
     }
+
 }

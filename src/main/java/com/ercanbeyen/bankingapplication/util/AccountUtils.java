@@ -1,6 +1,7 @@
 package com.ercanbeyen.bankingapplication.util;
 
 import com.ercanbeyen.bankingapplication.constant.enums.AccountType;
+import com.ercanbeyen.bankingapplication.constant.enums.UnidirectionalAccountOperation;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
 import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
@@ -28,6 +29,15 @@ public class AccountUtils {
         if (senderAccount.getCurrency() != receiverAccount.getCurrency()) {
             throw new ResourceConflictException("Currencies of the accounts must be same");
         }
+    }
+
+    public static String constructResponseMessageForUnidirectionalAccountOperations(UnidirectionalAccountOperation operation, Double amount, Account account) {
+        String messageTemplate = amount + " " + account.getCurrency() + " is successfully %s account " + account.getId();
+
+        return switch (operation) {
+            case ADD -> String.format(messageTemplate, "added to");
+            case WITHDRAW -> String.format(messageTemplate, "withdrawn from");
+        };
     }
 
     private static void checkAccountType(AccountDto accountDto) {
