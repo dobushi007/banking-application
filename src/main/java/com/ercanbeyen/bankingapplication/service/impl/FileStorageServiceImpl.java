@@ -25,7 +25,7 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     @Override
     public File storeFile(MultipartFile multipartFile) {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
@@ -38,7 +38,7 @@ public class FileStorageServiceImpl implements FileStorageService {
             savedFile = fileRepository.save(file);
             log.info("File is successfully stored");
         } catch (Exception exception) {
-            log.error(LogMessages.EXCEPTION_MESSAGE, exception.getMessage());
+            log.error(LogMessages.EXCEPTION, exception.getMessage());
             String message = ResponseMessages.FILE_UPLOAD_ERROR;
             throw new ResourceExpectationFailedException(message);
         }
@@ -48,18 +48,17 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     @Override
     public File getFile(String id) {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
 
-        return fileRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
+        return findFileById(id);
     }
 
     @Override
     public String deleteFile(String id) {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
@@ -70,7 +69,7 @@ public class FileStorageServiceImpl implements FileStorageService {
             try {
                 fileRepository.delete(file);
             } catch (Exception exception) {
-                log.error(LogMessages.EXCEPTION_MESSAGE, exception.getMessage());
+                log.error(LogMessages.EXCEPTION, exception.getMessage());
                 String message = "File is a profile photo. So, it might only be deleted from customer api";
                 throw new ResourceExpectationFailedException(message);
             }
@@ -84,12 +83,17 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     @Override
     public Stream<File> getAllFiles() {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
 
         return fileRepository.findAll()
                 .stream();
+    }
+
+    private File findFileById(String id) {
+        return fileRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
     }
 }

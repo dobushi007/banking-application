@@ -13,5 +13,6 @@ public final class Address extends BaseEntity {
     private City city;
     @Column(name = "zip_code")
     private Integer zipCode;
+    @Column(length = 200)
     private String details;
 }

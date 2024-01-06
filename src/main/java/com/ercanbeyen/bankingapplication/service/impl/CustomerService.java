@@ -35,7 +35,7 @@ public class CustomerService implements BaseService<CustomerDto> {
 
     @Override
     public List<CustomerDto> getEntities() {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
@@ -50,26 +50,27 @@ public class CustomerService implements BaseService<CustomerDto> {
 
     @Override
     public Optional<CustomerDto> getEntity(Integer id) {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
 
         Optional<Customer> customerOptional = customerRepository.findById(id);
+
         return customerOptional.map(customerMapper::customerToDto);
     }
 
     @Override
     public CustomerDto createEntity(CustomerDto request) {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
 
         Customer customer = customerMapper.dtoToCustomer(request);
-
         AddressDto addressDto = addressService.createEntity(request.getAddressDto());
         Address address = addressMapper.dtoToAddress(addressDto);
+
         customer.setAddress(address);
 
         return customerMapper.customerToDto(customerRepository.save(customer));
@@ -77,15 +78,14 @@ public class CustomerService implements BaseService<CustomerDto> {
 
     @Override
     public CustomerDto updateEntity(Integer id, CustomerDto request) {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
 
-        Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
-
+        Customer customer = findCustomerById(id);
         log.info(LogMessages.RESOURCE_FOUND, LogMessages.ResourceNames.CUSTOMER);
+
         Customer requestCustomer = customerMapper.dtoToCustomer(request);
 
         customer.setName(requestCustomer.getName());
@@ -101,22 +101,24 @@ public class CustomerService implements BaseService<CustomerDto> {
 
     @Override
     public void deleteEntity(Integer id) {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
 
-        customerRepository.deleteById(id);
+        Customer customer = findCustomerById(id);
+        log.info(LogMessages.RESOURCE_FOUND, LogMessages.ResourceNames.CUSTOMER);
+
+        customerRepository.delete(customer);
     }
 
     public String uploadProfilePhoto(Integer id, MultipartFile file) {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
 
-        Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
+        Customer customer = findCustomerById(id);
 
         File photo = fileStorageService.storeFile(file);
         customer.setProfilePhoto(photo); // Profile photo upload
@@ -126,14 +128,12 @@ public class CustomerService implements BaseService<CustomerDto> {
     }
 
     public File downloadProfilePhoto(Integer id) {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
 
-        Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
-
+        Customer customer = findCustomerById(id);
         log.info(LogMessages.RESOURCE_FOUND, LogMessages.ResourceNames.CUSTOMER);
 
         return customer.getProfilePhoto()
@@ -141,17 +141,31 @@ public class CustomerService implements BaseService<CustomerDto> {
     }
 
     public String deleteProfilePhoto(Integer id) {
-        log.info(LogMessages.ECHO_MESSAGE,
+        log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
 
-        Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
+        Customer customer = findCustomerById(id);
 
         customer.setProfilePhoto(null); // Profile photo deletion
         customerRepository.save(customer);
 
         return ResponseMessages.FILE_DELETE_SUCCESS;
+    }
+
+    /**
+     *
+     * @param nationalId is national identity which is unique for each customer
+     * @return customer corresponds to that nationalId
+     */
+    public Customer findCustomerByNationalId(String nationalId) {
+        return customerRepository.findByNationalId(nationalId)
+                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
+    }
+
+    private Customer findCustomerById(Integer id) {
+        return customerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
     }
 }
