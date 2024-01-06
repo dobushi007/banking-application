@@ -6,16 +6,19 @@
 
 ### Summary
 It is a banking application includes basic banking operations. Abstract crud approach is used throughout the development.<br/>
-There are 3 entities in this project
+There are 4 entities in this project
 
 Entities:
 - Customer
+- Account
 - Address
 - File
 
 ### Requirements
 - Customer must have name, surname, phone number, email, gender, birth date and address.
 - Customer's email must be unique.
+- Account must have customer, type, branch location, currency and balance.
+- Account's type is either checking or deposit.
 - Address must have city, zip code and details.
 
 ### Tech Stack
@@ -33,7 +36,7 @@ Entities:
 
 ### Run & Build
 ---
-In order to pull the mysql image from the Dockerhub, you should run the below command
+In order to pull mysql image from Dockerhub, you should run the below command
 
 `$ docker pull mysql`
 
@@ -52,5 +55,6 @@ $ docker-compose up
 ### Api Documentation
 ---
 
-You may use swagger-ui with the port of the application to access the project's api documentation.<br/>
+You may use Swagger-UI with the port of the application you configured to access the project's api documentation.<br/>
+You should use the below url to access the Swagger-UI. Default port is 8080.<br/>
 `http://localhost:${PORT}/swagger-ui.html`
