@@ -11,8 +11,7 @@ import org.hibernate.annotations.GenericGenerator;
 @NoArgsConstructor
 public class File {
     @Id
-    @GeneratedValue(generator = "uuid")
-    @GenericGenerator(name = "uuid", strategy = "uuid2")
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
     private String name;
     private String type;
