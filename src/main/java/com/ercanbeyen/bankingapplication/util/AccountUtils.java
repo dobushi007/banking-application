@@ -1,7 +1,7 @@
 package com.ercanbeyen.bankingapplication.util;
 
 import com.ercanbeyen.bankingapplication.constant.enums.AccountType;
-import com.ercanbeyen.bankingapplication.constant.enums.UnidirectionalAccountOperation;
+import com.ercanbeyen.bankingapplication.constant.enums.AccountOperation;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
 import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
@@ -31,7 +31,11 @@ public class AccountUtils {
         }
     }
 
-    public static String constructResponseMessageForUnidirectionalAccountOperations(UnidirectionalAccountOperation operation, Double amount, Account account) {
+    public static double calculateAmountForDepositOperation(Double balance, Double interest) {
+        return (interest * 100) / balance;
+    }
+
+    public static String constructResponseMessageForUnidirectionalAccountOperations(AccountOperation operation, Double amount, Account account) {
         String messageTemplate = amount + " " + account.getCurrency() + " is successfully %s account " + account.getId();
 
         return switch (operation) {

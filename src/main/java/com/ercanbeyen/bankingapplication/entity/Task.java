@@ -10,7 +10,9 @@ import lombok.Data;
 public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    String id;
-    TaskType type;
-    String endpoint;
+    private String id;
+    private TaskType type;
+    private String endpoint;
+    private String customerNationalId;
+
 }

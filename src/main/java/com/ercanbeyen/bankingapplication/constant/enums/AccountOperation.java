@@ -1,6 +1,6 @@
 package com.ercanbeyen.bankingapplication.constant.enums;
 
-public enum UnidirectionalAccountOperation {
+public enum AccountOperation {
     ADD,
     WITHDRAW
 }

@@ -3,6 +3,7 @@ package com.ercanbeyen.bankingapplication.controller;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.BaseDto;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
+import com.ercanbeyen.bankingapplication.option.BaseFilteringOptions;
 import com.ercanbeyen.bankingapplication.service.BaseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,12 +14,12 @@ import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @Slf4j
-public abstract class BaseController<T extends BaseDto> {
-    private final BaseService<T> baseService;
+public abstract class BaseController<T extends BaseDto, V extends BaseFilteringOptions> {
+    private final BaseService<T, V> baseService;
 
     @GetMapping
-    public ResponseEntity<?> getEntities() {
-        return new ResponseEntity<>(baseService.getEntities(), HttpStatus.OK);
+    public ResponseEntity<?> getEntities(V options) {
+        return new ResponseEntity<>(baseService.getEntities(options), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")

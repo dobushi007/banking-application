@@ -6,6 +6,7 @@ import com.ercanbeyen.bankingapplication.dto.AddressDto;
 import com.ercanbeyen.bankingapplication.entity.Address;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import com.ercanbeyen.bankingapplication.mapper.AddressMapper;
+import com.ercanbeyen.bankingapplication.option.AddressFilteringOptions;
 import com.ercanbeyen.bankingapplication.repository.AddressRepository;
 import com.ercanbeyen.bankingapplication.repository.CustomerRepository;
 import com.ercanbeyen.bankingapplication.service.BaseService;
@@ -21,13 +22,13 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class AddressService implements BaseService<AddressDto> {
+public class AddressService implements BaseService<AddressDto, AddressFilteringOptions> {
     private final CustomerRepository customerRepository;
     private final AddressRepository addressRepository;
     private final AddressMapper addressMapper;
 
     @Override
-    public List<AddressDto> getEntities() {
+    public List<AddressDto> getEntities(AddressFilteringOptions options) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())

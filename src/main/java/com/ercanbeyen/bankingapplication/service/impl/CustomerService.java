@@ -10,6 +10,7 @@ import com.ercanbeyen.bankingapplication.entity.File;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import com.ercanbeyen.bankingapplication.mapper.AddressMapper;
 import com.ercanbeyen.bankingapplication.mapper.CustomerMapper;
+import com.ercanbeyen.bankingapplication.option.CustomerFilteringOptions;
 import com.ercanbeyen.bankingapplication.repository.CustomerRepository;
 import com.ercanbeyen.bankingapplication.service.BaseService;
 import com.ercanbeyen.bankingapplication.service.FileStorageService;
@@ -26,15 +27,16 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class CustomerService implements BaseService<CustomerDto> {
+public class CustomerService implements BaseService<CustomerDto, CustomerFilteringOptions> {
     private final CustomerRepository customerRepository;
     private final CustomerMapper customerMapper;
     private final AddressMapper addressMapper;
     private final AddressService addressService;
     private final FileStorageService fileStorageService;
 
+
     @Override
-    public List<CustomerDto> getEntities() {
+    public List<CustomerDto> getEntities(CustomerFilteringOptions options) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())

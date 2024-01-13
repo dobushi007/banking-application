@@ -2,6 +2,7 @@ package com.ercanbeyen.bankingapplication.controller;
 
 import com.ercanbeyen.bankingapplication.dto.CustomerDto;
 import com.ercanbeyen.bankingapplication.entity.File;
+import com.ercanbeyen.bankingapplication.option.CustomerFilteringOptions;
 import com.ercanbeyen.bankingapplication.response.MessageResponse;
 import com.ercanbeyen.bankingapplication.service.impl.CustomerService;
 import com.ercanbeyen.bankingapplication.util.PhotoUtils;
@@ -15,7 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/v1/customers")
 @Slf4j
-public class CustomerController extends BaseController<CustomerDto> {
+public class CustomerController extends BaseController<CustomerDto, CustomerFilteringOptions> {
     private final CustomerService customerService;
 
     public CustomerController(CustomerService customerService) {
