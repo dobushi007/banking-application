@@ -1,14 +1,12 @@
 package com.ercanbeyen.bankingapplication.service.impl;
 
 import com.ercanbeyen.bankingapplication.constant.enums.AccountOperation;
-import com.ercanbeyen.bankingapplication.constant.enums.AccountType;
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
 import com.ercanbeyen.bankingapplication.dto.request.MoneyTransferRequest;
 import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.entity.Customer;
-import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import com.ercanbeyen.bankingapplication.mapper.AccountMapper;
 import com.ercanbeyen.bankingapplication.option.AccountFilteringOptions;
@@ -21,8 +19,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -75,7 +71,6 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
 
-        AccountUtils.checkAccountConstruction(request);
         Account account = accountMapper.dtoToAccount(request);
 
         Customer customer = customerService.findCustomerByNationalId(request.getCustomerNationalId());
@@ -140,29 +135,14 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         Account account = findAccountById(id);
         log.info(LogMessages.RESOURCE_FOUND, LogMessages.ResourceNames.ACCOUNT);
 
-        AccountType accountType = account.getType();
-
-        if (accountType != AccountType.DEPOSIT) {
-            log.info("Account Type: {}", accountType);
-            throw new ResourceConflictException("This money add operation is for deposit accounts");
-        }
-
-        String message;
-        LocalDate today = LocalDateTime.now().toLocalDate();
-
-        LocalDate updateDate = account.getUpdateTime()
-                .toLocalDate()
-                .plusMonths(account.getDepositPeriod());
-
-        if (updateDate.isEqual(today)) {
-            Double amount = AccountUtils.calculateAmountForDepositOperation(account.getBalance(), account.getInterest());
-            message = addMoney(account, amount);
-        } else {
+        if (!AccountUtils.checkDepositAccountForPeriodicMoneyAdd(account)) {
             log.warn("Deposit period is not completed");
-            message = "Today is not the completion of deposit period";
+            return "Today is not the completion of deposit period";
         }
 
-        return message;
+        Double amount = AccountUtils.calculateInterestAmountForDepositOperation(account.getBalance(), account.getInterest());
+
+        return addMoney(account, amount);
     }
 
     public String transferMoney(MoneyTransferRequest request) {

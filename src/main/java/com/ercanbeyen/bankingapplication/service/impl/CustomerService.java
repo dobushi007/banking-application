@@ -7,6 +7,7 @@ import com.ercanbeyen.bankingapplication.dto.CustomerDto;
 import com.ercanbeyen.bankingapplication.entity.Address;
 import com.ercanbeyen.bankingapplication.entity.Customer;
 import com.ercanbeyen.bankingapplication.entity.File;
+import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import com.ercanbeyen.bankingapplication.mapper.AddressMapper;
 import com.ercanbeyen.bankingapplication.mapper.CustomerMapper;
@@ -68,6 +69,8 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
+
+        checkCustomerNationalId(request.getNationalId());
 
         Customer customer = customerMapper.dtoToCustomer(request);
         AddressDto addressDto = addressService.createEntity(request.getAddressDto());
@@ -169,5 +172,16 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
     private Customer findCustomerById(Integer id) {
         return customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
+    }
+
+    private void checkCustomerNationalId(String nationalId) {
+        boolean customerExists = customerRepository.findAll()
+                .stream()
+                .map(Customer::getNationalId)
+                .anyMatch(nationalId::equals);
+
+        if (customerExists) {
+            throw new ResourceConflictException(ResponseMessages.ALREADY_EXISTS);
+        }
     }
 }
