@@ -2,6 +2,7 @@ package com.ercanbeyen.bankingapplication.dto;
 
 import com.ercanbeyen.bankingapplication.annotation.PhoneNumberRequest;
 import com.ercanbeyen.bankingapplication.constant.enums.Gender;
+import com.ercanbeyen.bankingapplication.entity.Address;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -37,5 +38,5 @@ public non-sealed class CustomerDto extends BaseDto {
     @JsonDeserialize(using = LocalDateDeserializer.class)
     private LocalDate birthDate;
     @Valid // For nested validations
-    private AddressDto addressDto;
+    private Address address;
 }

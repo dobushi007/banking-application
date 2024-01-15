@@ -2,14 +2,11 @@ package com.ercanbeyen.bankingapplication.service.impl;
 
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
-import com.ercanbeyen.bankingapplication.dto.AddressDto;
 import com.ercanbeyen.bankingapplication.dto.CustomerDto;
-import com.ercanbeyen.bankingapplication.entity.Address;
 import com.ercanbeyen.bankingapplication.entity.Customer;
 import com.ercanbeyen.bankingapplication.entity.File;
 import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
-import com.ercanbeyen.bankingapplication.mapper.AddressMapper;
 import com.ercanbeyen.bankingapplication.mapper.CustomerMapper;
 import com.ercanbeyen.bankingapplication.option.CustomerFilteringOptions;
 import com.ercanbeyen.bankingapplication.repository.CustomerRepository;
@@ -31,8 +28,6 @@ import java.util.Optional;
 public class CustomerService implements BaseService<CustomerDto, CustomerFilteringOptions> {
     private final CustomerRepository customerRepository;
     private final CustomerMapper customerMapper;
-    private final AddressMapper addressMapper;
-    private final AddressService addressService;
     private final FileStorageService fileStorageService;
 
 
@@ -73,10 +68,6 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
         checkCustomerNationalId(request.getNationalId());
 
         Customer customer = customerMapper.dtoToCustomer(request);
-        AddressDto addressDto = addressService.createEntity(request.getAddressDto());
-        Address address = addressMapper.dtoToAddress(addressDto);
-
-        customer.setAddress(address);
 
         return customerMapper.customerToDto(customerRepository.save(customer));
     }
@@ -99,7 +90,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
         customer.setEmail(requestCustomer.getEmail());
         customer.setGender(requestCustomer.getGender());
         customer.setBirthDate(requestCustomer.getBirthDate());
-        addressService.updateEntity(customer.getAddress().getId(), request.getAddressDto());
+        customer.setAddress(requestCustomer.getAddress());
 
         return customerMapper.customerToDto(customerRepository.save(customer));
     }

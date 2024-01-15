@@ -33,7 +33,12 @@ public non-sealed class Customer extends BaseEntity {
     @Column(name = "birth_date")
     private LocalDate birthDate;
     @Getter
-    @OneToOne(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "city", column = @Column(name = "city")),
+            @AttributeOverride(name = "zipCode", column = @Column(name = "zip_code")),
+            @AttributeOverride(name = "details", column = @Column(name = "address_details", length = 500))
+    })
     private Address address;
     @OneToOne(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @JoinColumn(name = "profile_photo")
