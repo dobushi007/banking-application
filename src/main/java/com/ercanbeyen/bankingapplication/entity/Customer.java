@@ -1,6 +1,7 @@
 package com.ercanbeyen.bankingapplication.entity;
 
 import com.ercanbeyen.bankingapplication.constant.enums.Gender;
+import com.ercanbeyen.bankingapplication.embeddable.Address;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

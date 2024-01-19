@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 @Service
 @RequiredArgsConstructor
@@ -38,9 +39,15 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
 
+        Predicate<Customer> customerPredicate = customer -> (options.getCity() == null || options.getCity() == customer.getAddress().getCity())
+                && (options.getBirthDate() == null || options.getBirthDate().isEqual(customer.getBirthDate()))
+                && (options.getCreateTime() == null || options.getCreateTime().isEqual(options.getCreateTime()));
+
         List<CustomerDto> customerDtoList = new ArrayList<>();
 
         customerRepository.findAll()
+                .stream()
+                .filter(customerPredicate)
                 .forEach(customer -> customerDtoList.add(customerMapper.customerToDto(customer)));
 
         return customerDtoList;
@@ -65,7 +72,8 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
 
-        checkCustomerNationalId(request.getNationalId());
+        checkCustomerUniqueness(request.getNationalId(), request.getPhoneNumber());
+        log.info(LogMessages.RESOURCE_UNIQUE, LogMessages.ResourceNames.CUSTOMER);
 
         Customer customer = customerMapper.dtoToCustomer(request);
 
@@ -165,11 +173,11 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
                 .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
     }
 
-    private void checkCustomerNationalId(String nationalId) {
+    private void checkCustomerUniqueness(String nationalId, String phoneNumber) {
+        Predicate<Customer> customerPredicate = customer -> customer.getNationalId().equals(nationalId) || customer.getPhoneNumber().equals(phoneNumber);
         boolean customerExists = customerRepository.findAll()
                 .stream()
-                .map(Customer::getNationalId)
-                .anyMatch(nationalId::equals);
+                .anyMatch(customerPredicate);
 
         if (customerExists) {
             throw new ResourceConflictException(ResponseMessages.ALREADY_EXISTS);

@@ -2,7 +2,7 @@ package com.ercanbeyen.bankingapplication.dto;
 
 import com.ercanbeyen.bankingapplication.annotation.PhoneNumberRequest;
 import com.ercanbeyen.bankingapplication.constant.enums.Gender;
-import com.ercanbeyen.bankingapplication.entity.Address;
+import com.ercanbeyen.bankingapplication.embeddable.Address;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;

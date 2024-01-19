@@ -1,4 +1,4 @@
-package com.ercanbeyen.bankingapplication.entity;
+package com.ercanbeyen.bankingapplication.embeddable;
 
 
 import com.ercanbeyen.bankingapplication.constant.enums.City;

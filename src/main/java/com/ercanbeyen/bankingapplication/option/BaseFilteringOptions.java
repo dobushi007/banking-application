@@ -7,6 +7,6 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public sealed class BaseFilteringOptions permits CustomerFilteringOptions, AddressFilteringOptions, AccountFilteringOptions {
+public sealed class BaseFilteringOptions permits CustomerFilteringOptions, AccountFilteringOptions {
     private LocalDateTime createTime;
 }

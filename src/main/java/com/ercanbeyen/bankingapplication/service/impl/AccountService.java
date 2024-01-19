@@ -41,7 +41,8 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
 
         log.info("AccountFilteringOptions' type: {}", options.getType());
 
-        Predicate<Account> accountPredicate = account -> (options.getType() == null || options.getType() == account.getType());
+        Predicate<Account> accountPredicate = account -> (options.getType() == null || options.getType() == account.getType())
+                && (options.getCreateTime() == null || options.getCreateTime().isEqual(options.getCreateTime()));
         List<AccountDto> accountDtoList = new ArrayList<>();
 
         accountRepository.findAll()
