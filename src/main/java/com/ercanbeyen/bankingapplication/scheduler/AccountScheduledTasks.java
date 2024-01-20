@@ -23,10 +23,10 @@ import java.util.Map;
 @EnableScheduling
 @Slf4j
 @RequiredArgsConstructor
-public class ScheduledTasks {
+public class AccountScheduledTasks {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
-    private static final String LOCALHOST_URL = "http://localhost:8080";
+    private static final String ACCOUNT_COLLECTION_URL = "http://localhost:8080/api/v1/accounts";
     private static final String ID = "id";
 
     @Scheduled(cron = " 0 0 9 * * *") // 9:00 everyday
@@ -34,14 +34,11 @@ public class ScheduledTasks {
         final String operation = "periodic money deposit to deposit account";
         log.info(LogMessages.SCHEDULED_TASK_STARTED, operation);
 
-        final String endpoint = "/api/v1/accounts";
-        String uri = getUrl(endpoint);
-
         List<AccountDto> accountDtoList;
 
         try {
             UriComponents uriComponents = UriComponentsBuilder
-                    .fromUriString(uri)
+                    .fromUriString(ACCOUNT_COLLECTION_URL)
                     .queryParam("type", String.valueOf(AccountType.DEPOSIT))
                     .build();
 
@@ -73,8 +70,7 @@ public class ScheduledTasks {
             log.info(LogMessages.BEFORE_REQUEST);
 
             Map<String, Integer> parameters = Map.of(ID, id);
-            String templateEndpoint = endpoint + "/{" + ID + "}/deposit";
-            String url = getUrl(templateEndpoint);
+            String url = ACCOUNT_COLLECTION_URL + "/{" + ID + "}/deposit";
 
             try {
                 restTemplate.put(url, null, parameters);
@@ -90,8 +86,5 @@ public class ScheduledTasks {
         log.info(LogMessages.SCHEDULED_TASK_ENDED, operation);
     }
 
-    private static String getUrl(String endpoint) {
-        return LOCALHOST_URL + endpoint;
-    }
 
 }

@@ -47,6 +47,9 @@ public non-sealed class Customer extends BaseEntity {
     @Getter
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Account> accounts = new ArrayList<>();
+    @Getter
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Notification> notifications = new ArrayList<>();
 
     public Optional<File> getProfilePhoto() {
         return Optional.ofNullable(profilePhoto);

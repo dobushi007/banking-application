@@ -2,6 +2,7 @@ package com.ercanbeyen.bankingapplication.service.impl;
 
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
+import com.ercanbeyen.bankingapplication.constant.values.ResourceNames;
 import com.ercanbeyen.bankingapplication.dto.CustomerDto;
 import com.ercanbeyen.bankingapplication.entity.Customer;
 import com.ercanbeyen.bankingapplication.entity.File;
@@ -73,7 +74,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
         );
 
         checkCustomerUniqueness(request.getNationalId(), request.getPhoneNumber());
-        log.info(LogMessages.RESOURCE_UNIQUE, LogMessages.ResourceNames.CUSTOMER);
+        log.info(LogMessages.RESOURCE_UNIQUE, ResourceNames.CUSTOMER);
 
         Customer customer = customerMapper.dtoToCustomer(request);
 
@@ -88,7 +89,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
         );
 
         Customer customer = findCustomerById(id);
-        log.info(LogMessages.RESOURCE_FOUND, LogMessages.ResourceNames.CUSTOMER);
+        log.info(LogMessages.RESOURCE_FOUND, ResourceNames.CUSTOMER);
 
         Customer requestCustomer = customerMapper.dtoToCustomer(request);
 
@@ -111,7 +112,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
         );
 
         Customer customer = findCustomerById(id);
-        log.info(LogMessages.RESOURCE_FOUND, LogMessages.ResourceNames.CUSTOMER);
+        log.info(LogMessages.RESOURCE_FOUND, ResourceNames.CUSTOMER);
 
         customerRepository.delete(customer);
     }
@@ -138,7 +139,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
         );
 
         Customer customer = findCustomerById(id);
-        log.info(LogMessages.RESOURCE_FOUND, LogMessages.ResourceNames.CUSTOMER);
+        log.info(LogMessages.RESOURCE_FOUND, ResourceNames.CUSTOMER);
 
         return customer.getProfilePhoto()
                 .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
@@ -165,12 +166,12 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
      */
     public Customer findCustomerByNationalId(String nationalId) {
         return customerRepository.findByNationalId(nationalId)
-                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, ResourceNames.CUSTOMER)));
     }
 
     private Customer findCustomerById(Integer id) {
         return customerRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, ResourceNames.CUSTOMER)));
     }
 
     private void checkCustomerUniqueness(String nationalId, String phoneNumber) {

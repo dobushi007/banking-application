@@ -16,11 +16,4 @@ public class LogMessages {
             Response is returned successfully after rest template call.
             Response: {}
             """;
-
-
-    public static class ResourceNames {
-        public static final String CUSTOMER = "Customer";
-        public static final String ACCOUNT = "Account";
-        public static final String FILE = "File";
-    }
 }
