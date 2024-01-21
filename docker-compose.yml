@@ -8,6 +8,11 @@ services:
     restart: always
     ports:
       - "8080:8080"
+      - "5005:5005"
+    environment:
+      _JAVA_OPTIONS: >
+        -Xdebug
+        -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
     networks:
       - banking-network
     depends_on:
