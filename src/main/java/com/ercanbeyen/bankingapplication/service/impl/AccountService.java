@@ -3,7 +3,7 @@ package com.ercanbeyen.bankingapplication.service.impl;
 import com.ercanbeyen.bankingapplication.constant.enums.AccountOperation;
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
-import com.ercanbeyen.bankingapplication.constant.values.ResourceNames;
+import com.ercanbeyen.bankingapplication.constant.resource.Resources;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
 import com.ercanbeyen.bankingapplication.dto.request.MoneyTransferRequest;
 import com.ercanbeyen.bankingapplication.entity.Account;
@@ -76,7 +76,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         Account account = accountMapper.dtoToAccount(request);
 
         Customer customer = customerService.findCustomerByNationalId(request.getCustomerNationalId());
-        log.info(LogMessages.RESOURCE_FOUND, ResourceNames.CUSTOMER);
+        log.info(LogMessages.RESOURCE_FOUND, Resources.EntityNames.CUSTOMER);
 
         account.setCustomer(customer);
 
@@ -93,7 +93,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         );
 
         Account account = findAccountById(id);
-        log.info(LogMessages.RESOURCE_FOUND, ResourceNames.ACCOUNT);
+        log.info(LogMessages.RESOURCE_FOUND, Resources.EntityNames.ACCOUNT);
 
         account.setBranchLocation(request.getBranchLocation());
 
@@ -108,7 +108,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         );
 
         Account account = findAccountById(id);
-        log.info(LogMessages.RESOURCE_FOUND, ResourceNames.ACCOUNT);
+        log.info(LogMessages.RESOURCE_FOUND, Resources.EntityNames.ACCOUNT);
 
         accountRepository.delete(account);
     }
@@ -120,7 +120,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         );
 
         Account account = findAccountById(id);
-        log.info(LogMessages.RESOURCE_FOUND, ResourceNames.ACCOUNT);
+        log.info(LogMessages.RESOURCE_FOUND, Resources.EntityNames.ACCOUNT);
 
         return switch (operation) {
             case AccountOperation.ADD -> addMoney(account, amount);
@@ -135,7 +135,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         );
 
         Account account = findAccountById(id);
-        log.info(LogMessages.RESOURCE_FOUND, ResourceNames.ACCOUNT);
+        log.info(LogMessages.RESOURCE_FOUND, Resources.EntityNames.ACCOUNT);
 
         if (!AccountUtils.checkDepositAccountForPeriodicMoneyAdd(account)) {
             log.warn("Deposit period is not completed");
@@ -154,10 +154,10 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         );
 
         Account senderAccount = findAccountById(request.senderId());
-        log.info(LogMessages.RESOURCE_FOUND, ResourceNames.ACCOUNT);
+        log.info(LogMessages.RESOURCE_FOUND, Resources.EntityNames.ACCOUNT);
 
         Account receiverAccount = findAccountById(request.receiverId());
-        log.info(LogMessages.RESOURCE_FOUND, ResourceNames.ACCOUNT);
+        log.info(LogMessages.RESOURCE_FOUND, Resources.EntityNames.ACCOUNT);
 
         AccountUtils.checkCurrenciesForMoneyTransfer(senderAccount, receiverAccount);
 

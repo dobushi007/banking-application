@@ -2,7 +2,7 @@ package com.ercanbeyen.bankingapplication.service.impl;
 
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
-import com.ercanbeyen.bankingapplication.constant.values.ResourceNames;
+import com.ercanbeyen.bankingapplication.constant.resource.Resources;
 import com.ercanbeyen.bankingapplication.dto.CustomerDto;
 import com.ercanbeyen.bankingapplication.entity.Customer;
 import com.ercanbeyen.bankingapplication.entity.File;
@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -40,9 +41,18 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
 
-        Predicate<Customer> customerPredicate = customer -> (options.getCity() == null || options.getCity() == customer.getAddress().getCity())
-                && (options.getBirthDate() == null || options.getBirthDate().isEqual(customer.getBirthDate()))
-                && (options.getCreateTime() == null || options.getCreateTime().isEqual(options.getCreateTime()));
+        Predicate<Customer> customerPredicate = customer -> {
+            Boolean addressCondition = (options.getCity() == null || options.getCity() == customer.getAddress().getCity());
+
+            LocalDate filteringDay = options.getBirthDate();
+            LocalDate customerBirthday = customer.getBirthDate();
+            Boolean birthDayCondition = (filteringDay == null)
+                    || (filteringDay.getMonth() == customerBirthday.getMonth() && filteringDay.getDayOfMonth() == customerBirthday.getDayOfMonth());
+
+            Boolean createTimeCondition = (options.getCreateTime() == null || options.getCreateTime().isEqual(options.getCreateTime()));
+
+            return (addressCondition && birthDayCondition && createTimeCondition);
+        };
 
         List<CustomerDto> customerDtoList = new ArrayList<>();
 
@@ -74,7 +84,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
         );
 
         checkCustomerUniqueness(request.getNationalId(), request.getPhoneNumber());
-        log.info(LogMessages.RESOURCE_UNIQUE, ResourceNames.CUSTOMER);
+        log.info(LogMessages.RESOURCE_UNIQUE, Resources.EntityNames.CUSTOMER);
 
         Customer customer = customerMapper.dtoToCustomer(request);
 
@@ -89,7 +99,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
         );
 
         Customer customer = findCustomerById(id);
-        log.info(LogMessages.RESOURCE_FOUND, ResourceNames.CUSTOMER);
+        log.info(LogMessages.RESOURCE_FOUND, Resources.EntityNames.CUSTOMER);
 
         Customer requestCustomer = customerMapper.dtoToCustomer(request);
 
@@ -112,7 +122,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
         );
 
         Customer customer = findCustomerById(id);
-        log.info(LogMessages.RESOURCE_FOUND, ResourceNames.CUSTOMER);
+        log.info(LogMessages.RESOURCE_FOUND, Resources.EntityNames.CUSTOMER);
 
         customerRepository.delete(customer);
     }
@@ -139,7 +149,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
         );
 
         Customer customer = findCustomerById(id);
-        log.info(LogMessages.RESOURCE_FOUND, ResourceNames.CUSTOMER);
+        log.info(LogMessages.RESOURCE_FOUND, Resources.EntityNames.CUSTOMER);
 
         return customer.getProfilePhoto()
                 .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
@@ -166,12 +176,12 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
      */
     public Customer findCustomerByNationalId(String nationalId) {
         return customerRepository.findByNationalId(nationalId)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, ResourceNames.CUSTOMER)));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Resources.EntityNames.CUSTOMER)));
     }
 
     private Customer findCustomerById(Integer id) {
         return customerRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, ResourceNames.CUSTOMER)));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Resources.EntityNames.CUSTOMER)));
     }
 
     private void checkCustomerUniqueness(String nationalId, String phoneNumber) {

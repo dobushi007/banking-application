@@ -2,6 +2,7 @@ package com.ercanbeyen.bankingapplication.scheduler;
 
 import com.ercanbeyen.bankingapplication.constant.enums.AccountType;
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
+import com.ercanbeyen.bankingapplication.constant.resource.Resources;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,19 +27,17 @@ import java.util.Map;
 public class AccountScheduledTasks {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
-    private static final String ACCOUNT_COLLECTION_URL = "http://localhost:8080/api/v1/accounts";
     private static final String ID = "id";
 
     @Scheduled(cron = " 0 0 9 * * *") // 9:00 everyday
     public void addMoneyToDepositAccounts() {
-        final String operation = "periodic money deposit to deposit account";
-        log.info(LogMessages.SCHEDULED_TASK_STARTED, operation);
+        final String task = "periodic money deposit to deposit account";
+        log.info(LogMessages.SCHEDULED_TASK_STARTED, task);
 
         List<AccountDto> accountDtoList;
 
         try {
-            UriComponents uriComponents = UriComponentsBuilder
-                    .fromUriString(ACCOUNT_COLLECTION_URL)
+            UriComponents uriComponents = UriComponentsBuilder.fromUriString(Resources.Urls.ACCOUNTS)
                     .queryParam("type", String.valueOf(AccountType.DEPOSIT))
                     .build();
 
@@ -66,24 +65,24 @@ public class AccountScheduledTasks {
 
         log.info("AccountIdList: {}", accountIdList);
 
-        for (Integer id : accountIdList) {
+        accountIdList.forEach(accountId -> {
             log.info(LogMessages.BEFORE_REQUEST);
 
-            Map<String, Integer> parameters = Map.of(ID, id);
-            String url = ACCOUNT_COLLECTION_URL + "/{" + ID + "}/deposit";
+            Map<String, Integer> parameters = Map.of(ID, accountId);
+            String url = Resources.Urls.ACCOUNTS + "/{" + ID + "}/deposit";
 
             try {
                 restTemplate.put(url, null, parameters);
-                String logMessage = "Account " + id + " is successfully updated";
+                String logMessage = "Account " + accountId + " is successfully updated";
                 log.info(LogMessages.REST_TEMPLATE_SUCCESS, logMessage);
             } catch (Exception exception) {
                 log.error(LogMessages.EXCEPTION, exception.getMessage());
             }
 
             log.info(LogMessages.AFTER_REQUEST);
-        }
+        });
 
-        log.info(LogMessages.SCHEDULED_TASK_ENDED, operation);
+        log.info(LogMessages.SCHEDULED_TASK_ENDED, task);
     }
 
 

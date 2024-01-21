@@ -24,8 +24,7 @@ public class NotificationServiceImpl implements NotificationService {
     public NotificationDto createNotification(NotificationDto notificationDto) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {
-                }.getClass().getEnclosingMethod())
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
         );
 
         Notification notification = notificationMapper.dtoToNotification(notificationDto);
