@@ -11,15 +11,19 @@ There are 4 entities in this project
 Entities:
 - Customer
 - Account
-- Address
 - File
+- Notification
 
 ### Requirements
-- Customer must have name, surname, phone number, email, gender, birth date and address.
-- Customer's email must be unique.
+- Customer must have name, surname, national id, phone number, email, gender, birth date and address.
+- Customer's national id, email and phone number must be unique.
 - Account must have customer, type, branch location, currency and balance.
 - Account's type is either checking or deposit.
 - Address must have city, zip code and details.
+- Notification must have customer related national id and message
+
+### Additionals
+- Scheduled tasks run while application is running.
 
 ### Tech Stack
 ---
@@ -34,7 +38,7 @@ Entities:
 - Maven
 - Docker
 
-### Run & Build
+### Build & Run & Debug
 ---
 In order to pull mysql image from Dockerhub, you should run the below command
 
@@ -51,6 +55,12 @@ $ mvn clean install
 $ docker-compose build
 $ docker-compose up
 ```
+
+In order to debug the application, you should follow the below steps
+
+1) Add Remote JVM Debug Configuration (You can use the default values that come in the debug configuration)
+2) Run the containers
+3) Start debugging on configured port (Default port is 5005)
 
 ### Api Documentation
 ---
