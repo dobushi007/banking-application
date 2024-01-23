@@ -1,6 +1,7 @@
 package com.ercanbeyen.bankingapplication.entity;
 
 import com.ercanbeyen.bankingapplication.constant.enums.Gender;
+import com.ercanbeyen.bankingapplication.embeddable.Address;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,7 +34,12 @@ public non-sealed class Customer extends BaseEntity {
     @Column(name = "birth_date")
     private LocalDate birthDate;
     @Getter
-    @OneToOne(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "city", column = @Column(name = "city")),
+            @AttributeOverride(name = "zipCode", column = @Column(name = "zip_code")),
+            @AttributeOverride(name = "details", column = @Column(name = "address_details", length = 500))
+    })
     private Address address;
     @OneToOne(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @JoinColumn(name = "profile_photo")
@@ -41,6 +47,9 @@ public non-sealed class Customer extends BaseEntity {
     @Getter
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Account> accounts = new ArrayList<>();
+    @Getter
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Notification> notifications = new ArrayList<>();
 
     public Optional<File> getProfilePhoto() {
         return Optional.ofNullable(profilePhoto);

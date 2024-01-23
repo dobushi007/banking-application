@@ -1,13 +1,14 @@
 package com.ercanbeyen.bankingapplication.util;
 
 import com.ercanbeyen.bankingapplication.constant.enums.AccountType;
-import com.ercanbeyen.bankingapplication.constant.enums.UnidirectionalAccountOperation;
+import com.ercanbeyen.bankingapplication.constant.enums.AccountOperation;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
 import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
 import com.ercanbeyen.bankingapplication.exception.ResourceExpectationFailedException;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -17,6 +18,12 @@ public class AccountUtils {
     public static void checkAccountConstruction(AccountDto accountDto) {
         checkAccountType(accountDto);
         checkDepositPeriod(accountDto);
+    }
+
+    public static void checkTransferDate(LocalDate transferDate) {
+        if (transferDate.isBefore(LocalDate.now())) {
+            throw new ResourceExpectationFailedException("Transfer date must be at least today");
+        }
     }
 
     public static void checkBalance(Account account, Double amount) {
@@ -31,13 +38,33 @@ public class AccountUtils {
         }
     }
 
-    public static String constructResponseMessageForUnidirectionalAccountOperations(UnidirectionalAccountOperation operation, Double amount, Account account) {
+    public static double calculateInterestAmountForDepositOperation(Double balance, Double interest) {
+        return (interest * 100) / balance;
+    }
+
+    public static String constructResponseMessageForUnidirectionalAccountOperations(AccountOperation operation, Double amount, Account account) {
         String messageTemplate = amount + " " + account.getCurrency() + " is successfully %s account " + account.getId();
 
         return switch (operation) {
             case ADD -> String.format(messageTemplate, "added to");
             case WITHDRAW -> String.format(messageTemplate, "withdrawn from");
         };
+    }
+
+    public static boolean checkDepositAccountForPeriodicMoneyAdd(Account account) {
+        AccountType accountType = account.getType();
+        log.info("Account Type: {}", accountType);
+
+        if (accountType != AccountType.DEPOSIT) {
+            throw new ResourceConflictException("This money add operation is for deposit accounts");
+        }
+
+        LocalDate today = LocalDate.now();
+        LocalDate updateDate = account.getUpdateTime()
+                .toLocalDate()
+                .plusMonths(account.getDepositPeriod());
+
+        return updateDate.isEqual(today);
     }
 
     private static void checkAccountType(AccountDto accountDto) {

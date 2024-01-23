@@ -2,6 +2,12 @@ package com.ercanbeyen.bankingapplication.dto;
 
 import com.ercanbeyen.bankingapplication.annotation.PhoneNumberRequest;
 import com.ercanbeyen.bankingapplication.constant.enums.Gender;
+import com.ercanbeyen.bankingapplication.embeddable.Address;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -17,7 +23,7 @@ public non-sealed class CustomerDto extends BaseDto {
     @Size(min = 2, max = 100, message = "Length of surname is not between {min} and {max}")
     String surname;
     @NotBlank(message = "National identity should not be blank")
-    @Pattern(regexp = "\\d{11}", message = "Length of national identity is not 11")
+    @Pattern(regexp = "\\d{11}", message = "Length of national identity must be 11 characters")
     private String nationalId;
     @PhoneNumberRequest
     private String phoneNumber;
@@ -27,7 +33,10 @@ public non-sealed class CustomerDto extends BaseDto {
     @NotNull(message = "Gender should not be null")
     private Gender gender;
     @NotNull(message = "Birth date should not be null")
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    @JsonSerialize(using = LocalDateSerializer.class)
+    @JsonDeserialize(using = LocalDateDeserializer.class)
     private LocalDate birthDate;
     @Valid // For nested validations
-    private AddressDto addressDto;
+    private Address address;
 }
