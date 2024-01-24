@@ -38,8 +38,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
     public List<CustomerDto> getEntities(CustomerFilteringOptions options) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
-        );
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
         Predicate<Customer> customerPredicate = customer -> {
             Boolean addressCondition = (options.getCity() == null || options.getCity() == customer.getAddress().getCity());
@@ -68,8 +67,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
     public Optional<CustomerDto> getEntity(Integer id) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
-        );
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
         Optional<Customer> customerOptional = customerRepository.findById(id);
 
@@ -80,8 +78,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
     public CustomerDto createEntity(CustomerDto request) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
-        );
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
         checkCustomerUniqueness(request.getNationalId(), request.getPhoneNumber());
         log.info(LogMessages.RESOURCE_UNIQUE, Resources.EntityNames.CUSTOMER);
@@ -95,8 +92,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
     public CustomerDto updateEntity(Integer id, CustomerDto request) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
-        );
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
         Customer customer = findCustomerById(id);
         log.info(LogMessages.RESOURCE_FOUND, Resources.EntityNames.CUSTOMER);
@@ -118,8 +114,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
     public void deleteEntity(Integer id) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
-        );
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
         Customer customer = findCustomerById(id);
         log.info(LogMessages.RESOURCE_FOUND, Resources.EntityNames.CUSTOMER);
@@ -130,8 +125,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
     public String uploadProfilePhoto(Integer id, MultipartFile file) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
-        );
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
         Customer customer = findCustomerById(id);
 
@@ -145,8 +139,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
     public File downloadProfilePhoto(Integer id) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
-        );
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
         Customer customer = findCustomerById(id);
         log.info(LogMessages.RESOURCE_FOUND, Resources.EntityNames.CUSTOMER);
@@ -158,8 +151,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
     public String deleteProfilePhoto(Integer id) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
-        );
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
         Customer customer = findCustomerById(id);
 
