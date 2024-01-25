@@ -13,11 +13,13 @@ import com.ercanbeyen.bankingapplication.service.TransactionService;
 import com.ercanbeyen.bankingapplication.util.LoggingUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -52,23 +54,26 @@ public class TransactionServiceImpl implements TransactionService {
         return transactionMapper.transactionToDto(transaction);
     }
 
+    @Async
     @Override
     public void createTransaction(TransactionRequest request) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
-        Transaction transaction = new Transaction(
-                request.transactionType(),
-                request.senderAccount(),
-                request.receiverAccount(),
-                request.amount(),
-                LocalDateTime.now(),
-                request.explanation()
-        );
+        CompletableFuture.runAsync(() -> {
+            Transaction transaction = new Transaction(
+                    request.transactionType(),
+                    request.senderAccount(),
+                    request.receiverAccount(),
+                    request.amount(),
+                    LocalDateTime.now(),
+                    request.explanation()
+            );
 
-        Transaction savedTransaction = transactionRepository.save(transaction);
-        log.info("Transaction {} is successfully created", savedTransaction.getType());
+            Transaction savedTransaction = transactionRepository.save(transaction);
+            log.info("Transaction {} is successfully created", savedTransaction.getType());
+        });
     }
 
     private Transaction findTransactionById(String id) {
