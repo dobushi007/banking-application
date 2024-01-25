@@ -53,7 +53,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public TransactionDto createTransaction(TransactionRequest request) {
+    public void createTransaction(TransactionRequest request) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
@@ -67,7 +67,8 @@ public class TransactionServiceImpl implements TransactionService {
                 request.explanation()
         );
 
-        return transactionMapper.transactionToDto(transactionRepository.save(transaction));
+        Transaction savedTransaction = transactionRepository.save(transaction);
+        log.info("Transaction {} is successfully created", savedTransaction.getType());
     }
 
     private Transaction findTransactionById(String id) {

@@ -3,6 +3,7 @@ package com.ercanbeyen.bankingapplication.util;
 import com.ercanbeyen.bankingapplication.constant.enums.AccountType;
 import com.ercanbeyen.bankingapplication.constant.enums.AccountOperation;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
+import com.ercanbeyen.bankingapplication.dto.request.MoneyTransferRequest;
 import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
 import com.ercanbeyen.bankingapplication.exception.ResourceExpectationFailedException;
@@ -20,8 +21,12 @@ public class AccountUtils {
         checkDepositPeriod(accountDto);
     }
 
-    public static void checkTransferDate(LocalDate transferDate) {
-        if (transferDate.isBefore(LocalDate.now())) {
+    public static void checkMoneyTransferRequest(MoneyTransferRequest request) {
+        if (Objects.equals(request.senderId(), request.receiverId())) { // Identity check
+            throw new ResourceExpectationFailedException("Identity of sender and receiver should not be equal");
+        }
+
+        if (request.transferDate().isBefore(LocalDate.now())) { // Date check
             throw new ResourceExpectationFailedException("Transfer date must be at least today");
         }
     }

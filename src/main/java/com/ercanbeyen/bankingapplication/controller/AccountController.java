@@ -53,7 +53,7 @@ public class AccountController extends BaseController<AccountDto, AccountFilteri
 
     @PutMapping("/transfer")
     public ResponseEntity<?> transferMoney(@RequestBody @Valid MoneyTransferRequest request) {
-        AccountUtils.checkTransferDate(request.transferDate());
+        AccountUtils.checkMoneyTransferRequest(request);
         String message = accountService.transferMoney(request);
         MessageResponse response = new MessageResponse(message);
         return new ResponseEntity<>(response, HttpStatus.OK);
