@@ -16,4 +16,7 @@ public class LogMessages {
             Response is returned successfully after rest template call.
             Response: {}
             """;
+    public static final String RESOURCE_CREATE_SUCCESS = "{} {} is successfully created";
+    public static final String CLASS_OF_RESPONSE = "Class of response: {}";
+    public static final String CLASS_OF_OBJECT = "Class of {}: {}";
 }

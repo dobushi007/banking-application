@@ -1,5 +1,6 @@
 package com.ercanbeyen.bankingapplication.service.impl;
 
+import com.ercanbeyen.bankingapplication.constant.enums.Entity;
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.dto.NotificationDto;
 import com.ercanbeyen.bankingapplication.entity.Customer;
@@ -31,6 +32,9 @@ public class NotificationServiceImpl implements NotificationService {
         Customer customer = customerService.findCustomerByNationalId(notificationDto.customerNationalId());
         notification.setCustomer(customer);
 
-        return notificationMapper.notificationToDto(notificationRepository.save(notification));
+        Notification savedNotification = notificationRepository.save(notification);
+        log.info(LogMessages.RESOURCE_CREATE_SUCCESS, Entity.NOTIFICATION.getValue(), savedNotification.getId());
+
+        return notificationMapper.notificationToDto(savedNotification);
     }
 }

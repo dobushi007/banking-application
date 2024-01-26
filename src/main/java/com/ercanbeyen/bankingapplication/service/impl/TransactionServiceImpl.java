@@ -1,8 +1,8 @@
 package com.ercanbeyen.bankingapplication.service.impl;
 
+import com.ercanbeyen.bankingapplication.constant.enums.Entity;
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
-import com.ercanbeyen.bankingapplication.constant.resource.Resources;
 import com.ercanbeyen.bankingapplication.dto.TransactionDto;
 import com.ercanbeyen.bankingapplication.dto.request.TransactionRequest;
 import com.ercanbeyen.bankingapplication.entity.Transaction;
@@ -49,7 +49,7 @@ public class TransactionServiceImpl implements TransactionService {
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
         Transaction transaction = findTransactionById(id);
-        log.info(LogMessages.RESOURCE_FOUND, Resources.EntityNames.TRANSACTION);
+        log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT);
 
         return transactionMapper.transactionToDto(transaction);
     }
@@ -72,12 +72,12 @@ public class TransactionServiceImpl implements TransactionService {
             );
 
             Transaction savedTransaction = transactionRepository.save(transaction);
-            log.info("Transaction {} is successfully created", savedTransaction.getType());
+            log.info(LogMessages.RESOURCE_CREATE_SUCCESS, Entity.TRANSACTION, savedTransaction.getId());
         });
     }
 
     private Transaction findTransactionById(String id) {
         return transactionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Resources.EntityNames.TRANSACTION)));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.TRANSACTION)));
     }
 }

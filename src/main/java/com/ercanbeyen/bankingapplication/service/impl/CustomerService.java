@@ -1,8 +1,8 @@
 package com.ercanbeyen.bankingapplication.service.impl;
 
+import com.ercanbeyen.bankingapplication.constant.enums.Entity;
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
-import com.ercanbeyen.bankingapplication.constant.resource.Resources;
 import com.ercanbeyen.bankingapplication.dto.CustomerDto;
 import com.ercanbeyen.bankingapplication.entity.Customer;
 import com.ercanbeyen.bankingapplication.entity.File;
@@ -81,7 +81,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
         checkCustomerUniqueness(request.getNationalId(), request.getPhoneNumber());
-        log.info(LogMessages.RESOURCE_UNIQUE, Resources.EntityNames.CUSTOMER);
+        log.info(LogMessages.RESOURCE_UNIQUE, Entity.CUSTOMER.getValue());
 
         Customer customer = customerMapper.dtoToCustomer(request);
 
@@ -95,7 +95,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
         Customer customer = findCustomerById(id);
-        log.info(LogMessages.RESOURCE_FOUND, Resources.EntityNames.CUSTOMER);
+        log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
 
         Customer requestCustomer = customerMapper.dtoToCustomer(request);
 
@@ -117,7 +117,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
         Customer customer = findCustomerById(id);
-        log.info(LogMessages.RESOURCE_FOUND, Resources.EntityNames.CUSTOMER);
+        log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
 
         customerRepository.delete(customer);
     }
@@ -142,7 +142,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
         Customer customer = findCustomerById(id);
-        log.info(LogMessages.RESOURCE_FOUND, Resources.EntityNames.CUSTOMER);
+        log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
 
         return customer.getProfilePhoto()
                 .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
@@ -168,12 +168,12 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
      */
     public Customer findCustomerByNationalId(String nationalId) {
         return customerRepository.findByNationalId(nationalId)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Resources.EntityNames.CUSTOMER)));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.CUSTOMER.getValue())));
     }
 
     private Customer findCustomerById(Integer id) {
         return customerRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Resources.EntityNames.CUSTOMER)));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.CUSTOMER.getValue())));
     }
 
     private void checkCustomerUniqueness(String nationalId, String phoneNumber) {

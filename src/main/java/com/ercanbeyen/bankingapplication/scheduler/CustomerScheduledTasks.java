@@ -1,7 +1,7 @@
 package com.ercanbeyen.bankingapplication.scheduler;
 
+import com.ercanbeyen.bankingapplication.constant.enums.Entity;
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
-import com.ercanbeyen.bankingapplication.constant.resource.Resources;
 import com.ercanbeyen.bankingapplication.dto.CustomerDto;
 import com.ercanbeyen.bankingapplication.dto.NotificationDto;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -34,7 +34,7 @@ public class CustomerScheduledTasks {
         List<CustomerDto> customerDtoList;
 
         try {
-            UriComponents uriComponents = UriComponentsBuilder.fromUriString(Resources.Urls.CUSTOMERS)
+            UriComponents uriComponents = UriComponentsBuilder.fromUriString(Entity.CUSTOMER.getCollectionUrl())
                     .queryParam("birthDate", birthday.toString())
                     .build();
 
@@ -43,10 +43,10 @@ public class CustomerScheduledTasks {
 
             List<?> response = restTemplate.getForObject(url, List.class);
             assert response != null;
-            log.info("Class of response: {}", response.getClass());
+            log.info(LogMessages.CLASS_OF_RESPONSE, response.getClass());
 
             customerDtoList = objectMapper.convertValue(response, new TypeReference<>() {});
-            customerDtoList.forEach(customerDto -> log.info("Class of CustomerDto: {}", customerDto.getClass()));
+            customerDtoList.forEach(customerDto -> log.info(LogMessages.CLASS_OF_OBJECT, "CustomerDto", customerDto.getClass()));
 
             log.info(LogMessages.REST_TEMPLATE_SUCCESS, customerDtoList);
         } catch (Exception exception) {
@@ -59,7 +59,7 @@ public class CustomerScheduledTasks {
 
             try {
                 log.info(LogMessages.BEFORE_REQUEST);
-                NotificationDto response = restTemplate.postForObject(Resources.Urls.NOTIFICATIONS, request, NotificationDto.class);
+                NotificationDto response = restTemplate.postForObject(Entity.NOTIFICATION.getCollectionUrl(), request, NotificationDto.class);
                 log.info(LogMessages.REST_TEMPLATE_SUCCESS, response);
             } catch (Exception exception) {
                 log.error(LogMessages.EXCEPTION, exception.getMessage());
