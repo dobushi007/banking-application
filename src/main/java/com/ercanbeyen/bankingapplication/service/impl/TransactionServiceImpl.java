@@ -8,6 +8,7 @@ import com.ercanbeyen.bankingapplication.dto.request.TransactionRequest;
 import com.ercanbeyen.bankingapplication.entity.Transaction;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import com.ercanbeyen.bankingapplication.mapper.TransactionMapper;
+import com.ercanbeyen.bankingapplication.option.TransactionFilteringOptions;
 import com.ercanbeyen.bankingapplication.repository.TransactionRepository;
 import com.ercanbeyen.bankingapplication.service.TransactionService;
 import com.ercanbeyen.bankingapplication.util.LoggingUtils;
@@ -16,10 +17,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Predicate;
 
 @Service
 @RequiredArgsConstructor
@@ -29,14 +30,21 @@ public class TransactionServiceImpl implements TransactionService {
     private final TransactionMapper transactionMapper;
 
     @Override
-    public List<TransactionDto> getTransactions() {
+    public List<TransactionDto> getTransactions(TransactionFilteringOptions options) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
+        Predicate<Transaction> transactionPredicate = transaction -> (options.type() == null || options.type() == transaction.getType())
+                && (options.senderAccountId() == null || options.senderAccountId().equals(transaction.getSenderAccount().getId()))
+                && (options.receiverAccountId() == null || options.receiverAccountId().equals(transaction.getReceiverAccount().getId()))
+                && (options.createAt() == null || (options.createAt().isEqual(transaction.getCreateAt().toLocalDate())));
+
         List<TransactionDto> transactionDtoList = new ArrayList<>();
 
         transactionRepository.findAll()
+                .stream()
+                .filter(transactionPredicate)
                 .forEach(transaction -> transactionDtoList.add(transactionMapper.transactionToDto(transaction)));
 
         return transactionDtoList;
@@ -67,7 +75,6 @@ public class TransactionServiceImpl implements TransactionService {
                     request.senderAccount(),
                     request.receiverAccount(),
                     request.amount(),
-                    LocalDateTime.now(),
                     request.explanation()
             );
 
@@ -78,6 +85,6 @@ public class TransactionServiceImpl implements TransactionService {
 
     private Transaction findTransactionById(String id) {
         return transactionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.TRANSACTION)));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.TRANSACTION.getValue())));
     }
 }

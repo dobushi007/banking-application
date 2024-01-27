@@ -1,6 +1,7 @@
 package com.ercanbeyen.bankingapplication.controller;
 
 import com.ercanbeyen.bankingapplication.dto.TransactionDto;
+import com.ercanbeyen.bankingapplication.option.TransactionFilteringOptions;
 import com.ercanbeyen.bankingapplication.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,8 +19,8 @@ public class TransactionController {
     private final TransactionService transactionService;
 
     @GetMapping
-    public ResponseEntity<?> getTransactions() {
-        List<TransactionDto> transactionDtoList = transactionService.getTransactions();
+    public ResponseEntity<?> getTransactions(TransactionFilteringOptions options) {
+        List<TransactionDto> transactionDtoList = transactionService.getTransactions(options);
         return ResponseEntity.ok(transactionDtoList);
     }
 

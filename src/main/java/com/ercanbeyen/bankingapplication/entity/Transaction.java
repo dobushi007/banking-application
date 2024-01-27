@@ -1,9 +1,11 @@
 package com.ercanbeyen.bankingapplication.entity;
 
 import com.ercanbeyen.bankingapplication.constant.enums.TransactionType;
+import com.ercanbeyen.bankingapplication.constant.query.Queries;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -24,15 +26,17 @@ public class Transaction {
     @JoinColumn(name = "receiver_account_id", referencedColumnName = "id")
     private Account receiverAccount;
     private Double amount;
+    @CreationTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "create_at", columnDefinition = Queries.GET_NOW_TIMESTAMP)
     private LocalDateTime createAt;
     private String explanation;
 
-    public Transaction(TransactionType type, Account senderAccount, Account receiverAccount, Double amount, LocalDateTime createAt, String explanation) {
+    public Transaction(TransactionType type, Account senderAccount, Account receiverAccount, Double amount, String explanation) {
         this.type = type;
         this.senderAccount = senderAccount;
         this.receiverAccount = receiverAccount;
         this.amount = amount;
-        this.createAt = createAt;
         this.explanation = explanation;
     }
 }

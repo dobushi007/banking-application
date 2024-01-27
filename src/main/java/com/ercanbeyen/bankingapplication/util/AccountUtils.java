@@ -43,8 +43,8 @@ public class AccountUtils {
         }
     }
 
-    public static double calculateInterestAmountForDepositOperation(Double balance, Double interest) {
-        return (interest * 100) / balance;
+    public static double calculateInterestAmountForDeposit(Double balance, Double interest) {
+        return (balance == 0 && interest == 0) ? 0 : ((interest * 100) / balance);
     }
 
     public static String constructResponseMessageForUnidirectionalAccountOperations(AccountOperation operation, Double amount, Account account) {

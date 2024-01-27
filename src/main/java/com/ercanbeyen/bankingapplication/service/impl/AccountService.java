@@ -156,7 +156,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
             return "Today is not the completion of deposit period";
         }
 
-        Double amount = AccountUtils.calculateInterestAmountForDepositOperation(account.getBalance(), account.getInterest());
+        Double amount = AccountUtils.calculateInterestAmountForDeposit(account.getBalance(), account.getInterest());
 
         return addMoney(account, amount);
     }
