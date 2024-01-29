@@ -3,12 +3,16 @@ package com.ercanbeyen.bankingapplication.service.impl;
 import com.ercanbeyen.bankingapplication.constant.enums.Entity;
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
+import com.ercanbeyen.bankingapplication.dto.AccountDto;
 import com.ercanbeyen.bankingapplication.dto.CustomerDto;
+import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.entity.Customer;
 import com.ercanbeyen.bankingapplication.entity.File;
 import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
+import com.ercanbeyen.bankingapplication.mapper.AccountMapper;
 import com.ercanbeyen.bankingapplication.mapper.CustomerMapper;
+import com.ercanbeyen.bankingapplication.option.AccountFilteringOptions;
 import com.ercanbeyen.bankingapplication.option.CustomerFilteringOptions;
 import com.ercanbeyen.bankingapplication.repository.CustomerRepository;
 import com.ercanbeyen.bankingapplication.service.BaseService;
@@ -31,8 +35,8 @@ import java.util.function.Predicate;
 public class CustomerService implements BaseService<CustomerDto, CustomerFilteringOptions> {
     private final CustomerRepository customerRepository;
     private final CustomerMapper customerMapper;
+    private final AccountMapper accountMapper;
     private final FileStorageService fileStorageService;
-
 
     @Override
     public List<CustomerDto> getEntities(CustomerFilteringOptions options) {
@@ -159,6 +163,27 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
         customerRepository.save(customer);
 
         return ResponseMessages.FILE_DELETE_SUCCESS;
+    }
+
+    public List<AccountDto> getAccountsOfCustomer(Integer id, AccountFilteringOptions options) {
+        Customer customer = findCustomerById(id);
+
+        List<Account> accounts = customer.getAccounts()
+                .stream()
+                .filter(account -> account.getCustomer().getNationalId().equals(customer.getNationalId()))
+                .toList();
+
+        Predicate<Account> accountPredicate = account -> (options.getType() == null || options.getType() == account.getType())
+                && (options.getCreateTime() == null || options.getCreateTime().getYear() <= account.getCreateTime().getYear());
+
+        List<Account> filteredAccounts = accounts.stream()
+                .filter(accountPredicate)
+                .toList();
+
+        List<AccountDto> accountDtoList = new ArrayList<>();
+        filteredAccounts.forEach(account -> accountDtoList.add(accountMapper.accountToDto(account)));
+
+        return accountDtoList;
     }
 
     /**

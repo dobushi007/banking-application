@@ -2,6 +2,7 @@ package com.ercanbeyen.bankingapplication.controller;
 
 import com.ercanbeyen.bankingapplication.dto.CustomerDto;
 import com.ercanbeyen.bankingapplication.entity.File;
+import com.ercanbeyen.bankingapplication.option.AccountFilteringOptions;
 import com.ercanbeyen.bankingapplication.option.CustomerFilteringOptions;
 import com.ercanbeyen.bankingapplication.response.MessageResponse;
 import com.ercanbeyen.bankingapplication.service.impl.CustomerService;
@@ -49,5 +50,10 @@ public class CustomerController extends BaseController<CustomerDto, CustomerFilt
         String message = customerService.deleteProfilePhoto(id);
         MessageResponse response = new MessageResponse(message);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}/accounts")
+    public ResponseEntity<?> getAccounts(@PathVariable("id") Integer id, AccountFilteringOptions options) {
+        return ResponseEntity.ok(customerService.getAccountsOfCustomer(id, options));
     }
 }

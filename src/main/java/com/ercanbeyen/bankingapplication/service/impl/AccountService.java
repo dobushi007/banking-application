@@ -47,7 +47,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         log.info("AccountFilteringOptions' type: {}", options.getType());
 
         Predicate<Account> accountPredicate = account -> (options.getType() == null || options.getType() == account.getType())
-                && (options.getCreateTime() == null || options.getCreateTime().isEqual(options.getCreateTime()));
+                && (options.getCreateTime() == null || options.getCreateTime().toLocalDate().isEqual(options.getCreateTime().toLocalDate()));
         List<AccountDto> accountDtoList = new ArrayList<>();
 
         accountRepository.findAll()
@@ -139,7 +139,6 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         transactionService.createTransaction(transactionRequest);
 
         return result;
-
     }
 
     public String addMoneyToDepositAccount(Integer id) {
