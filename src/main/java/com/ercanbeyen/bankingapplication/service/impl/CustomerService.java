@@ -5,6 +5,7 @@ import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
 import com.ercanbeyen.bankingapplication.dto.CustomerDto;
+import com.ercanbeyen.bankingapplication.dto.TransactionDto;
 import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.entity.Customer;
 import com.ercanbeyen.bankingapplication.entity.File;
@@ -14,9 +15,11 @@ import com.ercanbeyen.bankingapplication.mapper.AccountMapper;
 import com.ercanbeyen.bankingapplication.mapper.CustomerMapper;
 import com.ercanbeyen.bankingapplication.option.AccountFilteringOptions;
 import com.ercanbeyen.bankingapplication.option.CustomerFilteringOptions;
+import com.ercanbeyen.bankingapplication.option.TransactionFilteringOptions;
 import com.ercanbeyen.bankingapplication.repository.CustomerRepository;
 import com.ercanbeyen.bankingapplication.service.BaseService;
 import com.ercanbeyen.bankingapplication.service.FileStorageService;
+import com.ercanbeyen.bankingapplication.service.TransactionService;
 import com.ercanbeyen.bankingapplication.util.LoggingUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -37,6 +41,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
     private final CustomerMapper customerMapper;
     private final AccountMapper accountMapper;
     private final FileStorageService fileStorageService;
+    private final TransactionService transactionService;
 
     @Override
     public List<CustomerDto> getEntities(CustomerFilteringOptions options) {
@@ -158,6 +163,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
         Customer customer = findCustomerById(id);
+        log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
 
         customer.setProfilePhoto(null); // Profile photo deletion
         customerRepository.save(customer);
@@ -166,24 +172,65 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
     }
 
     public List<AccountDto> getAccountsOfCustomer(Integer id, AccountFilteringOptions options) {
+        log.info(LogMessages.ECHO,
+                LoggingUtils.getClassName(this),
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+
         Customer customer = findCustomerById(id);
+        log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
+
+        Predicate<Account> accountPredicate = account -> (account.getCustomer().getNationalId().equals(customer.getNationalId()))
+                && (options.getType() == null || options.getType() == account.getType())
+                && (options.getCreateTime() == null || options.getCreateTime().getYear() <= account.getCreateTime().getYear());
+
+        Comparator<Account> accountComparator = Comparator.comparing(Account::getCreateTime).reversed();
 
         List<Account> accounts = customer.getAccounts()
                 .stream()
-                .filter(account -> account.getCustomer().getNationalId().equals(customer.getNationalId()))
-                .toList();
-
-        Predicate<Account> accountPredicate = account -> (options.getType() == null || options.getType() == account.getType())
-                && (options.getCreateTime() == null || options.getCreateTime().getYear() <= account.getCreateTime().getYear());
-
-        List<Account> filteredAccounts = accounts.stream()
                 .filter(accountPredicate)
+                .sorted(accountComparator)
                 .toList();
 
-        List<AccountDto> accountDtoList = new ArrayList<>();
-        filteredAccounts.forEach(account -> accountDtoList.add(accountMapper.accountToDto(account)));
+        List<AccountDto> accountDtos = new ArrayList<>();
+        accounts.forEach(account -> accountDtos.add(accountMapper.accountToDto(account)));
 
-        return accountDtoList;
+        return accountDtos;
+    }
+
+    public List<TransactionDto> getTransactionsOfCustomer(Integer id, TransactionFilteringOptions options) {
+        log.info(LogMessages.ECHO,
+                LoggingUtils.getClassName(this),
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+
+        Customer customer = findCustomerById(id);
+        log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
+
+        List<TransactionDto> transactionDtos = new ArrayList<>();
+
+        List<Integer> accountIds = customer.getAccounts()
+                .stream()
+                .map(Account::getId)
+                .toList();
+
+        /* Get all transactions of each account */
+        accountIds.forEach(accountId -> {
+            getTransactionsOfCustomer(accountId, true, options, transactionDtos);
+            getTransactionsOfCustomer(accountId, false, options, transactionDtos);
+        });
+
+        Comparator<TransactionDto> transactionDtoComparator = Comparator.comparing(TransactionDto::createAt).reversed();
+
+        return transactionDtos.stream()
+                .sorted(transactionDtoComparator)
+                .toList();
+    }
+
+    private void getTransactionsOfCustomer(Integer accountId, boolean isSender, TransactionFilteringOptions options, List<TransactionDto> transactionDtos) {
+        TransactionFilteringOptions transactionFilteringOptions = isSender ?
+                new TransactionFilteringOptions(options.type(), accountId, null, options.minimumAmount(), options.createAt()) :
+                new TransactionFilteringOptions(options.type(), null, accountId, options.minimumAmount(), options.createAt());
+        List<TransactionDto> currentTransactionDtos = transactionService.getTransactions(transactionFilteringOptions);
+        transactionDtos.addAll(currentTransactionDtos);
     }
 
     /**

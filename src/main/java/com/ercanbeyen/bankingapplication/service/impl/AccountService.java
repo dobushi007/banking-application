@@ -127,11 +127,11 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         switch (operation) {
             case AccountOperation.ADD -> {
                 result = addMoney(account, amount);
-                transactionRequest = new TransactionRequest(TransactionType.ADD_MONEY, null, account, amount, null);
+                transactionRequest = new TransactionRequest(TransactionType.ADD_MONEY, null, account.getId(), amount, null);
             }
             case AccountOperation.WITHDRAW -> {
                 result = withdrawMoney(account, amount);
-                transactionRequest = new TransactionRequest(TransactionType.WITHDRAW_MONEY, account, null, amount, null);
+                transactionRequest = new TransactionRequest(TransactionType.WITHDRAW_MONEY, account.getId(), null, amount, null);
             }
             default -> throw new ResourceExpectationFailedException("Unknown account operation");
         }
@@ -165,10 +165,10 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
-        Account senderAccount = findAccountById(request.senderId());
+        Account senderAccount = findAccountById(request.senderAccountId());
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
 
-        Account receiverAccount = findAccountById(request.receiverId());
+        Account receiverAccount = findAccountById(request.receiverAccountId());
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
 
         AccountUtils.checkCurrenciesForMoneyTransfer(senderAccount, receiverAccount);
@@ -196,7 +196,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         }
 
         TransactionRequest transactionRequest = new TransactionRequest(
-                TransactionType.MONEY_TRANSFER, senderAccount, receiverAccount, amount, request.explanation());
+                TransactionType.MONEY_TRANSFER, senderAccount.getId(), receiverAccount.getId(), amount, request.explanation());
 
         transactionService.createTransaction(transactionRequest);
 

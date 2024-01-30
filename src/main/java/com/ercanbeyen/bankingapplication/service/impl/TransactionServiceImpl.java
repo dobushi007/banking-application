@@ -18,6 +18,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
@@ -36,15 +37,18 @@ public class TransactionServiceImpl implements TransactionService {
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
         Predicate<Transaction> transactionPredicate = transaction -> (options.type() == null || options.type() == transaction.getType())
-                && (options.senderAccountId() == null || options.senderAccountId().equals(transaction.getSenderAccount().getId()))
-                && (options.receiverAccountId() == null || options.receiverAccountId().equals(transaction.getReceiverAccount().getId()))
+                && (options.senderAccountId() == null || options.senderAccountId().equals(transaction.getSenderAccountId()))
+                && (options.receiverAccountId() == null || options.receiverAccountId().equals(transaction.getReceiverAccountId()))
+                && (options.minimumAmount() == null || options.minimumAmount() <= transaction.getAmount())
                 && (options.createAt() == null || (options.createAt().isEqual(transaction.getCreateAt().toLocalDate())));
 
         List<TransactionDto> transactionDtoList = new ArrayList<>();
+        Comparator<Transaction> transactionComparator = Comparator.comparing(Transaction::getCreateAt).reversed();
 
         transactionRepository.findAll()
                 .stream()
                 .filter(transactionPredicate)
+                .sorted(transactionComparator)
                 .forEach(transaction -> transactionDtoList.add(transactionMapper.transactionToDto(transaction)));
 
         return transactionDtoList;
@@ -72,8 +76,8 @@ public class TransactionServiceImpl implements TransactionService {
         CompletableFuture.runAsync(() -> {
             Transaction transaction = new Transaction(
                     request.transactionType(),
-                    request.senderAccount(),
-                    request.receiverAccount(),
+                    request.senderAccountId(),
+                    request.receiverAccountId(),
                     request.amount(),
                     request.explanation()
             );

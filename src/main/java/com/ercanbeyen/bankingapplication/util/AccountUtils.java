@@ -22,12 +22,8 @@ public class AccountUtils {
     }
 
     public static void checkMoneyTransferRequest(MoneyTransferRequest request) {
-        if (Objects.equals(request.senderId(), request.receiverId())) { // Identity check
-            throw new ResourceExpectationFailedException("Identity of sender and receiver should not be equal");
-        }
-
-        if (request.transferDate().isBefore(LocalDate.now())) { // Date check
-            throw new ResourceExpectationFailedException("Transfer date must be at least today");
+        if (Objects.equals(request.senderAccountId(), request.receiverAccountId())) {
+            throw new ResourceExpectationFailedException("Identity of sender and receiver accounts should not be equal");
         }
     }
 
