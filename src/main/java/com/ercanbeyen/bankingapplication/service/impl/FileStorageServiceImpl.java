@@ -28,7 +28,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     public File storeFile(MultipartFile multipartFile) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
+                LoggingUtils.getMethodName(FileStorageServiceImpl.class.getEnclosingMethod())
         );
 
         String fileName = StringUtils.cleanPath(Objects.requireNonNull(multipartFile.getOriginalFilename()));
@@ -51,7 +51,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     public File getFile(String id) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
+                LoggingUtils.getMethodName(FileStorageServiceImpl.class.getEnclosingMethod())
         );
 
         return findFileById(id);
@@ -61,7 +61,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     public String deleteFile(String id) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
+                LoggingUtils.getMethodName(FileStorageServiceImpl.class.getEnclosingMethod())
         );
 
         fileRepository.findById(id).ifPresentOrElse(file -> {
@@ -86,7 +86,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     public Stream<File> getAllFiles() {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
+                LoggingUtils.getMethodName(FileStorageServiceImpl.class.getEnclosingMethod())
         );
 
         return fileRepository.findAll()

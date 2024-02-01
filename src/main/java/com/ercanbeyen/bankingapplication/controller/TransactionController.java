@@ -19,13 +19,13 @@ public class TransactionController {
     private final TransactionService transactionService;
 
     @GetMapping
-    public ResponseEntity<?> getTransactions(TransactionFilteringOptions options) {
+    public ResponseEntity<List<TransactionDto>> getTransactions(TransactionFilteringOptions options) {
         List<TransactionDto> transactionDtoList = transactionService.getTransactions(options);
         return ResponseEntity.ok(transactionDtoList);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getTransaction(@PathVariable("id") String id) {
+    public ResponseEntity<TransactionDto> getTransaction(@PathVariable("id") String id) {
         TransactionDto transactionDto = transactionService.getTransaction(id);
         return ResponseEntity.ok(transactionDto);
     }

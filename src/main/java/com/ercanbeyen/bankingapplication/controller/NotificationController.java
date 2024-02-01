@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class NotificationController {
     private final NotificationService notificationService;
     @PostMapping
-    public ResponseEntity<?> createNotification(@RequestBody @Valid NotificationDto request) {
+    public ResponseEntity<NotificationDto> createNotification(@RequestBody @Valid NotificationDto request) {
         NotificationDto notificationDto = notificationService.createNotification(request);
         return ResponseEntity.ok(notificationDto);
     }

@@ -1,6 +1,8 @@
 package com.ercanbeyen.bankingapplication.constant.message;
 
 public class LogMessages {
+    private LogMessages() {}
+
     public static final String ECHO = "Program is in class {} and method {}";
     public static final String RESOURCE_FOUND = "{} is found";
     public static final String RESOURCE_NOT_FOUND = "{} is not found";

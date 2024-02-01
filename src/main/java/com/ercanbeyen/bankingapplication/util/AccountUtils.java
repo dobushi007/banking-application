@@ -16,6 +16,8 @@ import java.util.function.Predicate;
 
 @Slf4j
 public class AccountUtils {
+    private AccountUtils() {}
+
     public static void checkAccountConstruction(AccountDto accountDto) {
         checkAccountType(accountDto);
         checkDepositPeriod(accountDto);
@@ -40,7 +42,7 @@ public class AccountUtils {
     }
 
     public static double calculateInterestAmountForDeposit(Double balance, Double interest) {
-        return (balance == 0 && interest == 0) ? 0 : ((interest * 100) / balance);
+        return (balance == 0 || interest == 0) ? 0 : ((interest * 100) / balance);
     }
 
     public static String constructResponseMessageForUnidirectionalAccountOperations(AccountOperation operation, Double amount, Account account) {

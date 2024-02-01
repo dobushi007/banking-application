@@ -12,35 +12,37 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @Slf4j
 public abstract class BaseController<T extends BaseDto, V extends BaseFilteringOptions> {
     private final BaseService<T, V> baseService;
 
     @GetMapping
-    public ResponseEntity<?> getEntities(V options) {
+    public ResponseEntity<List<T>> getEntities(V options) {
         return new ResponseEntity<>(baseService.getEntities(options), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getEntity(@PathVariable("id") Integer id) {
+    public ResponseEntity<T> getEntity(@PathVariable("id") Integer id) {
         return baseService.getEntity(id)
                 .map(t -> new ResponseEntity<>(t, HttpStatus.OK))
                 .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
     }
 
     @PostMapping
-    public ResponseEntity<?> createEntity(@RequestBody @Valid T request) {
+    public ResponseEntity<T> createEntity(@RequestBody @Valid T request) {
         return new ResponseEntity<>(baseService.createEntity(request), HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateEntity(@PathVariable("id") Integer id, @RequestBody @Valid T request) {
+    public ResponseEntity<T> updateEntity(@PathVariable("id") Integer id, @RequestBody @Valid T request) {
         return new ResponseEntity<>(baseService.updateEntity(id, request), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteEntity(@PathVariable("id") Integer id) {
+    public ResponseEntity<String> deleteEntity(@PathVariable("id") Integer id) {
         return baseService.getEntity(id)
                 .map(t -> {
                     baseService.deleteEntity(id);

@@ -12,6 +12,7 @@ import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.entity.Customer;
 import com.ercanbeyen.bankingapplication.exception.ResourceExpectationFailedException;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
+import com.ercanbeyen.bankingapplication.exception.UnsuccessfulTransactionException;
 import com.ercanbeyen.bankingapplication.mapper.AccountMapper;
 import com.ercanbeyen.bankingapplication.option.AccountFilteringOptions;
 import com.ercanbeyen.bankingapplication.repository.AccountRepository;
@@ -42,7 +43,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     public List<AccountDto> getEntities(AccountFilteringOptions options) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+                LoggingUtils.getMethodName(AccountService.class.getEnclosingMethod()));
 
         log.info("AccountFilteringOptions' type: {}", options.getType());
 
@@ -62,7 +63,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     public Optional<AccountDto> getEntity(Integer id) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+                LoggingUtils.getMethodName(AccountService.class.getEnclosingMethod()));
 
         Optional<Account> accountOptional = accountRepository.findById(id);
 
@@ -73,7 +74,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     public AccountDto createEntity(AccountDto request) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+                LoggingUtils.getMethodName(AccountService.class.getEnclosingMethod()));
 
         Account account = accountMapper.dtoToAccount(request);
 
@@ -91,7 +92,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     public AccountDto updateEntity(Integer id, AccountDto request) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+                LoggingUtils.getMethodName(AccountService.class.getEnclosingMethod()));
 
         Account account = findAccountById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
@@ -105,7 +106,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     public void deleteEntity(Integer id) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+                LoggingUtils.getMethodName(AccountService.class.getEnclosingMethod()));
 
         Account account = findAccountById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
@@ -116,7 +117,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     public String applyUnidirectionalAccountOperation(Integer id, AccountOperation operation, Double amount) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+                LoggingUtils.getMethodName(AccountService.class.getEnclosingMethod()));
 
         Account account = findAccountById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
@@ -144,8 +145,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     public String addMoneyToDepositAccount(Integer id) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
-        );
+                LoggingUtils.getMethodName(AccountService.class.getEnclosingMethod()));
 
         Account account = findAccountById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
@@ -163,7 +163,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     public String transferMoney(MoneyTransferRequest request) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+                LoggingUtils.getMethodName(AccountService.class.getEnclosingMethod()));
 
         Account senderAccount = findAccountById(request.senderAccountId());
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
@@ -192,7 +192,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
             log.error("Unable to transfer the money");
             message = addMoney(senderAccount, amount); // rollback
             log.info(LogMessages.TRANSACTION_MESSAGE, message);
-            throw new RuntimeException("Money transfer operation is unsuccessfully completed");
+            throw new UnsuccessfulTransactionException("Money transfer operation is unsuccessfully completed");
         }
 
         TransactionRequest transactionRequest = new TransactionRequest(
@@ -210,7 +210,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     private String addMoney(Account account, Double amount) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+                LoggingUtils.getMethodName(AccountService.class.getEnclosingMethod()));
 
         Double previousBalance = account.getBalance();
         Double nextBalance = previousBalance + amount;
@@ -226,7 +226,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     private String withdrawMoney(Account account, Double amount) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+                LoggingUtils.getMethodName(AccountService.class.getEnclosingMethod()));
 
         AccountUtils.checkBalance(account, amount);
 

@@ -34,7 +34,7 @@ public class TransactionServiceImpl implements TransactionService {
     public List<TransactionDto> getTransactions(TransactionFilteringOptions options) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+                LoggingUtils.getMethodName(TransactionServiceImpl.class.getEnclosingMethod()));
 
         Predicate<Transaction> transactionPredicate = transaction -> (options.type() == null || options.type() == transaction.getType())
                 && (options.senderAccountId() == null || options.senderAccountId().equals(transaction.getSenderAccountId()))
@@ -58,7 +58,7 @@ public class TransactionServiceImpl implements TransactionService {
     public TransactionDto getTransaction(String id) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+                LoggingUtils.getMethodName(TransactionServiceImpl.class.getEnclosingMethod()));
 
         Transaction transaction = findTransactionById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT);
@@ -71,7 +71,7 @@ public class TransactionServiceImpl implements TransactionService {
     public void createTransaction(TransactionRequest request) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+                LoggingUtils.getMethodName(TransactionServiceImpl.class.getEnclosingMethod()));
 
         CompletableFuture.runAsync(() -> {
             Transaction transaction = new Transaction(

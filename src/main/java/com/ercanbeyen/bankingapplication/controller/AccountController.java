@@ -25,34 +25,34 @@ public class AccountController extends BaseController<AccountDto, AccountFilteri
 
     @PostMapping
     @Override
-    public ResponseEntity<?> createEntity(@RequestBody @Valid AccountDto request) {
+    public ResponseEntity<AccountDto> createEntity(@RequestBody @Valid AccountDto request) {
         AccountUtils.checkAccountConstruction(request);
         return new ResponseEntity<>(accountService.createEntity(request), HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
     @Override
-    public ResponseEntity<?> updateEntity(@PathVariable("id") Integer id, @RequestBody @Valid AccountDto request) {
+    public ResponseEntity<AccountDto> updateEntity(@PathVariable("id") Integer id, @RequestBody @Valid AccountDto request) {
         AccountUtils.checkAccountConstruction(request);
         return new ResponseEntity<>(accountService.updateEntity(id, request), HttpStatus.OK);
     }
 
     @PutMapping("/{id}/individual")
-    public ResponseEntity<?> updateBalance(@PathVariable("id") Integer id, @RequestParam("operation") AccountOperation operation, @Valid @RequestParam("amount") @Min(value = 1, message = "Minimum amount should be {value}") Double amount) {
+    public ResponseEntity<MessageResponse> updateBalance(@PathVariable("id") Integer id, @RequestParam("operation") AccountOperation operation, @Valid @RequestParam("amount") @Min(value = 1, message = "Minimum amount should be {value}") Double amount) {
         String message = accountService.applyUnidirectionalAccountOperation(id, operation, amount);
         MessageResponse response = new MessageResponse(message);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PutMapping("/{id}/deposit")
-    public ResponseEntity<?> updateBalanceOfDepositAccount(@PathVariable("id") Integer id) {
+    public ResponseEntity<MessageResponse> updateBalanceOfDepositAccount(@PathVariable("id") Integer id) {
         String message = accountService.addMoneyToDepositAccount(id);
         MessageResponse response = new MessageResponse(message);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PutMapping("/transfer")
-    public ResponseEntity<?> transferMoney(@RequestBody @Valid MoneyTransferRequest request) {
+    public ResponseEntity<MessageResponse> transferMoney(@RequestBody @Valid MoneyTransferRequest request) {
         AccountUtils.checkMoneyTransferRequest(request);
         String message = accountService.transferMoney(request);
         MessageResponse response = new MessageResponse(message);
