@@ -6,21 +6,23 @@
 
 ### Summary
 It is a banking application includes basic banking operations. Abstract crud approach is used throughout the development.<br/>
-There are 4 entities in this project
+There are 5 entities in this project
 
 Entities:
 - Customer
 - Account
 - File
 - Notification
+- Transaction
 
 ### Requirements
 - Customer must have name, surname, national id, phone number, email, gender, birth date and address.
 - Customer's national id, email and phone number must be unique.
 - Account must have customer, type, branch location, currency and balance.
-- Account's type is either checking or deposit.
+- If account is deposit, then it must also have deposit period and interest.
 - Address must have city, zip code and details.
-- Notification must have customer related national id and message
+- Notification must have customer related national id and message.
+- Transaction must have an amount and at least sender account id or receiver account id.
 
 ### Additionals
 - Scheduled tasks run while application is running.
