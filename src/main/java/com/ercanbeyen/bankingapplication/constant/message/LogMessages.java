@@ -1,6 +1,8 @@
 package com.ercanbeyen.bankingapplication.constant.message;
 
 public class LogMessages {
+    private LogMessages() {}
+
     public static final String ECHO = "Program is in class {} and method {}";
     public static final String RESOURCE_FOUND = "{} is found";
     public static final String RESOURCE_NOT_FOUND = "{} is not found";
@@ -16,4 +18,7 @@ public class LogMessages {
             Response is returned successfully after rest template call.
             Response: {}
             """;
+    public static final String RESOURCE_CREATE_SUCCESS = "{} {} is successfully created";
+    public static final String CLASS_OF_RESPONSE = "Class of response: {}";
+    public static final String CLASS_OF_OBJECT = "Class of {}: {}";
 }

@@ -20,9 +20,8 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<?> handleValidationExceptions(MethodArgumentNotValidException exception) {
+    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException exception) {
         Map<String, String> errors = new HashMap<>();
 
         exception.getBindingResult()
@@ -37,7 +36,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(HandlerMethodValidationException.class)
-    public ResponseEntity<?> handleMethodValidationException(HandlerMethodValidationException exception) {
+    public ResponseEntity<Map<String, String>> handleMethodValidationException(HandlerMethodValidationException exception) {
         Map<String, String> errors = new HashMap<>();
 
         exception.getAllValidationResults()
@@ -53,26 +52,26 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<?> handleResourceNotFoundException(Exception exception) {
+    public ResponseEntity<ExceptionResponse> handleResourceNotFoundException(Exception exception) {
         return constructResponse(exception, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(ResourceConflictException.class)
-    public ResponseEntity<?> handleResourceConflictException(Exception exception) {
+    public ResponseEntity<ExceptionResponse> handleResourceConflictException(Exception exception) {
         return constructResponse(exception, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler({MaxUploadSizeExceededException.class, ResourceExpectationFailedException.class})
-    public ResponseEntity<?> handleResourceExpectationFailedException(Exception exception) {
+    public ResponseEntity<ExceptionResponse> handleResourceExpectationFailedException(Exception exception) {
         return constructResponse(exception, HttpStatus.EXPECTATION_FAILED);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<?> handleGeneralException(Exception exception) {
+    public ResponseEntity<ExceptionResponse> handleGeneralException(Exception exception) {
         return constructResponse(exception, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    private ResponseEntity<?> constructResponse(Exception exception, HttpStatus httpStatus) {
+    private ResponseEntity<ExceptionResponse> constructResponse(Exception exception, HttpStatus httpStatus) {
         ExceptionResponse response = new ExceptionResponse(httpStatus.value(), exception.getMessage(), LocalDateTime.now());
         return new ResponseEntity<>(response, httpStatus);
     }

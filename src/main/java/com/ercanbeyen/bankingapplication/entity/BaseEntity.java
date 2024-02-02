@@ -1,7 +1,7 @@
 package com.ercanbeyen.bankingapplication.entity;
 
 
-import com.ercanbeyen.bankingapplication.constant.query.SqlQueries;
+import com.ercanbeyen.bankingapplication.constant.query.Queries;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
@@ -17,10 +17,10 @@ public abstract sealed class BaseEntity permits Customer, Account {
     private Integer id;
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "create_time", columnDefinition = SqlQueries.GET_NOW_TIMESTAMP)
+    @Column(name = "create_time", columnDefinition = Queries.GET_NOW_TIMESTAMP)
     private LocalDateTime createTime;
     @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "update_time", columnDefinition = SqlQueries.GET_NOW_TIMESTAMP)
+    @Column(name = "update_time", columnDefinition = Queries.GET_NOW_TIMESTAMP)
     private LocalDateTime updateTime;
 }

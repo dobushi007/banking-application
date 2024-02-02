@@ -1,8 +1,8 @@
 package com.ercanbeyen.bankingapplication.scheduler;
 
 import com.ercanbeyen.bankingapplication.constant.enums.AccountType;
+import com.ercanbeyen.bankingapplication.constant.enums.Entity;
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
-import com.ercanbeyen.bankingapplication.constant.resource.Resources;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,7 +37,7 @@ public class AccountScheduledTasks {
         List<AccountDto> accountDtoList;
 
         try {
-            UriComponents uriComponents = UriComponentsBuilder.fromUriString(Resources.Urls.ACCOUNTS)
+            UriComponents uriComponents = UriComponentsBuilder.fromUriString(Entity.ACCOUNT.getCollectionUrl())
                     .queryParam("type", String.valueOf(AccountType.DEPOSIT))
                     .build();
 
@@ -46,10 +46,10 @@ public class AccountScheduledTasks {
 
             List<?> response = restTemplate.getForObject(url, List.class);
             assert response != null;
-            log.info("Class of response: {}", response.getClass());
+            log.info(LogMessages.CLASS_OF_RESPONSE, response.getClass());
 
             accountDtoList = objectMapper.convertValue(response, new TypeReference<>() {});
-            accountDtoList.forEach(accountDto -> log.info("Class of AccountDto: {}", accountDto.getClass()));
+            accountDtoList.forEach(accountDto -> log.info(LogMessages.CLASS_OF_OBJECT, "AccountDto", accountDto.getClass()));
 
             log.info(LogMessages.REST_TEMPLATE_SUCCESS, accountDtoList);
         } catch (Exception exception) {
@@ -69,11 +69,11 @@ public class AccountScheduledTasks {
             log.info(LogMessages.BEFORE_REQUEST);
 
             Map<String, Integer> parameters = Map.of(ID, accountId);
-            String url = Resources.Urls.ACCOUNTS + "/{" + ID + "}/deposit";
+            String url = Entity.ACCOUNT.getCollectionUrl() + "/{" + ID + "}/deposit";
 
             try {
                 restTemplate.put(url, null, parameters);
-                String logMessage = "Account " + accountId + " is successfully updated";
+                String logMessage = Entity.ACCOUNT.getValue() + " " + accountId + " is successfully updated";
                 log.info(LogMessages.REST_TEMPLATE_SUCCESS, logMessage);
             } catch (Exception exception) {
                 log.error(LogMessages.EXCEPTION, exception.getMessage());

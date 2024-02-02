@@ -24,7 +24,7 @@ public class FileStorageController {
     private final FileStorageService fileStorageService;
 
     @PostMapping
-    public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<MessageResponse> uploadFile(@RequestParam("file") MultipartFile file) {
         fileStorageService.storeFile(file);
         MessageResponse response = new MessageResponse(ResponseMessages.FILE_UPLOAD_SUCCESS);
 
@@ -32,7 +32,7 @@ public class FileStorageController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> downloadFile(@PathVariable("id") String id) {
+    public ResponseEntity<byte[]> downloadFile(@PathVariable("id") String id) {
         File file = fileStorageService.getFile(id);
         String fileName = file.getName();
         log.info("file.getName(): {}", fileName);
@@ -43,7 +43,7 @@ public class FileStorageController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteFile(@PathVariable("id") String id) {
+    public ResponseEntity<MessageResponse> deleteFile(@PathVariable("id") String id) {
         String message = fileStorageService.deleteFile(id);
         MessageResponse response = new MessageResponse(message);
 
@@ -51,7 +51,7 @@ public class FileStorageController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getFileList() {
+    public ResponseEntity<List<FileResponse>> getFileList() {
         List<FileResponse> fileResponseList = fileStorageService.getAllFiles()
                 .map(file -> {
                     String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()

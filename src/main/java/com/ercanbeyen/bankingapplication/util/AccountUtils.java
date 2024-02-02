@@ -3,6 +3,7 @@ package com.ercanbeyen.bankingapplication.util;
 import com.ercanbeyen.bankingapplication.constant.enums.AccountType;
 import com.ercanbeyen.bankingapplication.constant.enums.AccountOperation;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
+import com.ercanbeyen.bankingapplication.dto.request.MoneyTransferRequest;
 import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
 import com.ercanbeyen.bankingapplication.exception.ResourceExpectationFailedException;
@@ -15,14 +16,16 @@ import java.util.function.Predicate;
 
 @Slf4j
 public class AccountUtils {
+    private AccountUtils() {}
+
     public static void checkAccountConstruction(AccountDto accountDto) {
         checkAccountType(accountDto);
         checkDepositPeriod(accountDto);
     }
 
-    public static void checkTransferDate(LocalDate transferDate) {
-        if (transferDate.isBefore(LocalDate.now())) {
-            throw new ResourceExpectationFailedException("Transfer date must be at least today");
+    public static void checkMoneyTransferRequest(MoneyTransferRequest request) {
+        if (Objects.equals(request.senderAccountId(), request.receiverAccountId())) {
+            throw new ResourceExpectationFailedException("Identity of sender and receiver accounts should not be equal");
         }
     }
 
@@ -38,8 +41,8 @@ public class AccountUtils {
         }
     }
 
-    public static double calculateInterestAmountForDepositOperation(Double balance, Double interest) {
-        return (interest * 100) / balance;
+    public static double calculateInterestAmountForDeposit(Double balance, Double interest) {
+        return (balance == 0 || interest == 0) ? 0 : ((interest * 100) / balance);
     }
 
     public static String constructResponseMessageForUnidirectionalAccountOperations(AccountOperation operation, Double amount, Account account) {

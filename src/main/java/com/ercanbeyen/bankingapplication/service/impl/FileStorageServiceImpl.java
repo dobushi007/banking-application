@@ -1,8 +1,8 @@
 package com.ercanbeyen.bankingapplication.service.impl;
 
+import com.ercanbeyen.bankingapplication.constant.enums.Entity;
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
-import com.ercanbeyen.bankingapplication.constant.resource.Resources;
 import com.ercanbeyen.bankingapplication.entity.File;
 import com.ercanbeyen.bankingapplication.exception.ResourceExpectationFailedException;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
@@ -28,7 +28,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     public File storeFile(MultipartFile multipartFile) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
+                LoggingUtils.getMethodName(FileStorageServiceImpl.class.getEnclosingMethod())
         );
 
         String fileName = StringUtils.cleanPath(Objects.requireNonNull(multipartFile.getOriginalFilename()));
@@ -51,7 +51,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     public File getFile(String id) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
+                LoggingUtils.getMethodName(FileStorageServiceImpl.class.getEnclosingMethod())
         );
 
         return findFileById(id);
@@ -61,11 +61,11 @@ public class FileStorageServiceImpl implements FileStorageService {
     public String deleteFile(String id) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
+                LoggingUtils.getMethodName(FileStorageServiceImpl.class.getEnclosingMethod())
         );
 
         fileRepository.findById(id).ifPresentOrElse(file -> {
-            log.info(LogMessages.RESOURCE_FOUND, Resources.EntityNames.FILE);
+            log.info(LogMessages.RESOURCE_FOUND, Entity.FILE.getValue());
 
             try {
                 fileRepository.delete(file);
@@ -75,7 +75,7 @@ public class FileStorageServiceImpl implements FileStorageService {
                 throw new ResourceExpectationFailedException(message);
             }
         }, () -> {
-            log.error(LogMessages.RESOURCE_NOT_FOUND, Resources.EntityNames.FILE);
+            log.error(LogMessages.RESOURCE_NOT_FOUND, Entity.FILE.getValue());
             throw new ResourceNotFoundException(ResponseMessages.NOT_FOUND);
         });
 
@@ -86,7 +86,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     public Stream<File> getAllFiles() {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod())
+                LoggingUtils.getMethodName(FileStorageServiceImpl.class.getEnclosingMethod())
         );
 
         return fileRepository.findAll()
@@ -95,6 +95,6 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     private File findFileById(String id) {
         return fileRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Resources.EntityNames.FILE)));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.FILE.getValue())));
     }
 }
