@@ -10,7 +10,8 @@ public enum Entity {
     ACCOUNT("Account"),
     FILE("File"),
     NOTIFICATION("Notification"),
-    TRANSACTION("Transaction");
+    TRANSACTION("Transaction"),
+    REGULAR_TRANSFER_ORDER("RegularTransferOrder");
 
     private final String value;
 

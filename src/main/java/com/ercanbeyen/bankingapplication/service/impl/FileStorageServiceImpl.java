@@ -28,8 +28,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     public File storeFile(MultipartFile multipartFile) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(FileStorageServiceImpl.class.getEnclosingMethod())
-        );
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
         String fileName = StringUtils.cleanPath(Objects.requireNonNull(multipartFile.getOriginalFilename()));
         File savedFile;
@@ -51,8 +50,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     public File getFile(String id) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(FileStorageServiceImpl.class.getEnclosingMethod())
-        );
+                LoggingUtils.getMethodName(FileStorageServiceImpl.class.getEnclosingMethod()));
 
         return findFileById(id);
     }
@@ -61,8 +59,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     public String deleteFile(String id) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(FileStorageServiceImpl.class.getEnclosingMethod())
-        );
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
         fileRepository.findById(id).ifPresentOrElse(file -> {
             log.info(LogMessages.RESOURCE_FOUND, Entity.FILE.getValue());
@@ -86,8 +83,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     public Stream<File> getAllFiles() {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(FileStorageServiceImpl.class.getEnclosingMethod())
-        );
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
         return fileRepository.findAll()
                 .stream();

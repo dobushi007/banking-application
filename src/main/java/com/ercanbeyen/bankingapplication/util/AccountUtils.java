@@ -3,7 +3,7 @@ package com.ercanbeyen.bankingapplication.util;
 import com.ercanbeyen.bankingapplication.constant.enums.AccountType;
 import com.ercanbeyen.bankingapplication.constant.enums.AccountOperation;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
-import com.ercanbeyen.bankingapplication.dto.request.MoneyTransferRequest;
+import com.ercanbeyen.bankingapplication.dto.request.TransferRequest;
 import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
 import com.ercanbeyen.bankingapplication.exception.ResourceExpectationFailedException;
@@ -23,7 +23,7 @@ public class AccountUtils {
         checkDepositPeriod(accountDto);
     }
 
-    public static void checkMoneyTransferRequest(MoneyTransferRequest request) {
+    public static void checkMoneyTransferRequest(TransferRequest request) {
         if (Objects.equals(request.senderAccountId(), request.receiverAccountId())) {
             throw new ResourceExpectationFailedException("Identity of sender and receiver accounts should not be equal");
         }
