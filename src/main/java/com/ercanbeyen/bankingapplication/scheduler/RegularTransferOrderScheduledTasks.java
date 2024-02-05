@@ -4,6 +4,7 @@ import com.ercanbeyen.bankingapplication.constant.enums.Entity;
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.dto.RegularTransferOrderDto;
 import com.ercanbeyen.bankingapplication.dto.request.TransferRequest;
+import com.ercanbeyen.bankingapplication.util.RegularTransferOrderUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -13,10 +14,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 @Component
 @Async
@@ -51,7 +50,7 @@ public class RegularTransferOrderScheduledTasks {
          }
 
         regularTransferOrderDtos.forEach(regularTransferOrderDto -> {
-            if (getRegularTransferOrderDtoPredicate().test(regularTransferOrderDto)) {
+            if (RegularTransferOrderUtils.getRegularTransferOrderDtoPredicate().test(regularTransferOrderDto)) {
                 log.info("Period check is passed");
                 getRegularTransferOrderDtoConsumer().accept(regularTransferOrderDto);
                 log.info("Transfer is successfully completed");
@@ -59,17 +58,6 @@ public class RegularTransferOrderScheduledTasks {
         });
 
         log.info(LogMessages.SCHEDULED_TASK_ENDED, task);
-    }
-
-    private static Predicate<RegularTransferOrderDto> getRegularTransferOrderDtoPredicate() {
-        return regularTransferOrderDto -> {
-            LocalDate regularTransferOrderDate = regularTransferOrderDto.getCreateTime()
-                    .toLocalDate()
-                    .plusWeeks(regularTransferOrderDto.getPeriod());
-            LocalDate today = LocalDate.now();
-
-            return today.isEqual(regularTransferOrderDate);
-        };
     }
 
     private Consumer<RegularTransferOrderDto> getRegularTransferOrderDtoConsumer() {
