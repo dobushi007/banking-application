@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 @Service
 @RequiredArgsConstructor
@@ -36,7 +37,14 @@ public class RegularTransferOrderService implements BaseService<RegularTransferO
 
         List<RegularTransferOrderDto> regularTransferOrderDtos = new ArrayList<>();
 
+        Predicate<RegularTransferOrder> regularTransferOrderPredicate = regularTransferOrder -> (options.getSenderAccountId() == null || options.getSenderAccountId().equals(regularTransferOrder.getAccount().getId()))
+                && (options.getReceiverAccountId() == null || options.getReceiverAccountId().equals(regularTransferOrder.getRegularTransfer().getReceiverAccountId())
+                && (options.getPeriod() == null || options.getPeriod().equals(regularTransferOrder.getPeriod()))
+                && (options.getCreateTime() == null || options.getCreateTime().toLocalDate().isEqual(options.getCreateTime().toLocalDate())));
+
         regularTransferOrderRepository.findAll()
+                .stream()
+                .filter(regularTransferOrderPredicate)
                 .forEach(regularMoneyTransferOrder -> regularTransferOrderDtos.add(regularTransferOrderMapper.regularTransferOrderToDto(regularMoneyTransferOrder)));
 
         return regularTransferOrderDtos;
@@ -66,7 +74,7 @@ public class RegularTransferOrderService implements BaseService<RegularTransferO
         regularTransferOrder.setPeriod(request.getPeriod());
 
         RegularTransferOrder savedRegularTransferOrder = regularTransferOrderRepository.save(regularTransferOrder);
-        log.info(LogMessages.RESOURCE_CREATE_SUCCESS, Entity.REGULAR_TRANSFER_ORDER.getValue());
+        log.info(LogMessages.RESOURCE_CREATE_SUCCESS, Entity.REGULAR_TRANSFER_ORDER.getValue(), savedRegularTransferOrder.getId());
 
         return regularTransferOrderMapper.regularTransferOrderToDto(savedRegularTransferOrder);
     }
