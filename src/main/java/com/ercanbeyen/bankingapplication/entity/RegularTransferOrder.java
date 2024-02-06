@@ -10,9 +10,8 @@ import lombok.Data;
 public non-sealed class RegularTransferOrder extends BaseEntity {
     private Integer id;
     @ManyToOne
-    private Account account;
+    private Account senderAccount;
     private Integer period;
     @Embedded
-    @AttributeOverride(name = "receiverAccountId", column = @Column(name = "receiver_account_id"))
     private RegularTransfer regularTransfer;
 }

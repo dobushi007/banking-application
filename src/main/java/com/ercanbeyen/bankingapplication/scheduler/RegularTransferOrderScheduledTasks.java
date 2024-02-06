@@ -63,12 +63,12 @@ public class RegularTransferOrderScheduledTasks {
     private Consumer<RegularTransferOrderDto> getRegularTransferOrderDtoConsumer() {
         return regularTransferOrderDto -> {
             Integer senderAccountId = regularTransferOrderDto.getSenderAccountId();
-            Integer receiverAccountId = regularTransferOrderDto.getRegularTransfer().getReceiverAccountId();
+            Integer receiverAccountId = regularTransferOrderDto.getRegularTransferDto().receiverAccountId();
             TransferRequest transferRequest = new TransferRequest(
                     senderAccountId,
                     receiverAccountId,
-                    regularTransferOrderDto.getRegularTransfer().getAmount(),
-                    regularTransferOrderDto.getRegularTransfer().getExplanation());
+                    regularTransferOrderDto.getRegularTransferDto().amount(),
+                    regularTransferOrderDto.getRegularTransferDto().explanation());
 
             try {
                 String url = Entity.ACCOUNT.getCollectionUrl() + "/transfer";

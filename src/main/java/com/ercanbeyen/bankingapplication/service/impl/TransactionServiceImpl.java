@@ -37,8 +37,8 @@ public class TransactionServiceImpl implements TransactionService {
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
         Predicate<Transaction> transactionPredicate = transaction -> (options.type() == null || options.type() == transaction.getType())
-                && (options.senderAccountId() == null || options.senderAccountId().equals(transaction.getSenderAccountId()))
-                && (options.receiverAccountId() == null || options.receiverAccountId().equals(transaction.getReceiverAccountId()))
+                && (options.senderAccountId() == null || options.senderAccountId().equals(transaction.getSenderAccount().getId()))
+                && (options.receiverAccountId() == null || options.receiverAccountId().equals(transaction.getReceiverAccount().getId()))
                 && (options.minimumAmount() == null || options.minimumAmount() <= transaction.getAmount())
                 && (options.createAt() == null || (options.createAt().isEqual(transaction.getCreateAt().toLocalDate())));
 
@@ -76,8 +76,8 @@ public class TransactionServiceImpl implements TransactionService {
         CompletableFuture.runAsync(() -> {
             Transaction transaction = new Transaction(
                     request.transactionType(),
-                    request.senderAccountId(),
-                    request.receiverAccountId(),
+                    request.senderAccount(),
+                    request.receiverAccount(),
                     request.amount(),
                     request.explanation()
             );

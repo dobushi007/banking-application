@@ -1,6 +1,5 @@
 package com.ercanbeyen.bankingapplication.dto;
 
-import com.ercanbeyen.bankingapplication.embeddable.RegularTransfer;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -13,5 +12,5 @@ public non-sealed class RegularTransferOrderDto extends BaseDto {
     @Min(value = 1, message = "Period must be at least {value} week")
     private Integer period;
     @Valid
-    private RegularTransfer regularTransfer;
+    private RegularTransferDto regularTransferDto;
 }

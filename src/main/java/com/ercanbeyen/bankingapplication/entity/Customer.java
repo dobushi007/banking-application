@@ -13,19 +13,22 @@ import java.util.Optional;
 
 @Setter
 @Entity
-@Table(name = "customers")
+@Table(name = "customers", indexes = {@Index(name = "nationalId_index", columnList = "nationalId")})
 public non-sealed class Customer extends BaseEntity {
     @Getter
+    @Column(nullable = false, length = 100)
     private String name;
     @Getter
+    @Column(nullable = false, length = 100)
     private String surname;
     @Getter
-    @Column(name = "national_id", length = 11, unique = true)
+    @Column(name = "national_id", nullable = false, length = 11, unique = true)
     private String nationalId;
     @Getter
     @Column(name = "phone_number", length = 13, unique = true)
     private String phoneNumber;
     @Getter
+    @Column(nullable = false, unique = true)
     private String email;
     @Getter
     @Enumerated(EnumType.STRING)

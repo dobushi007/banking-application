@@ -23,7 +23,7 @@ public non-sealed class Account extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Currency currency;
     private Double balance;
-    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "senderAccount", cascade = CascadeType.ALL)
     private List<RegularTransferOrder> regularTransferOrders = new ArrayList<>();
     /* Deposit Account fields */
     private Double interest;
