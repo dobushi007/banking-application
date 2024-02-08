@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 
 public class LoggingUtils {
     private LoggingUtils() {}
+
     public static String getClassName(Object object) {
         return object.getClass().getSimpleName();
     }

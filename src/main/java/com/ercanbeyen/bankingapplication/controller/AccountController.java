@@ -2,7 +2,7 @@ package com.ercanbeyen.bankingapplication.controller;
 
 import com.ercanbeyen.bankingapplication.constant.enums.AccountOperation;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
-import com.ercanbeyen.bankingapplication.dto.request.MoneyTransferRequest;
+import com.ercanbeyen.bankingapplication.dto.request.TransferRequest;
 import com.ercanbeyen.bankingapplication.option.AccountFilteringOptions;
 import com.ercanbeyen.bankingapplication.response.MessageResponse;
 import com.ercanbeyen.bankingapplication.service.impl.AccountService;
@@ -52,7 +52,7 @@ public class AccountController extends BaseController<AccountDto, AccountFilteri
     }
 
     @PutMapping("/transfer")
-    public ResponseEntity<MessageResponse> transferMoney(@RequestBody @Valid MoneyTransferRequest request) {
+    public ResponseEntity<MessageResponse> transferMoney(@RequestBody @Valid TransferRequest request) {
         AccountUtils.checkMoneyTransferRequest(request);
         String message = accountService.transferMoney(request);
         MessageResponse response = new MessageResponse(message);

@@ -34,31 +34,31 @@ public class TransactionServiceImpl implements TransactionService {
     public List<TransactionDto> getTransactions(TransactionFilteringOptions options) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(TransactionServiceImpl.class.getEnclosingMethod()));
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
         Predicate<Transaction> transactionPredicate = transaction -> (options.type() == null || options.type() == transaction.getType())
-                && (options.senderAccountId() == null || options.senderAccountId().equals(transaction.getSenderAccountId()))
-                && (options.receiverAccountId() == null || options.receiverAccountId().equals(transaction.getReceiverAccountId()))
+                && (options.senderAccountId() == null || options.senderAccountId().equals(transaction.getSenderAccount().getId()))
+                && (options.receiverAccountId() == null || options.receiverAccountId().equals(transaction.getReceiverAccount().getId()))
                 && (options.minimumAmount() == null || options.minimumAmount() <= transaction.getAmount())
                 && (options.createAt() == null || (options.createAt().isEqual(transaction.getCreateAt().toLocalDate())));
 
-        List<TransactionDto> transactionDtoList = new ArrayList<>();
+        List<TransactionDto> transactionDtos = new ArrayList<>();
         Comparator<Transaction> transactionComparator = Comparator.comparing(Transaction::getCreateAt).reversed();
 
         transactionRepository.findAll()
                 .stream()
                 .filter(transactionPredicate)
                 .sorted(transactionComparator)
-                .forEach(transaction -> transactionDtoList.add(transactionMapper.transactionToDto(transaction)));
+                .forEach(transaction -> transactionDtos.add(transactionMapper.transactionToDto(transaction)));
 
-        return transactionDtoList;
+        return transactionDtos;
     }
 
     @Override
     public TransactionDto getTransaction(String id) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(TransactionServiceImpl.class.getEnclosingMethod()));
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
         Transaction transaction = findTransactionById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT);
@@ -71,13 +71,13 @@ public class TransactionServiceImpl implements TransactionService {
     public void createTransaction(TransactionRequest request) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(TransactionServiceImpl.class.getEnclosingMethod()));
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
         CompletableFuture.runAsync(() -> {
             Transaction transaction = new Transaction(
                     request.transactionType(),
-                    request.senderAccountId(),
-                    request.receiverAccountId(),
+                    request.senderAccount(),
+                    request.receiverAccount(),
                     request.amount(),
                     request.explanation()
             );

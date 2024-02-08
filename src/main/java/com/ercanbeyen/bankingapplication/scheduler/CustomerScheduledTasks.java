@@ -31,7 +31,7 @@ public class CustomerScheduledTasks {
         final String task = "celebrate customers' birthday";
         log.info(LogMessages.SCHEDULED_TASK_STARTED, task);
         LocalDate birthday = LocalDate.now();
-        List<CustomerDto> customerDtoList;
+        List<CustomerDto> customerDtos;
 
         try {
             UriComponents uriComponents = UriComponentsBuilder.fromUriString(Entity.CUSTOMER.getCollectionUrl())
@@ -45,16 +45,16 @@ public class CustomerScheduledTasks {
             assert response != null;
             log.info(LogMessages.CLASS_OF_RESPONSE, response.getClass());
 
-            customerDtoList = objectMapper.convertValue(response, new TypeReference<>() {});
-            customerDtoList.forEach(customerDto -> log.info(LogMessages.CLASS_OF_OBJECT, "CustomerDto", customerDto.getClass()));
+            customerDtos = objectMapper.convertValue(response, new TypeReference<>() {});
+            customerDtos.forEach(customerDto -> log.info(LogMessages.CLASS_OF_OBJECT, "CustomerDto", customerDto.getClass()));
 
-            log.info(LogMessages.REST_TEMPLATE_SUCCESS, customerDtoList);
+            log.info(LogMessages.REST_TEMPLATE_SUCCESS, customerDtos);
         } catch (Exception exception) {
             log.error(LogMessages.EXCEPTION, exception.getMessage());
             return;
         }
 
-        customerDtoList.forEach(customerDto -> {
+        customerDtos.forEach(customerDto -> {
             NotificationDto request = new NotificationDto(customerDto.getNationalId(), "happy birthday");
 
             try {

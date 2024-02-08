@@ -34,7 +34,7 @@ public class AccountScheduledTasks {
         final String task = "periodic money deposit to deposit account";
         log.info(LogMessages.SCHEDULED_TASK_STARTED, task);
 
-        List<AccountDto> accountDtoList;
+        List<AccountDto> accountDtos;
 
         try {
             UriComponents uriComponents = UriComponentsBuilder.fromUriString(Entity.ACCOUNT.getCollectionUrl())
@@ -48,17 +48,17 @@ public class AccountScheduledTasks {
             assert response != null;
             log.info(LogMessages.CLASS_OF_RESPONSE, response.getClass());
 
-            accountDtoList = objectMapper.convertValue(response, new TypeReference<>() {});
-            accountDtoList.forEach(accountDto -> log.info(LogMessages.CLASS_OF_OBJECT, "AccountDto", accountDto.getClass()));
+            accountDtos = objectMapper.convertValue(response, new TypeReference<>() {});
+            accountDtos.forEach(accountDto -> log.info(LogMessages.CLASS_OF_OBJECT, "AccountDto", accountDto.getClass()));
 
-            log.info(LogMessages.REST_TEMPLATE_SUCCESS, accountDtoList);
+            log.info(LogMessages.REST_TEMPLATE_SUCCESS, accountDtos);
         } catch (Exception exception) {
             log.error(LogMessages.EXCEPTION, exception.getMessage());
             return;
         }
 
         log.info("Before mapping to integer list");
-        List<Integer> accountIdList = accountDtoList.stream()
+        List<Integer> accountIdList = accountDtos.stream()
                 .map(AccountDto::getId)
                 .toList();
         log.info("After mapping to integer list");
@@ -84,6 +84,4 @@ public class AccountScheduledTasks {
 
         log.info(LogMessages.SCHEDULED_TASK_ENDED, task);
     }
-
-
 }
