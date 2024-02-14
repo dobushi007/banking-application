@@ -22,16 +22,16 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
-//@EnableBatchProcessing
 @RequiredArgsConstructor
 public class BatchConfig {
     private final JobRepository jobRepository;
     private final PlatformTransactionManager transactionManager;
+    private static final int CHUNK_SIZE = 40;
 
     @Bean
     public Step stepNewsReport(@Qualifier("readerNewsReportCSVFile") ItemReader<NewsReport> itemReader, @Qualifier("writerNewsReportTable") ItemWriter<NewsReport> itemWriter, StepCompletionNotificationListener listener) {
         return new StepBuilder("stepNewsReport", jobRepository)
-                .<NewsReport, NewsReport>chunk(50, transactionManager)
+                .<NewsReport, NewsReport>chunk(CHUNK_SIZE, transactionManager)
                 .listener(listener)
                 .reader(itemReader)
                 .writer(itemWriter)
@@ -41,7 +41,7 @@ public class BatchConfig {
     @Bean
     public Step stepBankNews(@Qualifier("readerNewsReportByBankNewsType") ItemReader<NewsReport> itemReader, @Qualifier("writerBankNewsTable") ItemWriter<BankNews> itemWriter, StepCompletionNotificationListener listener) {
         return new StepBuilder("stepBankNews", jobRepository)
-                .<NewsReport, BankNews>chunk(50, transactionManager)
+                .<NewsReport, BankNews>chunk(CHUNK_SIZE, transactionManager)
                 .listener(listener)
                 .reader(itemReader)
                 .processor(bankNewsProcessor())
@@ -52,7 +52,7 @@ public class BatchConfig {
     @Bean
     public Step stepOfferNews(@Qualifier("readerNewsReportByOfferNewsType") ItemReader<NewsReport> itemReader, @Qualifier("writerOfferNewsTable") ItemWriter<OfferNews> itemWriter, StepCompletionNotificationListener listener) {
         return new StepBuilder("stepOfferNews", jobRepository)
-                .<NewsReport, OfferNews>chunk(50, transactionManager)
+                .<NewsReport, OfferNews>chunk(CHUNK_SIZE, transactionManager)
                 .listener(listener)
                 .reader(itemReader)
                 .processor(offerNewsProcessor())

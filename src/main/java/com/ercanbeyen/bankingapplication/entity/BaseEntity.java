@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 
 @Data
 @MappedSuperclass
-public abstract sealed class BaseEntity permits Account, Customer, NewsReport, RegularTransferOrder, BankNews, OfferNews {
+public abstract sealed class BaseEntity permits Account, Customer, NewsReport, RegularTransferOrder, News {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;

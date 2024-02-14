@@ -7,7 +7,6 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name = "offer_news")
-public non-sealed class OfferNews extends BaseEntity {
-    private String title;
-    private String url;
+public non-sealed class OfferNews extends News {
+
 }
