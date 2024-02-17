@@ -7,7 +7,7 @@ spring:
   jpa:
     properties:
       hibernate:
-        dialect : "org.hibernate.dialect.MySQL8Dialect"
+        dialect: "org.hibernate.dialect.MySQL8Dialect"
       ddl-auto: update
     generate-ddl: true
     show-sql: true
@@ -17,6 +17,6 @@ spring:
       max-request-size: 2MB
   batch:
     job:
-      enabled: false
+      enabled: false # change the value to true to immediately enable batch processing on startup
     jdbc:
       initialize-schema: always

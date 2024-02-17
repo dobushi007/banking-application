@@ -1,8 +1,6 @@
 package com.ercanbeyen.bankingapplication.constant.message;
 
 public class LogMessages {
-    private LogMessages() {}
-
     public static final String ECHO = "Program is in class {} and method {}";
     public static final String RESOURCE_FOUND = "{} is found";
     public static final String RESOURCE_NOT_FOUND = "{} is not found";
@@ -21,4 +19,12 @@ public class LogMessages {
     public static final String RESOURCE_CREATE_SUCCESS = "{} {} is successfully created";
     public static final String CLASS_OF_RESPONSE = "Class of response: {}";
     public static final String CLASS_OF_OBJECT = "Class of {}: {}";
+    public static class Batch {
+        public static final String JOB_STATUS = "!!! Job {}! Time to verify the results";
+        public static final String STEP_STATUS = "Step {} is {} time {}";
+
+        private Batch() {}
+    }
+
+    private LogMessages() {}
 }

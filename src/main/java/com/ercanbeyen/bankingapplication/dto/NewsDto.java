@@ -1,11 +1,11 @@
-package com.ercanbeyen.bankingapplication.entity;
+package com.ercanbeyen.bankingapplication.dto;
 
 import jakarta.persistence.MappedSuperclass;
 import lombok.Data;
 
 @Data
 @MappedSuperclass
-public sealed class News extends BaseEntity permits BankNews, OfferNews {
+public non-sealed class NewsDto extends BaseDto {
     private String title;
     private String url;
 }
