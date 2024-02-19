@@ -6,5 +6,5 @@ import com.ercanbeyen.bankingapplication.dto.NewsDto;
 import java.util.List;
 
 public interface NewsService {
-    List<NewsDto> getNews(NewsType type);
+    List<NewsDto> getNews(NewsType type, int pageNumber, int pageSize);
 }

@@ -12,6 +12,9 @@ import com.ercanbeyen.bankingapplication.service.NewsService;
 import com.ercanbeyen.bankingapplication.util.LoggingUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -25,19 +28,24 @@ public class NewsServiceImpl implements NewsService {
     private final OfferNewsRepository offerNewsRepository;
     private final NewsMapper newsMapper;
     @Override
-    public List<NewsDto> getNews(NewsType type) {
+    public List<NewsDto> getNews(NewsType type, int pageNumber, int pageSize) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
         List<NewsDto> newsDtoList = new ArrayList<>();
 
+        Sort newsSort = Sort.by("createTime", "updateTime").descending()
+                .and(Sort.by("title").ascending());
+
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, newsSort);
+
         switch (type) {
-            case BANK_NEWS -> bankNewsRepository.findAll()
+            case BANK_NEWS -> bankNewsRepository.findAll(pageable)
                     .stream()
                     .map(News.class::cast)
                     .forEach(news -> newsDtoList.add(newsMapper.newsToDto(news)));
-            case OFFER_NEWS -> offerNewsRepository.findAll()
+            case OFFER_NEWS -> offerNewsRepository.findAll(pageable)
                     .stream()
                     .map(News.class::cast)
                     .forEach(news -> newsDtoList.add(newsMapper.newsToDto(news)));

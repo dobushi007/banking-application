@@ -18,8 +18,11 @@ import java.util.List;
 public class NewsController {
     private final NewsService newsService;
     @GetMapping
-    public ResponseEntity<List<NewsDto>> getNews(@RequestParam(name = "type") NewsType type) {
-        List<NewsDto> newsDtoList = newsService.getNews(type);
+    public ResponseEntity<List<NewsDto>> getNews(
+            @RequestParam(name = "type") NewsType type,
+            @RequestParam(name = "page", defaultValue = "0") int pageNumber,
+            @RequestParam(name = "size", defaultValue = "10") int pageSize) {
+        List<NewsDto> newsDtoList = newsService.getNews(type, pageNumber, pageSize);
         return ResponseEntity.ok(newsDtoList);
     }
 }
