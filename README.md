@@ -6,7 +6,7 @@
 
 ### Summary
 It is a banking application includes basic banking operations. Abstract crud approach is used throughout the development.<br/>
-There are 6 entities in this project
+There are 8 entities in this project
 
 Entities:
 - Customer
@@ -15,6 +15,8 @@ Entities:
 - Notification
 - Transaction
 - Regular Transfer Order
+- News Report
+- News
 
 ### Requirements
 - Customer must have name, surname, national id, phone number, email, gender, birth date and address.
@@ -25,15 +27,19 @@ Entities:
 - Notification must have customer related national id and message.
 - Transaction must have an amount and at least sender account id or receiver account id.
 - Regular transfer order must have sender account, receiver account, period and amount.
+- News Report is used to add news.
+- News type should be either bank or offer.
 
 ### Additionals
 - Scheduled tasks run while application is running.
+- News are automatically added in chunks of size 40.
 
 ### Tech Stack
 ---
 - Java 21
 - Spring Boot
 - Spring Data JPA
+- Spring Batch
 - MySQL
 - Docker
 
