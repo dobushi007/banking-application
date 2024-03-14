@@ -63,7 +63,7 @@ public class AccountUtils {
         }
 
         LocalDate today = LocalDate.now();
-        LocalDate updateDate = account.getUpdateTime()
+        LocalDate updateDate = account.getUpdatedAt()
                 .toLocalDate()
                 .plusMonths(account.getDepositPeriod());
 

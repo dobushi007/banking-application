@@ -43,10 +43,10 @@ public class TransactionServiceImpl implements TransactionService {
                 && (options.senderAccountId() == null || options.senderAccountId().equals(transaction.getSenderAccount().getId()))
                 && (options.receiverAccountId() == null || options.receiverAccountId().equals(transaction.getReceiverAccount().getId()))
                 && (options.minimumAmount() == null || options.minimumAmount() <= transaction.getAmount())
-                && (options.createAt() == null || (options.createAt().isEqual(transaction.getCreateAt().toLocalDate())));
+                && (options.createAt() == null || (options.createAt().isEqual(transaction.getCreatedAt().toLocalDate())));
 
         List<TransactionDto> transactionDtos = new ArrayList<>();
-        Comparator<Transaction> transactionComparator = Comparator.comparing(Transaction::getCreateAt).reversed();
+        Comparator<Transaction> transactionComparator = Comparator.comparing(Transaction::getCreatedAt).reversed();
 
         transactionRepository.findAll()
                 .stream()

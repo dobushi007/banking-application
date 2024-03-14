@@ -181,9 +181,9 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
 
         Predicate<Account> accountPredicate = account -> (account.getCustomer().getNationalId().equals(customer.getNationalId()))
                 && (options.getType() == null || options.getType() == account.getType())
-                && (options.getCreateTime() == null || options.getCreateTime().getYear() <= account.getCreateTime().getYear());
+                && (options.getCreateTime() == null || options.getCreateTime().getYear() <= account.getCreatedAt().getYear());
 
-        Comparator<Account> accountComparator = Comparator.comparing(Account::getCreateTime).reversed();
+        Comparator<Account> accountComparator = Comparator.comparing(Account::getCreatedAt).reversed();
 
         List<Account> accounts = customer.getAccounts()
                 .stream()
@@ -218,7 +218,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
             getTransactionsOfCustomer(accountId, false, options, transactionDtos);
         });
 
-        Comparator<TransactionDto> transactionDtoComparator = Comparator.comparing(TransactionDto::createAt).reversed();
+        Comparator<TransactionDto> transactionDtoComparator = Comparator.comparing(TransactionDto::createdAt).reversed();
 
         return transactionDtos.stream()
                 .sorted(transactionDtoComparator)

@@ -15,7 +15,7 @@ public class RegularTransferOrderUtils {
             2) If next transfer date comes then it returns true, else it returns false
          */
         return regularTransferOrderDto -> {
-            LocalDate nextTransferDate = regularTransferOrderDto.getCreateTime().toLocalDate();
+            LocalDate nextTransferDate = regularTransferOrderDto.getCreatedAt().toLocalDate();
             LocalDate todayDate = LocalDate.now();
 
             do {

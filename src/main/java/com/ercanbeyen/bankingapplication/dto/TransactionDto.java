@@ -9,7 +9,7 @@ public record TransactionDto(
         Integer senderAccountId,
         Integer receiverAccountId,
         Double amount,
-        LocalDateTime createAt,
+        LocalDateTime createdAt,
         String explanation) {
 
 }
