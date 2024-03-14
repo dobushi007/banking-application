@@ -1,14 +1,12 @@
 package com.ercanbeyen.bankingapplication.controller;
 
 import com.ercanbeyen.bankingapplication.dto.TransactionDto;
+import com.ercanbeyen.bankingapplication.entity.TransactionView;
 import com.ercanbeyen.bankingapplication.option.TransactionFilteringOptions;
 import com.ercanbeyen.bankingapplication.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -20,13 +18,21 @@ public class TransactionController {
 
     @GetMapping
     public ResponseEntity<List<TransactionDto>> getTransactions(TransactionFilteringOptions options) {
-        List<TransactionDto> transactionDtoList = transactionService.getTransactions(options);
-        return ResponseEntity.ok(transactionDtoList);
+        List<TransactionDto> transactionDtos = transactionService.getTransactions(options);
+        return ResponseEntity.ok(transactionDtos);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<TransactionDto> getTransaction(@PathVariable("id") String id) {
         TransactionDto transactionDto = transactionService.getTransaction(id);
         return ResponseEntity.ok(transactionDto);
+    }
+
+    @GetMapping("/views")
+    public ResponseEntity<List<TransactionView>> getTransactionViews(
+            @RequestParam(name = "senderAccountId") Integer senderAccountId,
+            @RequestParam(name = "receiverAccountId") Integer receiverAccountId) {
+        List<TransactionView> transactionViews = transactionService.getTransactions(senderAccountId, receiverAccountId);
+        return ResponseEntity.ok(transactionViews);
     }
 }
