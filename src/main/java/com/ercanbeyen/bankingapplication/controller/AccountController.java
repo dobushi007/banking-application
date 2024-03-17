@@ -1,6 +1,9 @@
 package com.ercanbeyen.bankingapplication.controller;
 
 import com.ercanbeyen.bankingapplication.constant.enums.AccountOperation;
+import com.ercanbeyen.bankingapplication.constant.enums.AccountType;
+import com.ercanbeyen.bankingapplication.constant.enums.City;
+import com.ercanbeyen.bankingapplication.constant.enums.Currency;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
 import com.ercanbeyen.bankingapplication.dto.request.TransferRequest;
 import com.ercanbeyen.bankingapplication.option.AccountFilteringOptions;
@@ -55,6 +58,16 @@ public class AccountController extends BaseController<AccountDto, AccountFilteri
     public ResponseEntity<MessageResponse> transferMoney(@RequestBody @Valid TransferRequest request) {
         AccountUtils.checkMoneyTransferRequest(request);
         String message = accountService.transferMoney(request);
+        MessageResponse response = new MessageResponse(message);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/total")
+    public ResponseEntity<MessageResponse> getTotalAccounts(
+            @RequestParam("city") City city,
+            @RequestParam("type") AccountType type,
+            @RequestParam("currency") Currency currency) {
+        String message = accountService.getTotalAccounts(city, type, currency);
         MessageResponse response = new MessageResponse(message);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

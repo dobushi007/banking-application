@@ -1,8 +1,6 @@
 package com.ercanbeyen.bankingapplication.service.impl;
 
-import com.ercanbeyen.bankingapplication.constant.enums.AccountOperation;
-import com.ercanbeyen.bankingapplication.constant.enums.Entity;
-import com.ercanbeyen.bankingapplication.constant.enums.TransactionType;
+import com.ercanbeyen.bankingapplication.constant.enums.*;
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
@@ -27,7 +25,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -98,7 +95,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         Account account = findAccountById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
 
-        account.setBranchLocation(request.getBranchLocation());
+        account.setCity(request.getCity());
 
         return accountMapper.accountToDto(accountRepository.save(account));
     }
@@ -211,10 +208,19 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         return findAccountById(id);
     }
 
-    public boolean doesAccountExist(Integer id) {
-        return accountRepository.findAll()
-                .stream()
-                .anyMatch(account -> Objects.equals(account.getId(), id));
+    @Transactional
+    public String getTotalAccounts(City city, AccountType type, Currency currency) {
+        log.info(LogMessages.ECHO,
+                LoggingUtils.getClassName(this),
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+
+        int count = accountRepository.getTotalAccountsByCityAndTypeAndCurrency(
+                String.valueOf(city),
+                String.valueOf(type),
+                String.valueOf(currency)
+        );
+        log.info("Total count: {}", count);
+        return String.format("Total %s accounts in %s currency in %s is %d", type, currency, city, count);
     }
 
     @Transactional
