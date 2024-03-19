@@ -223,6 +223,14 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         return String.format("Total %s accounts in %s currency in %s is %d", type, currency, city, count);
     }
 
+    public List<String> getCustomersHaveMaximumBalance(AccountType type, Currency currency) {
+        log.info(LogMessages.ECHO,
+                LoggingUtils.getClassName(this),
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+
+        return accountRepository.getCustomersHaveMaximumBalanceByTypeAndCurrency(type, currency);
+    }
+
     @Transactional
     private String addMoney(Account account, Double amount) {
         log.info(LogMessages.ECHO,

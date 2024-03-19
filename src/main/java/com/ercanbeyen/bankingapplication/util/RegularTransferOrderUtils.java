@@ -5,7 +5,7 @@ import com.ercanbeyen.bankingapplication.dto.RegularTransferOrderDto;
 import java.time.LocalDate;
 import java.util.function.Predicate;
 
-public class RegularTransferOrderUtils {
+public final class RegularTransferOrderUtils {
     private RegularTransferOrderUtils() {}
 
     public static Predicate<RegularTransferOrderDto> getRegularTransferOrderDtoPredicate() {

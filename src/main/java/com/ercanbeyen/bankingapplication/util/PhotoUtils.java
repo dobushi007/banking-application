@@ -5,7 +5,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-public class PhotoUtils {
+public final class PhotoUtils {
     private static final List<String> validContentTypeList = List.of(
             "image/png", "image/jpg", "image/jpeg"
     );

@@ -1,9 +1,14 @@
 package com.ercanbeyen.bankingapplication.repository;
 
+import com.ercanbeyen.bankingapplication.constant.enums.AccountType;
+import com.ercanbeyen.bankingapplication.constant.enums.Currency;
 import com.ercanbeyen.bankingapplication.entity.Account;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public interface AccountRepository extends BaseRepository<Account> {
@@ -12,5 +17,21 @@ public interface AccountRepository extends BaseRepository<Account> {
             @Param("city") String city,
             @Param("type") String type,
             @Param("currency") String currency
+    );
+
+    @Query(value = """
+                SELECT CONCAT(c.name, ' ', c.surname, ' ', c.nationalId)
+                FROM Customer c
+                JOIN c.accounts a
+                WHERE a.type = :type AND a.currency = :currency AND a.balance = (
+                    SELECT MAX(a1.balance)
+                    FROM Account a1
+                    WHERE a1.type = :type AND a1.currency = :currency
+                )
+                ORDER BY c.nationalId ASC
+           """)
+    List<String> getCustomersHaveMaximumBalanceByTypeAndCurrency(
+            @Param("type") AccountType type,
+            @Param("currency") Currency currency
     );
 }

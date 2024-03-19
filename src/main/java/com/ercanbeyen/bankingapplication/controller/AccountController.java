@@ -16,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/accounts")
 public class AccountController extends BaseController<AccountDto, AccountFilteringOptions> {
@@ -69,6 +71,14 @@ public class AccountController extends BaseController<AccountDto, AccountFilteri
             @RequestParam("currency") Currency currency) {
         String message = accountService.getTotalAccounts(city, type, currency);
         MessageResponse response = new MessageResponse(message);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/maximum-balance")
+    public ResponseEntity<List<String>> getCustomerInformationWithMaximumBalance(
+            @RequestParam("type") AccountType type,
+            @RequestParam("currency") Currency currency) {
+        List<String> response = accountService.getCustomersHaveMaximumBalance(type, currency);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

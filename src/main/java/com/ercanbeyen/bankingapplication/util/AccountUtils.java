@@ -15,7 +15,7 @@ import java.util.Objects;
 import java.util.function.Predicate;
 
 @Slf4j
-public class AccountUtils {
+public final class AccountUtils {
     private AccountUtils() {}
 
     public static void checkAccountConstruction(AccountDto accountDto) {
