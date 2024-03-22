@@ -4,8 +4,8 @@ import com.ercanbeyen.bankingapplication.constant.enums.*;
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
-import com.ercanbeyen.bankingapplication.dto.request.TransferRequest;
 import com.ercanbeyen.bankingapplication.dto.request.TransactionRequest;
+import com.ercanbeyen.bankingapplication.dto.request.TransferRequest;
 import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.entity.Customer;
 import com.ercanbeyen.bankingapplication.exception.ResourceExpectationFailedException;
@@ -14,6 +14,7 @@ import com.ercanbeyen.bankingapplication.exception.UnsuccessfulTransactionExcept
 import com.ercanbeyen.bankingapplication.mapper.AccountMapper;
 import com.ercanbeyen.bankingapplication.option.AccountFilteringOptions;
 import com.ercanbeyen.bankingapplication.repository.AccountRepository;
+import com.ercanbeyen.bankingapplication.response.StatisticsResponse;
 import com.ercanbeyen.bankingapplication.service.BaseService;
 import com.ercanbeyen.bankingapplication.service.TransactionService;
 import com.ercanbeyen.bankingapplication.util.AccountUtils;
@@ -223,12 +224,16 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         return String.format("Total %s accounts in %s currency in %s is %d", type, currency, city, count);
     }
 
-    public List<String> getCustomersHaveMaximumBalance(AccountType type, Currency currency) {
+    public List<StatisticsResponse> getCustomersHaveMaximumBalance(AccountType type, Currency currency, City city) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
-        return accountRepository.getCustomersHaveMaximumBalanceByTypeAndCurrency(type, currency);
+        if (Optional.ofNullable(city).isPresent()) {
+            return accountRepository.getCustomersHaveMaximumBalanceByTypeAndCurrencyAndCity(type, currency, city);
+        } else {
+            return accountRepository.getCustomersHaveMaximumBalanceByTypeAndCurrency(type, currency);
+        }
     }
 
     @Transactional

@@ -16,8 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/v1/accounts")
 public class AccountController extends BaseController<AccountDto, AccountFilteringOptions> {
@@ -43,42 +41,30 @@ public class AccountController extends BaseController<AccountDto, AccountFilteri
     }
 
     @PutMapping("/{id}/individual")
-    public ResponseEntity<MessageResponse> updateBalance(@PathVariable("id") Integer id, @RequestParam("operation") AccountOperation operation, @Valid @RequestParam("amount") @Min(value = 1, message = "Minimum amount should be {value}") Double amount) {
-        String message = accountService.applyUnidirectionalAccountOperation(id, operation, amount);
-        MessageResponse response = new MessageResponse(message);
+    public ResponseEntity<MessageResponse<String>> updateBalance(@PathVariable("id") Integer id, @RequestParam("operation") AccountOperation operation, @Valid @RequestParam("amount") @Min(value = 1, message = "Minimum amount should be {value}") Double amount) {
+        MessageResponse<String> response = new MessageResponse<>(accountService.applyUnidirectionalAccountOperation(id, operation, amount));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PutMapping("/{id}/deposit")
-    public ResponseEntity<MessageResponse> updateBalanceOfDepositAccount(@PathVariable("id") Integer id) {
-        String message = accountService.addMoneyToDepositAccount(id);
-        MessageResponse response = new MessageResponse(message);
+    public ResponseEntity<MessageResponse<String>> updateBalanceOfDepositAccount(@PathVariable("id") Integer id) {
+        MessageResponse<String> response = new MessageResponse<>(accountService.addMoneyToDepositAccount(id));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PutMapping("/transfer")
-    public ResponseEntity<MessageResponse> transferMoney(@RequestBody @Valid TransferRequest request) {
+    public ResponseEntity<MessageResponse<String>> transferMoney(@RequestBody @Valid TransferRequest request) {
         AccountUtils.checkMoneyTransferRequest(request);
-        String message = accountService.transferMoney(request);
-        MessageResponse response = new MessageResponse(message);
+        MessageResponse<String> response = new MessageResponse<>(accountService.transferMoney(request));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/total")
-    public ResponseEntity<MessageResponse> getTotalAccounts(
+    public ResponseEntity<MessageResponse<String>> getTotalAccounts(
             @RequestParam("city") City city,
             @RequestParam("type") AccountType type,
             @RequestParam("currency") Currency currency) {
-        String message = accountService.getTotalAccounts(city, type, currency);
-        MessageResponse response = new MessageResponse(message);
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
-    @GetMapping("/maximum-balance")
-    public ResponseEntity<List<String>> getCustomerInformationWithMaximumBalance(
-            @RequestParam("type") AccountType type,
-            @RequestParam("currency") Currency currency) {
-        List<String> response = accountService.getCustomersHaveMaximumBalance(type, currency);
+        MessageResponse<String> response = new MessageResponse<>(accountService.getTotalAccounts(city, type, currency));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

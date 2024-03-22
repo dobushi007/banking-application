@@ -31,10 +31,9 @@ public class CustomerController extends BaseController<CustomerDto, CustomerFilt
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<MessageResponse> uploadProfilePhoto(@PathVariable("id") Integer id, @RequestParam("file") MultipartFile file) {
+    public ResponseEntity<MessageResponse<String>> uploadProfilePhoto(@PathVariable("id") Integer id, @RequestParam("file") MultipartFile file) {
         PhotoUtils.checkPhoto(file);
-        String message = customerService.uploadProfilePhoto(id, file);
-        MessageResponse response = new MessageResponse(message);
+        MessageResponse<String> response = new MessageResponse<>(customerService.uploadProfilePhoto(id, file));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -51,9 +50,8 @@ public class CustomerController extends BaseController<CustomerDto, CustomerFilt
     }
 
     @DeleteMapping("{id}/photo")
-    public ResponseEntity<MessageResponse> deleteProfilePhoto(@PathVariable("id") Integer id) {
-        String message = customerService.deleteProfilePhoto(id);
-        MessageResponse response = new MessageResponse(message);
+    public ResponseEntity<MessageResponse<String>> deleteProfilePhoto(@PathVariable("id") Integer id) {
+        MessageResponse<String> response = new MessageResponse<>(customerService.deleteProfilePhoto(id));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
