@@ -1,12 +1,13 @@
 package com.ercanbeyen.bankingapplication.util;
 
 import com.ercanbeyen.bankingapplication.dto.RegularTransferOrderDto;
+import lombok.experimental.UtilityClass;
 
 import java.time.LocalDate;
 import java.util.function.Predicate;
 
+@UtilityClass
 public final class RegularTransferOrderUtils {
-    private RegularTransferOrderUtils() {}
 
     public static Predicate<RegularTransferOrderDto> getRegularTransferOrderDtoPredicate() {
         /*

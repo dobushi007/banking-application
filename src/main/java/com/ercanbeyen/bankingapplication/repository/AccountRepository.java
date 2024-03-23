@@ -23,7 +23,7 @@ public interface AccountRepository extends BaseRepository<Account> {
 
     @Query(value = """
                 SELECT new com.ercanbeyen.bankingapplication.response.StatisticsResponse(
-                    c.nationalId, CONCAT(c.name, ' ', c.surname), a.id, a.city)
+                    c.nationalId, CONCAT(c.name, ' ', c.surname), a.id, a.city, a.balance)
                 FROM Customer c
                 JOIN c.accounts a
                 WHERE a.type = ?1 AND a.currency = ?2 AND a.balance = (
@@ -40,7 +40,7 @@ public interface AccountRepository extends BaseRepository<Account> {
 
     @Query(value = """
                 SELECT new com.ercanbeyen.bankingapplication.response.StatisticsResponse(
-                    c.nationalId, CONCAT(c.name, ' ', c.surname), a.id, a.city)
+                    c.nationalId, CONCAT(c.name, ' ', c.surname), a.id, a.city, a.balance)
                 FROM Customer c
                 JOIN c.accounts a
                 WHERE a.city = :city AND a.type = :type AND a.currency = :currency AND a.balance = (

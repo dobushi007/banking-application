@@ -1,9 +1,11 @@
 package com.ercanbeyen.bankingapplication.util;
 
+import lombok.experimental.UtilityClass;
+
 import java.lang.reflect.Method;
 
+@UtilityClass
 public final class LoggingUtils {
-    private LoggingUtils() {}
 
     public static String getClassName(Object object) {
         return object.getClass().getSimpleName();

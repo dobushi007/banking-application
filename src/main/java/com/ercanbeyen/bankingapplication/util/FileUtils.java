@@ -2,16 +2,16 @@ package com.ercanbeyen.bankingapplication.util;
 
 import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
 import com.ercanbeyen.bankingapplication.exception.ResourceExpectationFailedException;
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 @Slf4j
+@UtilityClass
 public final class FileUtils {
     private static final int FILE_NAME_LENGTH_THRESHOLD = 100;
-
-    private FileUtils() {}
 
     public static void checkIsFileEmpty(MultipartFile file) {
         if (file.isEmpty()) {

@@ -22,7 +22,7 @@ public non-sealed class AccountDto extends BaseDto {
     private Double balance;
     private AccountType type;
     /* Deposit Account fields */
-    @Range(min = 0, max = 100, message = "Interest is not between {min} and {max}")
-    private Double interest;
+    @Range(min = 0, max = 100, message = "Interest ratio is not between {min} and {max}")
+    private Double interestRatio;
     private Integer depositPeriod;
 }
