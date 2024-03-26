@@ -49,7 +49,7 @@ public class CustomerController extends BaseController<CustomerDto, CustomerFilt
                 .body(file.getData());
     }
 
-    @DeleteMapping("{id}/photo")
+    @DeleteMapping("/{id}/photo")
     public ResponseEntity<MessageResponse<String>> deleteProfilePhoto(@PathVariable("id") Integer id) {
         MessageResponse<String> response = new MessageResponse<>(customerService.deleteProfilePhoto(id));
         return new ResponseEntity<>(response, HttpStatus.OK);

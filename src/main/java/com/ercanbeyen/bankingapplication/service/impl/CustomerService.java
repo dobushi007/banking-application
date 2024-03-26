@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 @Service
@@ -137,9 +138,8 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
         Customer customer = findCustomerById(id);
-
-        File photo = fileStorageService.storeFile(file);
-        customer.setProfilePhoto(photo); // Profile photo upload
+        CompletableFuture<File> photo = fileStorageService.storeFile(file);
+        customer.setProfilePhoto(photo.join()); // Profile photo upload
         customerRepository.save(customer);
 
         return ResponseMessages.FILE_UPLOAD_SUCCESS;
