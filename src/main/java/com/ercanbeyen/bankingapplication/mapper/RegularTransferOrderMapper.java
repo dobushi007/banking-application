@@ -7,6 +7,8 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface RegularTransferOrderMapper {
+    @Mapping(target = "regularTransferDto.receiverAccountId", source = "regularTransferOrder.regularTransfer.receiverAccount.id")
+    @Mapping(target = "regularTransferDto", source = "regularTransferOrder.regularTransfer")
     @Mapping(target = "senderAccountId", source = "regularTransferOrder.senderAccount.id")
     RegularTransferOrderDto regularTransferOrderToDto(RegularTransferOrder regularTransferOrder);
 }

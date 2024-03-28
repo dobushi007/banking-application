@@ -3,13 +3,11 @@ package com.ercanbeyen.bankingapplication.service.impl;
 import com.ercanbeyen.bankingapplication.constant.enums.Entity;
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
-import com.ercanbeyen.bankingapplication.dto.RegularTransferDto;
 import com.ercanbeyen.bankingapplication.dto.RegularTransferOrderDto;
 import com.ercanbeyen.bankingapplication.embeddable.RegularTransfer;
 import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.entity.RegularTransferOrder;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
-import com.ercanbeyen.bankingapplication.mapper.RegularTransferMapper;
 import com.ercanbeyen.bankingapplication.mapper.RegularTransferOrderMapper;
 import com.ercanbeyen.bankingapplication.option.RegularTransferOrderOptions;
 import com.ercanbeyen.bankingapplication.repository.RegularTransferOrderRepository;
@@ -29,7 +27,6 @@ import java.util.function.Predicate;
 public class RegularTransferOrderService implements BaseService<RegularTransferOrderDto, RegularTransferOrderOptions> {
     private final RegularTransferOrderRepository regularTransferOrderRepository;
     private final RegularTransferOrderMapper regularTransferOrderMapper;
-    private final RegularTransferMapper regularTransferMapper;
     private final AccountService accountService;
 
     @Override
@@ -48,7 +45,7 @@ public class RegularTransferOrderService implements BaseService<RegularTransferO
          regularTransferOrderDtos = regularTransferOrderRepository.findAll()
                  .stream()
                  .filter(regularTransferOrderPredicate)
-                 .map(this::getRegularTransferOrderDto)
+                 .map(regularTransferOrderMapper::regularTransferOrderToDto)
                  .toList();
 
         return regularTransferOrderDtos;
@@ -61,7 +58,7 @@ public class RegularTransferOrderService implements BaseService<RegularTransferO
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
         Optional<RegularTransferOrder> regularMoneyTransferOrderOptional = regularTransferOrderRepository.findById(id);
-        return regularMoneyTransferOrderOptional.map(this::getRegularTransferOrderDto);
+        return regularMoneyTransferOrderOptional.map(regularTransferOrderMapper::regularTransferOrderToDto);
     }
 
     @Override
@@ -74,7 +71,7 @@ public class RegularTransferOrderService implements BaseService<RegularTransferO
         RegularTransferOrder savedRegularTransferOrder = regularTransferOrderRepository.save(regularTransferOrder);
         log.info(LogMessages.RESOURCE_CREATE_SUCCESS, Entity.REGULAR_TRANSFER_ORDER.getValue(), savedRegularTransferOrder.getId());
 
-        return getRegularTransferOrderDto(savedRegularTransferOrder);
+        return regularTransferOrderMapper.regularTransferOrderToDto(savedRegularTransferOrder);
     }
 
     @Override
@@ -96,9 +93,7 @@ public class RegularTransferOrderService implements BaseService<RegularTransferO
 
         regularTransferOrder.setPeriod(regularTransferOrder.getPeriod());
 
-        RegularTransferOrder savedRegularTransferOrder = regularTransferOrderRepository.save(regularTransferOrder);
-
-        return getRegularTransferOrderDto(savedRegularTransferOrder);
+        return regularTransferOrderMapper.regularTransferOrderToDto(regularTransferOrderRepository.save(regularTransferOrder));
     }
 
     @Override
@@ -124,13 +119,6 @@ public class RegularTransferOrderService implements BaseService<RegularTransferO
         regularTransferOrder.setPeriod(request.getPeriod());
 
         return regularTransferOrder;
-    }
-
-    private RegularTransferOrderDto getRegularTransferOrderDto(RegularTransferOrder savedRegularTransferOrder) {
-        RegularTransferOrderDto regularTransferOrderDto = regularTransferOrderMapper.regularTransferOrderToDto(savedRegularTransferOrder);
-        RegularTransferDto regularTransferDto = regularTransferMapper.regularTransferToDto(savedRegularTransferOrder.getRegularTransfer());
-        regularTransferOrderDto.setRegularTransferDto(regularTransferDto);
-        return regularTransferOrderDto;
     }
 
     /***

@@ -49,9 +49,7 @@ public final class AccountUtils {
     }
 
     public static boolean checkAccountForPeriodicMoneyAdd(AccountType accountType, LocalDateTime updatedAt, Integer depositPeriod) {
-        if (accountType != AccountType.DEPOSIT) {
-            throw new ResourceConflictException("This money add operation is for deposit accounts");
-        }
+        checkAccountTypeAndDepositPeriodForPeriodMoneyAdd(accountType, depositPeriod);
 
         LocalDate isGoingToBeUpdatedAt = updatedAt
                 .toLocalDate()
@@ -67,6 +65,14 @@ public final class AccountUtils {
             case ADD -> String.format(messageTemplate, "added to");
             case WITHDRAW -> String.format(messageTemplate, "withdrawn from");
         };
+    }
+
+    private static void checkAccountTypeAndDepositPeriodForPeriodMoneyAdd(AccountType accountType, Integer depositPeriod) {
+        if (accountType != AccountType.DEPOSIT) {
+            throw new ResourceConflictException("This money add operation is for deposit accounts");
+        }
+
+        checkValidityOfDepositPeriod(depositPeriod);
     }
 
     private static void checkValidityOfBalanceAndInterestRatio(Double balance, Double interestRatio) {
@@ -108,9 +114,13 @@ public final class AccountUtils {
           return;
       }
 
-        if (!DEPOSIT_PERIODS.contains(accountDto.getDepositPeriod())) {
-          throw new ResourceExpectationFailedException("Deposit period is invalid. Valid values are " + DEPOSIT_PERIODS);
-      }
+      checkValidityOfDepositPeriod(accountDto.getDepositPeriod());
+    }
+
+    private static void checkValidityOfDepositPeriod(Integer depositPeriod) {
+        if (!DEPOSIT_PERIODS.contains(depositPeriod)) {
+            throw new ResourceExpectationFailedException("Deposit period is invalid. Valid values are " + DEPOSIT_PERIODS);
+        }
     }
 
     private static final Predicate<Object> isNull = Objects::isNull;
