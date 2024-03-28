@@ -5,6 +5,7 @@ import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
 import com.ercanbeyen.bankingapplication.dto.CustomerDto;
+import com.ercanbeyen.bankingapplication.dto.RegularTransferOrderDto;
 import com.ercanbeyen.bankingapplication.dto.TransactionDto;
 import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.entity.Customer;
@@ -13,6 +14,7 @@ import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import com.ercanbeyen.bankingapplication.mapper.AccountMapper;
 import com.ercanbeyen.bankingapplication.mapper.CustomerMapper;
+import com.ercanbeyen.bankingapplication.mapper.RegularTransferOrderMapper;
 import com.ercanbeyen.bankingapplication.option.AccountFilteringOptions;
 import com.ercanbeyen.bankingapplication.option.CustomerFilteringOptions;
 import com.ercanbeyen.bankingapplication.option.TransactionFilteringOptions;
@@ -41,6 +43,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
     private final CustomerRepository customerRepository;
     private final CustomerMapper customerMapper;
     private final AccountMapper accountMapper;
+    private final RegularTransferOrderMapper regularTransferOrderMapper;
     private final FileStorageService fileStorageService;
     private final TransactionService transactionService;
 
@@ -222,6 +225,24 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
 
         return transactionDtos.stream()
                 .sorted(transactionDtoComparator)
+                .toList();
+    }
+
+    public List<RegularTransferOrderDto> getRegularTransferOrdersOfCustomer(Integer customerId, Integer accountId) {
+        log.info(LogMessages.ECHO,
+                LoggingUtils.getClassName(this),
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+
+        Customer customer = findCustomerById(customerId);
+        log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
+
+        Account account = customer.getAccount(accountId)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.ACCOUNT.getValue())));
+        log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
+
+        return account.getRegularTransferOrders()
+                .stream()
+                .map(regularTransferOrderMapper::regularTransferOrderToDto)
                 .toList();
     }
 

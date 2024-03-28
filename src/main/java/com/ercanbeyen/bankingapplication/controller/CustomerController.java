@@ -2,6 +2,7 @@ package com.ercanbeyen.bankingapplication.controller;
 
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
 import com.ercanbeyen.bankingapplication.dto.CustomerDto;
+import com.ercanbeyen.bankingapplication.dto.RegularTransferOrderDto;
 import com.ercanbeyen.bankingapplication.dto.TransactionDto;
 import com.ercanbeyen.bankingapplication.entity.File;
 import com.ercanbeyen.bankingapplication.option.AccountFilteringOptions;
@@ -63,5 +64,10 @@ public class CustomerController extends BaseController<CustomerDto, CustomerFilt
     @GetMapping("/{id}/transactions")
     public ResponseEntity<List<TransactionDto>> getTransactions(@PathVariable("id") Integer id, TransactionFilteringOptions options) {
         return ResponseEntity.ok(customerService.getTransactionsOfCustomer(id, options));
+    }
+
+    @GetMapping("/{customerId}/accounts/{accountId}/regular-transfer-orders")
+    public ResponseEntity<List<RegularTransferOrderDto>> getRegularTransfers(@PathVariable("customerId") Integer customerId, @PathVariable("accountId") Integer accountId) {
+        return ResponseEntity.ok(customerService.getRegularTransferOrdersOfCustomer(customerId, accountId));
     }
 }
