@@ -28,8 +28,8 @@ public class Transaction {
     private Double amount;
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "create_at", columnDefinition = Queries.GET_NOW_TIMESTAMP)
-    private LocalDateTime createAt;
+    @Column(name = "created_at", columnDefinition = Queries.GET_NOW_TIMESTAMP)
+    private LocalDateTime createdAt;
     private String explanation;
 
     public Transaction(TransactionType type, Account senderAccount, Account receiverAccount, Double amount, String explanation) {

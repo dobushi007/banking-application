@@ -1,21 +1,21 @@
 package com.ercanbeyen.bankingapplication.service.impl;
 
-import com.ercanbeyen.bankingapplication.constant.enums.AccountOperation;
-import com.ercanbeyen.bankingapplication.constant.enums.Entity;
-import com.ercanbeyen.bankingapplication.constant.enums.TransactionType;
+import com.ercanbeyen.bankingapplication.constant.enums.*;
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
-import com.ercanbeyen.bankingapplication.dto.request.TransferRequest;
 import com.ercanbeyen.bankingapplication.dto.request.TransactionRequest;
+import com.ercanbeyen.bankingapplication.dto.request.TransferRequest;
 import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.entity.Customer;
+import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
 import com.ercanbeyen.bankingapplication.exception.ResourceExpectationFailedException;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import com.ercanbeyen.bankingapplication.exception.UnsuccessfulTransactionException;
 import com.ercanbeyen.bankingapplication.mapper.AccountMapper;
 import com.ercanbeyen.bankingapplication.option.AccountFilteringOptions;
 import com.ercanbeyen.bankingapplication.repository.AccountRepository;
+import com.ercanbeyen.bankingapplication.response.StatisticsResponse;
 import com.ercanbeyen.bankingapplication.service.BaseService;
 import com.ercanbeyen.bankingapplication.service.TransactionService;
 import com.ercanbeyen.bankingapplication.util.AccountUtils;
@@ -27,7 +27,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -98,7 +97,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         Account account = findAccountById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
 
-        account.setBranchLocation(request.getBranchLocation());
+        account.setCity(request.getCity());
 
         return accountMapper.accountToDto(accountRepository.save(account));
     }
@@ -151,12 +150,12 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         Account account = findAccountById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
 
-        if (!AccountUtils.checkDepositAccountForPeriodicMoneyAdd(account)) {
+        if (!AccountUtils.checkAccountForPeriodicMoneyAdd(account.getType(), account.getUpdatedAt(), account.getDepositPeriod())) {
             log.warn("Deposit period is not completed");
             return "Today is not the completion of deposit period";
         }
 
-        Double amount = AccountUtils.calculateInterestAmountForDeposit(account.getBalance(), account.getInterest());
+        Double amount = AccountUtils.calculateInterest(account.getBalance(), account.getInterestRatio());
 
         return addMoney(account, amount);
     }
@@ -172,7 +171,9 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         Account receiverAccount = findAccountById(request.receiverAccountId());
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
 
-        AccountUtils.checkCurrenciesForMoneyTransfer(senderAccount, receiverAccount);
+        if (senderAccount.getCurrency() != receiverAccount.getCurrency()) {
+            throw new ResourceConflictException("Currencies of the accounts must be same");
+        }
 
         Double amount = request.amount();
 
@@ -211,10 +212,31 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         return findAccountById(id);
     }
 
-    public boolean doesAccountExist(Integer id) {
-        return accountRepository.findAll()
-                .stream()
-                .anyMatch(account -> Objects.equals(account.getId(), id));
+    @Transactional
+    public String getTotalAccounts(City city, AccountType type, Currency currency) {
+        log.info(LogMessages.ECHO,
+                LoggingUtils.getClassName(this),
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+
+        int count = accountRepository.getTotalAccountsByCityAndTypeAndCurrency(
+                String.valueOf(city),
+                String.valueOf(type),
+                String.valueOf(currency)
+        );
+        log.info("Total count: {}", count);
+        return String.format("Total %s accounts in %s currency in %s is %d", type, currency, city, count);
+    }
+
+    public List<StatisticsResponse> getCustomersHaveMaximumBalance(AccountType type, Currency currency, City city) {
+        log.info(LogMessages.ECHO,
+                LoggingUtils.getClassName(this),
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+
+        if (Optional.ofNullable(city).isPresent()) {
+            return accountRepository.getCustomersHaveMaximumBalanceByTypeAndCurrencyAndCity(type, currency, city);
+        } else {
+            return accountRepository.getCustomersHaveMaximumBalanceByTypeAndCurrency(type, currency);
+        }
     }
 
     @Transactional
@@ -230,7 +252,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         account.setBalance(nextBalance);
         accountRepository.save(account);
 
-        return AccountUtils.constructResponseMessageForUnidirectionalAccountOperations(AccountOperation.ADD, amount, account);
+        return AccountUtils.constructResponseMessageForUnidirectionalAccountOperations(AccountOperation.ADD, amount, account.getId(), account.getCurrency());
     }
 
     @Transactional
@@ -239,7 +261,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
-        AccountUtils.checkBalance(account, amount);
+        AccountUtils.checkBalance(account.getBalance(), amount);
 
         Double previousBalance = account.getBalance();
         Double nextBalance = previousBalance - amount;
@@ -248,7 +270,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         account.setBalance(nextBalance);
         accountRepository.save(account);
 
-        return AccountUtils.constructResponseMessageForUnidirectionalAccountOperations(AccountOperation.WITHDRAW, amount, account);
+        return AccountUtils.constructResponseMessageForUnidirectionalAccountOperations(AccountOperation.WITHDRAW, amount, account.getId(), account.getCurrency());
     }
 
     private Account findAccountById(Integer id) {

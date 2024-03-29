@@ -1,6 +1,9 @@
 package com.ercanbeyen.bankingapplication.controller;
 
 import com.ercanbeyen.bankingapplication.constant.enums.AccountOperation;
+import com.ercanbeyen.bankingapplication.constant.enums.AccountType;
+import com.ercanbeyen.bankingapplication.constant.enums.City;
+import com.ercanbeyen.bankingapplication.constant.enums.Currency;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
 import com.ercanbeyen.bankingapplication.dto.request.TransferRequest;
 import com.ercanbeyen.bankingapplication.option.AccountFilteringOptions;
@@ -38,24 +41,30 @@ public class AccountController extends BaseController<AccountDto, AccountFilteri
     }
 
     @PutMapping("/{id}/individual")
-    public ResponseEntity<MessageResponse> updateBalance(@PathVariable("id") Integer id, @RequestParam("operation") AccountOperation operation, @Valid @RequestParam("amount") @Min(value = 1, message = "Minimum amount should be {value}") Double amount) {
-        String message = accountService.applyUnidirectionalAccountOperation(id, operation, amount);
-        MessageResponse response = new MessageResponse(message);
+    public ResponseEntity<MessageResponse<String>> updateBalance(@PathVariable("id") Integer id, @RequestParam("operation") AccountOperation operation, @Valid @RequestParam("amount") @Min(value = 1, message = "Minimum amount should be {value}") Double amount) {
+        MessageResponse<String> response = new MessageResponse<>(accountService.applyUnidirectionalAccountOperation(id, operation, amount));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PutMapping("/{id}/deposit")
-    public ResponseEntity<MessageResponse> updateBalanceOfDepositAccount(@PathVariable("id") Integer id) {
-        String message = accountService.addMoneyToDepositAccount(id);
-        MessageResponse response = new MessageResponse(message);
+    public ResponseEntity<MessageResponse<String>> updateBalanceOfDepositAccount(@PathVariable("id") Integer id) {
+        MessageResponse<String> response = new MessageResponse<>(accountService.addMoneyToDepositAccount(id));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PutMapping("/transfer")
-    public ResponseEntity<MessageResponse> transferMoney(@RequestBody @Valid TransferRequest request) {
+    public ResponseEntity<MessageResponse<String>> transferMoney(@RequestBody @Valid TransferRequest request) {
         AccountUtils.checkMoneyTransferRequest(request);
-        String message = accountService.transferMoney(request);
-        MessageResponse response = new MessageResponse(message);
+        MessageResponse<String> response = new MessageResponse<>(accountService.transferMoney(request));
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/total")
+    public ResponseEntity<MessageResponse<String>> getTotalAccounts(
+            @RequestParam("city") City city,
+            @RequestParam("type") AccountType type,
+            @RequestParam("currency") Currency currency) {
+        MessageResponse<String> response = new MessageResponse<>(accountService.getTotalAccounts(city, type, currency));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

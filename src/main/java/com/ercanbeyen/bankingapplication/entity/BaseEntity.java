@@ -17,10 +17,10 @@ public abstract sealed class BaseEntity permits Account, Customer, NewsReport, R
     private Integer id;
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "create_time", columnDefinition = Queries.GET_NOW_TIMESTAMP)
-    private LocalDateTime createTime;
+    @Column(name = "created_at", columnDefinition = Queries.GET_NOW_TIMESTAMP)
+    private LocalDateTime createdAt;
     @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "update_time", columnDefinition = Queries.GET_NOW_TIMESTAMP)
-    private LocalDateTime updateTime;
+    @Column(name = "updated_at", columnDefinition = Queries.GET_NOW_TIMESTAMP)
+    private LocalDateTime updatedAt;
 }

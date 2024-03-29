@@ -9,6 +9,7 @@ import lombok.Setter;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Setter
@@ -51,6 +52,12 @@ public non-sealed class Customer extends BaseEntity {
     @Getter
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Notification> notifications = new ArrayList<>();
+
+    public Optional<Account> getAccount(Integer id) {
+        return accounts.stream()
+                .filter(account -> Objects.equals(account.getId(), id))
+                .findFirst();
+    }
 
     public Optional<File> getProfilePhoto() {
         return Optional.ofNullable(profilePhoto);

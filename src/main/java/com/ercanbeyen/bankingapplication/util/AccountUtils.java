@@ -1,22 +1,26 @@
 package com.ercanbeyen.bankingapplication.util;
 
-import com.ercanbeyen.bankingapplication.constant.enums.AccountType;
 import com.ercanbeyen.bankingapplication.constant.enums.AccountOperation;
+import com.ercanbeyen.bankingapplication.constant.enums.AccountType;
+import com.ercanbeyen.bankingapplication.constant.enums.Currency;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
 import com.ercanbeyen.bankingapplication.dto.request.TransferRequest;
-import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
 import com.ercanbeyen.bankingapplication.exception.ResourceExpectationFailedException;
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 
 @Slf4j
-public class AccountUtils {
-    private AccountUtils() {}
+@UtilityClass
+public final class AccountUtils {
+    private static final List<Integer> DEPOSIT_PERIODS = List.of(1, 3, 6, 12);
+    private static final Double MAXIMUM_TRANSFER_LIMIT = 1_000_000D;
 
     public static void checkAccountConstruction(AccountDto accountDto) {
         checkAccountType(accountDto);
@@ -27,26 +31,35 @@ public class AccountUtils {
         if (Objects.equals(request.senderAccountId(), request.receiverAccountId())) {
             throw new ResourceExpectationFailedException("Identity of sender and receiver accounts should not be equal");
         }
+
+        if (request.amount() >= MAXIMUM_TRANSFER_LIMIT) {
+            throw new ResourceExpectationFailedException("Maximum transfer limit (" + MAXIMUM_TRANSFER_LIMIT + ") is exceeded");
+        }
     }
 
-    public static void checkBalance(Account account, Double amount) {
-        if (account.getBalance() < amount) {
+    public static void checkBalance(Double balance, Double threshold) {
+        if (balance < threshold) {
             throw new ResourceExpectationFailedException("Insufficient funds");
         }
     }
 
-    public static void checkCurrenciesForMoneyTransfer(Account senderAccount, Account receiverAccount) {
-        if (senderAccount.getCurrency() != receiverAccount.getCurrency()) {
-            throw new ResourceConflictException("Currencies of the accounts must be same");
-        }
+    public static double calculateInterest(Double balance, Double interestRatio) {
+        checkValidityOfBalanceAndInterestRatio(balance, interestRatio);
+        return (balance == 0 || interestRatio == 0) ? 0 : ((interestRatio * 100) / balance);
     }
 
-    public static double calculateInterestAmountForDeposit(Double balance, Double interest) {
-        return (balance == 0 || interest == 0) ? 0 : ((interest * 100) / balance);
+    public static boolean checkAccountForPeriodicMoneyAdd(AccountType accountType, LocalDateTime updatedAt, Integer depositPeriod) {
+        checkAccountTypeAndDepositPeriodForPeriodMoneyAdd(accountType, depositPeriod);
+
+        LocalDate isGoingToBeUpdatedAt = updatedAt
+                .toLocalDate()
+                .plusMonths(depositPeriod);
+
+        return isGoingToBeUpdatedAt.isEqual(LocalDate.now());
     }
 
-    public static String constructResponseMessageForUnidirectionalAccountOperations(AccountOperation operation, Double amount, Account account) {
-        String messageTemplate = amount + " " + account.getCurrency() + " is successfully %s account " + account.getId();
+    public static String constructResponseMessageForUnidirectionalAccountOperations(AccountOperation operation, Double amount, Integer id, Currency currency) {
+        String messageTemplate = amount + " " + currency + " is successfully %s account " + id;
 
         return switch (operation) {
             case ADD -> String.format(messageTemplate, "added to");
@@ -54,24 +67,33 @@ public class AccountUtils {
         };
     }
 
-    public static boolean checkDepositAccountForPeriodicMoneyAdd(Account account) {
-        AccountType accountType = account.getType();
-        log.info("Account Type: {}", accountType);
-
+    private static void checkAccountTypeAndDepositPeriodForPeriodMoneyAdd(AccountType accountType, Integer depositPeriod) {
         if (accountType != AccountType.DEPOSIT) {
             throw new ResourceConflictException("This money add operation is for deposit accounts");
         }
 
-        LocalDate today = LocalDate.now();
-        LocalDate updateDate = account.getUpdateTime()
-                .toLocalDate()
-                .plusMonths(account.getDepositPeriod());
+        checkValidityOfDepositPeriod(depositPeriod);
+    }
 
-        return updateDate.isEqual(today);
+    private static void checkValidityOfBalanceAndInterestRatio(Double balance, Double interestRatio) {
+        boolean isBalanceValid = balance < 0;
+        boolean isInterestRatioValid = interestRatio < 0;
+
+        if (isBalanceValid && isInterestRatioValid) {
+            throw new ResourceConflictException("Invalid balance and interest ratio");
+        }
+
+        if (isInterestRatioValid) {
+            throw new ResourceConflictException("Invalid interest ratio");
+        }
+
+        if (isBalanceValid) {
+            throw new ResourceConflictException("Invalid balance");
+        }
     }
 
     private static void checkAccountType(AccountDto accountDto) {
-        boolean isInterestNull = isNull.test(accountDto.getInterest());
+        boolean isInterestNull = isNull.test(accountDto.getInterestRatio());
         boolean isDepositPeriodNull = isNull.test(accountDto.getDepositPeriod());
 
         AccountType accountType = accountDto.getType();
@@ -92,11 +114,13 @@ public class AccountUtils {
           return;
       }
 
-      List<Integer> depositPeriodArray = List.of(1, 3, 6, 12);
+      checkValidityOfDepositPeriod(accountDto.getDepositPeriod());
+    }
 
-      if (!depositPeriodArray.contains(accountDto.getDepositPeriod())) {
-          throw new ResourceExpectationFailedException("Deposit period is invalid. Valid values are " + depositPeriodArray);
-      }
+    private static void checkValidityOfDepositPeriod(Integer depositPeriod) {
+        if (!DEPOSIT_PERIODS.contains(depositPeriod)) {
+            throw new ResourceExpectationFailedException("Deposit period is invalid. Valid values are " + DEPOSIT_PERIODS);
+        }
     }
 
     private static final Predicate<Object> isNull = Objects::isNull;

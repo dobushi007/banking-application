@@ -15,14 +15,14 @@ public non-sealed class AccountDto extends BaseDto {
     @NotBlank(message = "National identity should not be blank")
     @Pattern(regexp = "\\d{11}", message = "Length of national identity is not 11")
     private String customerNationalId;
-    private City branchLocation;
+    private City city;
     private Currency currency;
     @NotNull(message = "Balance should not be null")
     @Min(value = 0, message = "Minimum balance should be {value}")
     private Double balance;
     private AccountType type;
     /* Deposit Account fields */
-    @Range(min = 0, max = 100, message = "Interest is not between {min} and {max}")
-    private Double interest;
+    @Range(min = 0, max = 100, message = "Interest ratio is not between {min} and {max}")
+    private Double interestRatio;
     private Integer depositPeriod;
 }

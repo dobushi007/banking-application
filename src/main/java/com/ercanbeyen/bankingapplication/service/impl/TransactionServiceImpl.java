@@ -6,10 +6,12 @@ import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.TransactionDto;
 import com.ercanbeyen.bankingapplication.dto.request.TransactionRequest;
 import com.ercanbeyen.bankingapplication.entity.Transaction;
+import com.ercanbeyen.bankingapplication.entity.TransactionView;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import com.ercanbeyen.bankingapplication.mapper.TransactionMapper;
 import com.ercanbeyen.bankingapplication.option.TransactionFilteringOptions;
 import com.ercanbeyen.bankingapplication.repository.TransactionRepository;
+import com.ercanbeyen.bankingapplication.repository.TransactionViewRepository;
 import com.ercanbeyen.bankingapplication.service.TransactionService;
 import com.ercanbeyen.bankingapplication.util.LoggingUtils;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ import java.util.function.Predicate;
 @Slf4j
 public class TransactionServiceImpl implements TransactionService {
     private final TransactionRepository transactionRepository;
+    private final TransactionViewRepository transactionViewRepository;
     private final TransactionMapper transactionMapper;
 
     @Override
@@ -40,10 +43,10 @@ public class TransactionServiceImpl implements TransactionService {
                 && (options.senderAccountId() == null || options.senderAccountId().equals(transaction.getSenderAccount().getId()))
                 && (options.receiverAccountId() == null || options.receiverAccountId().equals(transaction.getReceiverAccount().getId()))
                 && (options.minimumAmount() == null || options.minimumAmount() <= transaction.getAmount())
-                && (options.createAt() == null || (options.createAt().isEqual(transaction.getCreateAt().toLocalDate())));
+                && (options.createAt() == null || (options.createAt().isEqual(transaction.getCreatedAt().toLocalDate())));
 
         List<TransactionDto> transactionDtos = new ArrayList<>();
-        Comparator<Transaction> transactionComparator = Comparator.comparing(Transaction::getCreateAt).reversed();
+        Comparator<Transaction> transactionComparator = Comparator.comparing(Transaction::getCreatedAt).reversed();
 
         transactionRepository.findAll()
                 .stream()
@@ -85,6 +88,15 @@ public class TransactionServiceImpl implements TransactionService {
             Transaction savedTransaction = transactionRepository.save(transaction);
             log.info(LogMessages.RESOURCE_CREATE_SUCCESS, Entity.TRANSACTION, savedTransaction.getId());
         });
+    }
+
+    @Override
+    public List<TransactionView> getTransactions(Integer senderAccountId, Integer receiverAccountId) {
+        log.info(LogMessages.ECHO,
+                LoggingUtils.getClassName(this),
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+
+        return transactionViewRepository.findBySenderAccountIdAndReceiverAccountId(senderAccountId, receiverAccountId);
     }
 
     private Transaction findTransactionById(String id) {

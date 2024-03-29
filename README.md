@@ -22,10 +22,9 @@ Entities:
 - Customer must have name, surname, national id, phone number, email, gender, birth date and address.
 - Customer's national id, email and phone number must be unique.
 - Account must have customer, type, branch location, currency and balance.
-- If account is deposit, then it must also have deposit period and interest.
-- Address must have city, zip code and details.
-- Notification must have customer related national id and message.
-- Transaction must have an amount and at least sender account id or receiver account id.
+- If account is deposit, then it must also have deposit period and interest ratio.
+- Notification must have customer and message.
+- Transaction must have an amount and at least sender account or receiver account.
 - Regular transfer order must have sender account, receiver account, period and amount.
 - News Report is used to add news.
 - News type should be either bank or offer.

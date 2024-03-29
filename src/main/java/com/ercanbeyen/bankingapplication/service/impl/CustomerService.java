@@ -5,6 +5,7 @@ import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
 import com.ercanbeyen.bankingapplication.dto.CustomerDto;
+import com.ercanbeyen.bankingapplication.dto.RegularTransferOrderDto;
 import com.ercanbeyen.bankingapplication.dto.TransactionDto;
 import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.entity.Customer;
@@ -13,6 +14,7 @@ import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import com.ercanbeyen.bankingapplication.mapper.AccountMapper;
 import com.ercanbeyen.bankingapplication.mapper.CustomerMapper;
+import com.ercanbeyen.bankingapplication.mapper.RegularTransferOrderMapper;
 import com.ercanbeyen.bankingapplication.option.AccountFilteringOptions;
 import com.ercanbeyen.bankingapplication.option.CustomerFilteringOptions;
 import com.ercanbeyen.bankingapplication.option.TransactionFilteringOptions;
@@ -31,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 @Service
@@ -40,6 +43,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
     private final CustomerRepository customerRepository;
     private final CustomerMapper customerMapper;
     private final AccountMapper accountMapper;
+    private final RegularTransferOrderMapper regularTransferOrderMapper;
     private final FileStorageService fileStorageService;
     private final TransactionService transactionService;
 
@@ -137,9 +141,8 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
         Customer customer = findCustomerById(id);
-
-        File photo = fileStorageService.storeFile(file);
-        customer.setProfilePhoto(photo); // Profile photo upload
+        CompletableFuture<File> photo = fileStorageService.storeFile(file);
+        customer.setProfilePhoto(photo.join()); // Profile photo upload
         customerRepository.save(customer);
 
         return ResponseMessages.FILE_UPLOAD_SUCCESS;
@@ -181,9 +184,9 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
 
         Predicate<Account> accountPredicate = account -> (account.getCustomer().getNationalId().equals(customer.getNationalId()))
                 && (options.getType() == null || options.getType() == account.getType())
-                && (options.getCreateTime() == null || options.getCreateTime().getYear() <= account.getCreateTime().getYear());
+                && (options.getCreateTime() == null || options.getCreateTime().getYear() <= account.getCreatedAt().getYear());
 
-        Comparator<Account> accountComparator = Comparator.comparing(Account::getCreateTime).reversed();
+        Comparator<Account> accountComparator = Comparator.comparing(Account::getCreatedAt).reversed();
 
         List<Account> accounts = customer.getAccounts()
                 .stream()
@@ -218,19 +221,29 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
             getTransactionsOfCustomer(accountId, false, options, transactionDtos);
         });
 
-        Comparator<TransactionDto> transactionDtoComparator = Comparator.comparing(TransactionDto::createAt).reversed();
+        Comparator<TransactionDto> transactionDtoComparator = Comparator.comparing(TransactionDto::createdAt).reversed();
 
         return transactionDtos.stream()
                 .sorted(transactionDtoComparator)
                 .toList();
     }
 
-    private void getTransactionsOfCustomer(Integer accountId, boolean isSender, TransactionFilteringOptions options, List<TransactionDto> transactionDtos) {
-        TransactionFilteringOptions transactionFilteringOptions = isSender ?
-                new TransactionFilteringOptions(options.type(), accountId, null, options.minimumAmount(), options.createAt()) :
-                new TransactionFilteringOptions(options.type(), null, accountId, options.minimumAmount(), options.createAt());
-        List<TransactionDto> currentTransactionDtos = transactionService.getTransactions(transactionFilteringOptions);
-        transactionDtos.addAll(currentTransactionDtos);
+    public List<RegularTransferOrderDto> getRegularTransferOrdersOfCustomer(Integer customerId, Integer accountId) {
+        log.info(LogMessages.ECHO,
+                LoggingUtils.getClassName(this),
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+
+        Customer customer = findCustomerById(customerId);
+        log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
+
+        Account account = customer.getAccount(accountId)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.ACCOUNT.getValue())));
+        log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
+
+        return account.getRegularTransferOrders()
+                .stream()
+                .map(regularTransferOrderMapper::regularTransferOrderToDto)
+                .toList();
     }
 
     /**
@@ -246,6 +259,14 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
     private Customer findCustomerById(Integer id) {
         return customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.CUSTOMER.getValue())));
+    }
+
+    private void getTransactionsOfCustomer(Integer accountId, boolean isSender, TransactionFilteringOptions options, List<TransactionDto> transactionDtos) {
+        TransactionFilteringOptions transactionFilteringOptions = isSender ?
+                new TransactionFilteringOptions(options.type(), accountId, null, options.minimumAmount(), options.createAt()) :
+                new TransactionFilteringOptions(options.type(), null, accountId, options.minimumAmount(), options.createAt());
+        List<TransactionDto> currentTransactionDtos = transactionService.getTransactions(transactionFilteringOptions);
+        transactionDtos.addAll(currentTransactionDtos);
     }
 
     private void checkCustomerUniqueness(String nationalId, String phoneNumber) {

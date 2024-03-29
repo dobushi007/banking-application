@@ -1,5 +1,5 @@
 package com.ercanbeyen.bankingapplication.response;
 
-public record MessageResponse(String message) {
+public record MessageResponse<T>(T response) {
 
 }

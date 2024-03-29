@@ -2,6 +2,7 @@ package com.ercanbeyen.bankingapplication.controller;
 
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
 import com.ercanbeyen.bankingapplication.dto.CustomerDto;
+import com.ercanbeyen.bankingapplication.dto.RegularTransferOrderDto;
 import com.ercanbeyen.bankingapplication.dto.TransactionDto;
 import com.ercanbeyen.bankingapplication.entity.File;
 import com.ercanbeyen.bankingapplication.option.AccountFilteringOptions;
@@ -31,10 +32,9 @@ public class CustomerController extends BaseController<CustomerDto, CustomerFilt
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<MessageResponse> uploadProfilePhoto(@PathVariable("id") Integer id, @RequestParam("file") MultipartFile file) {
+    public ResponseEntity<MessageResponse<String>> uploadProfilePhoto(@PathVariable("id") Integer id, @RequestParam("file") MultipartFile file) {
         PhotoUtils.checkPhoto(file);
-        String message = customerService.uploadProfilePhoto(id, file);
-        MessageResponse response = new MessageResponse(message);
+        MessageResponse<String> response = new MessageResponse<>(customerService.uploadProfilePhoto(id, file));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -50,10 +50,9 @@ public class CustomerController extends BaseController<CustomerDto, CustomerFilt
                 .body(file.getData());
     }
 
-    @DeleteMapping("{id}/photo")
-    public ResponseEntity<MessageResponse> deleteProfilePhoto(@PathVariable("id") Integer id) {
-        String message = customerService.deleteProfilePhoto(id);
-        MessageResponse response = new MessageResponse(message);
+    @DeleteMapping("/{id}/photo")
+    public ResponseEntity<MessageResponse<String>> deleteProfilePhoto(@PathVariable("id") Integer id) {
+        MessageResponse<String> response = new MessageResponse<>(customerService.deleteProfilePhoto(id));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -65,5 +64,10 @@ public class CustomerController extends BaseController<CustomerDto, CustomerFilt
     @GetMapping("/{id}/transactions")
     public ResponseEntity<List<TransactionDto>> getTransactions(@PathVariable("id") Integer id, TransactionFilteringOptions options) {
         return ResponseEntity.ok(customerService.getTransactionsOfCustomer(id, options));
+    }
+
+    @GetMapping("/{customerId}/accounts/{accountId}/regular-transfer-orders")
+    public ResponseEntity<List<RegularTransferOrderDto>> getRegularTransfers(@PathVariable("customerId") Integer customerId, @PathVariable("accountId") Integer accountId) {
+        return ResponseEntity.ok(customerService.getRegularTransferOrdersOfCustomer(customerId, accountId));
     }
 }
