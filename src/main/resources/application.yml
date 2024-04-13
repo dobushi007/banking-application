@@ -20,3 +20,10 @@ spring:
       enabled: false # change the value to true to immediately enable batch processing on startup
     jdbc:
       initialize-schema: always
+  #data:
+    #cassandra:
+      #keyspace-name: mykeyspace
+  #cassandra:
+    #contactpoints: rating-database
+    #port: 9042
+    #basepackages: com.ercanbeyen.bankingapplication

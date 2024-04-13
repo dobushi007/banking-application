@@ -17,6 +17,7 @@ services:
       - banking-network
     depends_on:
       - mysqldb
+      - cassandradb
   mysqldb:
     container_name: "bank-database"
     image: "mysql"
@@ -30,5 +31,14 @@ services:
       MYSQL_USER: username
       MYSQL_PASSWORD: password
       MYSQL_ROOT_PASSWORD: password
+  cassandradb:
+    container_name: "rating-database"
+    image: "cassandra"
+    environment:
+      CASSANDRA_CLUSTER_NAME: cassandra_cluster
+    networks:
+      - banking-network
+    ports:
+      - "9042:9042"
 networks:
   banking-network:
