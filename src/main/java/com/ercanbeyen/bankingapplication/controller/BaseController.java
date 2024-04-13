@@ -28,12 +28,12 @@ public abstract class BaseController<T extends BaseDto, V extends BaseFilteringO
     public ResponseEntity<T> getEntity(@PathVariable("id") Integer id) {
         return baseService.getEntity(id)
                 .map(t -> new ResponseEntity<>(t, HttpStatus.OK))
-                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, "Entity")));
     }
 
     @PostMapping
     public ResponseEntity<T> createEntity(@RequestBody @Valid T request) {
-        return new ResponseEntity<>(baseService.createEntity(request), HttpStatus.OK);
+        return new ResponseEntity<>(baseService.createEntity(request), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")

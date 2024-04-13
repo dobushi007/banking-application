@@ -30,7 +30,7 @@ public class AccountController extends BaseController<AccountDto, AccountFilteri
     @Override
     public ResponseEntity<AccountDto> createEntity(@RequestBody @Valid AccountDto request) {
         AccountUtils.checkAccountConstruction(request);
-        return new ResponseEntity<>(accountService.createEntity(request), HttpStatus.OK);
+        return new ResponseEntity<>(accountService.createEntity(request), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
