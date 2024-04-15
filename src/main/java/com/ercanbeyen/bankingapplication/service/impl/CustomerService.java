@@ -256,6 +256,15 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.CUSTOMER.getValue())));
     }
 
+    /***
+     *
+     * @param nationalId is national identity which is unique for each customer
+     * @return status for customer existence corresponds to nationalId
+     */
+    public boolean doesCustomerExist(String nationalId) {
+        return customerRepository.existsByNationalId(nationalId);
+    }
+
     private Customer findCustomerById(Integer id) {
         return customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.CUSTOMER.getValue())));

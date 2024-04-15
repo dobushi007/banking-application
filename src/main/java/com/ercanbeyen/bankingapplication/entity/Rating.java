@@ -13,22 +13,12 @@ import java.util.UUID;
 @Table(value = "ratings")
 public class Rating {
     @PrimaryKey
-    //@GeneratedValue(strategy = GenerationType.UUID)
-    //private UUID id = UUID.randomUUID();
     private UUID id;
+    @Column(name = "user_national_id")
     private String userNationalId;
-    /*@CreationTimestamp
-    @Temporal(TemporalType.TIMESTAMP)*/
     private LocalDateTime createdAt;
-    /*@UpdateTimestamp
-    @Temporal(TemporalType.TIMESTAMP)*/
     private LocalDateTime updatedAt;
     private Double rate;
     @Enumerated(EnumType.STRING)
-    private RatingReason ratingReason;
-
-   /* @PrePersist
-    protected void onCreate() {
-        this.id = UUID.randomUUID();
-    }*/
+    private RatingReason reason;
 }

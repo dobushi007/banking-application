@@ -17,6 +17,6 @@ public record RatingDto(
         LocalDateTime updatedAt,
         @Range(min = 1, max = 5, message = "Rate should be between {min} and {max}")
         Double rate,
-        RatingReason ratingReason) {
+        RatingReason reason) {
 
 }
