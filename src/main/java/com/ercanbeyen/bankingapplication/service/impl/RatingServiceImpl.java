@@ -61,16 +61,15 @@ public class RatingServiceImpl implements RatingService {
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
-        if (!customerService.doesCustomerExist(ratingDto.userNationalId())) {
-            log.error(LogMessages.RESOURCE_NOT_FOUND, Entity.CUSTOMER.getValue());
-            throw new ResourceExpectationFailedException("User national id is not in database");
-        }
+        checkRatingBeforeCreate(ratingDto);
 
         Rating rating = ratingMapper.dtoToRating(ratingDto);
         rating.setId(UUID.randomUUID());
+        rating.setExplanation(ratingDto.explanation());
         LocalDateTime now = LocalDateTime.now();
         rating.setCreatedAt(now);
         rating.setUpdatedAt(now);
+        rating.setYear(now.getYear());
 
         log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
 
@@ -91,6 +90,7 @@ public class RatingServiceImpl implements RatingService {
 
         rating.setRate(ratingDto.rate());
         rating.setReason(ratingDto.reason());
+        rating.setExplanation(ratingDto.explanation());
         rating.setUpdatedAt(LocalDateTime.now());
 
         Rating savedRating = ratingRepository.save(rating);
@@ -102,5 +102,19 @@ public class RatingServiceImpl implements RatingService {
     private Rating findRatingById(UUID id) {
         return ratingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.RATING.getValue())));
+    }
+
+    private void checkRatingBeforeCreate(RatingDto ratingDto) {
+        if (!customerService.doesCustomerExist(ratingDto.userNationalId())) {
+            log.error(LogMessages.RESOURCE_NOT_FOUND, Entity.CUSTOMER.getValue());
+            throw new ResourceExpectationFailedException("User national id is not in database");
+        }
+
+        int currentYear = LocalDateTime.now().getYear();
+
+        if (ratingRepository.findByYearAndUserNationalId(currentYear, ratingDto.userNationalId()).isPresent()) {
+            log.error(LogMessages.RESOURCE_FOUND, Entity.RATING.getValue());
+            throw new ResourceExpectationFailedException(String.format("Customer is already rated in %d", currentYear));
+        }
     }
 }

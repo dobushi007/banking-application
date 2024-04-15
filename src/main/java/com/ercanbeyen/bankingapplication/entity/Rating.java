@@ -18,7 +18,9 @@ public class Rating {
     private String userNationalId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Integer year;
     private Double rate;
     @Enumerated(EnumType.STRING)
     private RatingReason reason;
+    private String explanation;
 }

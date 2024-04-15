@@ -15,8 +15,10 @@ public record RatingDto(
         String userNationalId,
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
+        Integer year,
         @Range(min = 1, max = 5, message = "Rate should be between {min} and {max}")
         Double rate,
-        RatingReason reason) {
+        RatingReason reason,
+        String explanation) {
 
 }
