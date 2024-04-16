@@ -19,7 +19,7 @@ public class Rating {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Integer year;
-    private Double rate;
+    private Integer rate;
     @Enumerated(EnumType.STRING)
     private RatingReason reason;
     private String explanation;

@@ -30,13 +30,13 @@ public class RatingController {
 
     @PostMapping
     public ResponseEntity<RatingDto> createRating(@RequestBody @Valid RatingDto request) {
-        RatingUtils.checkRatingTime();
+        RatingUtils.checkRating(request);
         return new ResponseEntity<>(ratingService.createRating(request), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<RatingDto> updateRating(@PathVariable("id") UUID id, @RequestBody @Valid RatingDto request) {
-        RatingUtils.checkRatingTime();
+        RatingUtils.checkRating(request);
         return new ResponseEntity<>(ratingService.updateRating(id, request), HttpStatus.OK);
     }
 }
