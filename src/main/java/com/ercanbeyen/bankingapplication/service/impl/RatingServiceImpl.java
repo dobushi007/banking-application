@@ -106,12 +106,22 @@ public class RatingServiceImpl implements RatingService {
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
-        // method findByYearBetween is exclusive, that is why bounds are extended by 1
-        List<RatingReason> ratingReasons = ratingRepository.findByYearBetween(--fromYear, ++toYear)
-                .stream()
+        List<Rating> ratings;
+
+        if (fromYear != null && toYear != null) {
+            ratings = (Objects.equals(fromYear, toYear)) ? ratingRepository.findByYear(fromYear)
+                    : ratingRepository.findByYearBetween(--fromYear, ++toYear); // method findByYearBetween is exclusive, that is why bounds are extended by 1
+        } else if (fromYear != null) {
+            ratings = ratingRepository.findByYearGreaterThanEqual(fromYear);
+        } else if (toYear != null) {
+            ratings = ratingRepository.findByYearLessThanEqual(toYear);
+        } else {
+            ratings = ratingRepository.findAll();
+        }
+
+        List<RatingReason> ratingReasons = ratings.stream()
                 .map(Rating::getReason)
                 .toList();
-
         Map<RatingReason, Integer> ratingReasonToInteger = new EnumMap<>(RatingReason.class);
 
         for (RatingReason ratingReason : RatingReason.values()) {

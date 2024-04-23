@@ -6,27 +6,41 @@ import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
 import com.ercanbeyen.bankingapplication.exception.ResourceExpectationFailedException;
 import io.micrometer.common.util.StringUtils;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 import java.time.Month;
 
 @UtilityClass
+@Slf4j
 public class RatingUtils {
     private static final Month START_MONTH = Month.SEPTEMBER;
     private static final int THRESHOLD_RATE = 3;
-    public static final int START_YEAR = 1900;
+    private static final int START_YEAR = 1900;
 
-    public static void checkReasonStatisticsFilteringParameters(int fromYear, int toYear) {
-        if ((fromYear < START_YEAR || toYear < START_YEAR) || (fromYear == Integer.MAX_VALUE)) {
-            throw new ResourceExpectationFailedException("Invalid parameter");
-        } else if (toYear < fromYear) {
-            throw new ResourceExpectationFailedException("from year must be smaller or equal than to year");
-        }
+    public static void checkReasonStatisticsFilteringParameters(Integer fromYear, Integer toYear) {
+        checkYear(fromYear);
+        checkYear(toYear);
     }
 
-    public static void checkRating(RatingDto ratingDto) {
-        checkTime();
+    public static void checkRatingBeforeSave(RatingDto ratingDto) {
+        checkTimeForCurrentYear();
         checkReason(ratingDto);
+    }
+
+    private static void checkYear(Integer year) {
+        if (year == null) {
+            log.warn("Year is null");
+            return;
+        }
+
+        int currentYear = LocalDateTime.now().getYear();
+
+        if (year < START_YEAR || year > currentYear) {
+            throw new ResourceExpectationFailedException("Invalid year parameter");
+        } else if (year == currentYear) {
+            checkTimeForCurrentYear();
+        }
     }
 
     private static void checkReason(RatingDto ratingDto) {
@@ -34,7 +48,7 @@ public class RatingUtils {
         String message;
         RatingReason requestedReason = ratingDto.reason();
 
-        if ((requestedReason == reason) && StringUtils.isBlank(ratingDto.explanation())) {
+        if (requestedReason == reason && StringUtils.isBlank(ratingDto.explanation())) {
             message = String.format("Explanation of %s should not be blank or empty", reason);
             throw new ResourceExpectationFailedException(message);
         }
@@ -54,7 +68,7 @@ public class RatingUtils {
         }
     }
 
-    private static void checkTime() {
+    private static void checkTimeForCurrentYear() {
         LocalDateTime now = LocalDateTime.now();
         int currentYear = now.getYear();
 

@@ -14,5 +14,11 @@ public interface RatingRepository extends CassandraRepository<Rating, UUID> {
     @AllowFiltering
     Optional<Rating> findByYearAndUserNationalId(int year, String userNationalId);
     @AllowFiltering
+    List<Rating> findByYear(int year);
+    @AllowFiltering
+    List<Rating> findByYearGreaterThanEqual(int year);
+    @AllowFiltering
+    List<Rating> findByYearLessThanEqual(int year);
+    @AllowFiltering
     List<Rating> findByYearBetween(int fromYear, int toYear);
 }

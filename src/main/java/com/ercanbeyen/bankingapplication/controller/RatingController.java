@@ -32,21 +32,20 @@ public class RatingController {
 
     @PostMapping
     public ResponseEntity<RatingDto> createRating(@RequestBody @Valid RatingDto request) {
-        RatingUtils.checkRating(request);
+        RatingUtils.checkRatingBeforeSave(request);
         return new ResponseEntity<>(ratingService.createRating(request), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<RatingDto> updateRating(@PathVariable("id") UUID id, @RequestBody @Valid RatingDto request) {
-        RatingUtils.checkRating(request);
+        RatingUtils.checkRatingBeforeSave(request);
         return ResponseEntity.ok(ratingService.updateRating(id, request));
     }
 
-
     @GetMapping("/statistics/reasons")
     public ResponseEntity<RatingStatisticsResponse<RatingReason, Integer>> getRatingReasonStatistics(
-            @RequestParam(name = "from") Integer fromYear,
-            @RequestParam(name = "to") Integer toYear) {
+            @RequestParam(name = "from", required = false) Integer fromYear,
+            @RequestParam(name = "to", required = false) Integer toYear) {
         RatingUtils.checkReasonStatisticsFilteringParameters(fromYear, toYear);
         return ResponseEntity.ok(ratingService.getRatingReasonStatistics(fromYear, toYear));
     }
