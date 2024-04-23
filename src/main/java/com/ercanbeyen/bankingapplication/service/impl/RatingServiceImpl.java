@@ -1,9 +1,11 @@
 package com.ercanbeyen.bankingapplication.service.impl;
 
 import com.ercanbeyen.bankingapplication.constant.enums.Entity;
+import com.ercanbeyen.bankingapplication.constant.enums.RatingReason;
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.RatingDto;
+import com.ercanbeyen.bankingapplication.dto.response.RatingStatisticsResponse;
 import com.ercanbeyen.bankingapplication.entity.Rating;
 import com.ercanbeyen.bankingapplication.exception.ResourceExpectationFailedException;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
@@ -16,9 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -66,6 +66,7 @@ public class RatingServiceImpl implements RatingService {
         Rating rating = ratingMapper.dtoToRating(ratingDto);
         rating.setId(UUID.randomUUID());
         rating.setExplanation(ratingDto.explanation());
+
         LocalDateTime now = LocalDateTime.now();
         rating.setCreatedAt(now);
         rating.setUpdatedAt(now);
@@ -97,6 +98,28 @@ public class RatingServiceImpl implements RatingService {
         log.info(LogMessages.RESOURCE_CREATE_SUCCESS, Entity.RATING.getValue(), savedRating.getId());
 
         return ratingMapper.ratingToDto(savedRating);
+    }
+
+    @Override
+    public RatingStatisticsResponse<RatingReason, Integer> getRatingReasonStatistics(Integer fromYear, Integer toYear) {
+        log.info(LogMessages.ECHO,
+                LoggingUtils.getClassName(this),
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+
+        // method findByYearBetween is exclusive, that is why bounds are extended by 1
+        List<RatingReason> ratingReasons = ratingRepository.findByYearBetween(--fromYear, ++toYear)
+                .stream()
+                .map(Rating::getReason)
+                .toList();
+
+        Map<RatingReason, Integer> ratingReasonToInteger = new EnumMap<>(RatingReason.class);
+
+        for (RatingReason ratingReason : RatingReason.values()) {
+            int occurrence = Collections.frequency(ratingReasons, ratingReason);
+            ratingReasonToInteger.put(ratingReason, occurrence);
+        }
+
+        return new RatingStatisticsResponse<>(ratingReasonToInteger);
     }
 
     private Rating findRatingById(UUID id) {

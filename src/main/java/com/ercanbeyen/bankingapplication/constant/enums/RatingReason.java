@@ -6,7 +6,7 @@ public enum RatingReason {
     SLOW_APP,
     INCONSISTENT_TRANSACTIONS,
     SLOW_TRANSACTIONS,
-    CRASHES,
+    APP_CRASHES,
     OTHER, // Different reason than the above reasons
     FINE, // Reason for 4 and 5
 }

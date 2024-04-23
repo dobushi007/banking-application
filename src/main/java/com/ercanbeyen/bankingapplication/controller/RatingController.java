@@ -1,6 +1,8 @@
 package com.ercanbeyen.bankingapplication.controller;
 
+import com.ercanbeyen.bankingapplication.constant.enums.RatingReason;
 import com.ercanbeyen.bankingapplication.dto.RatingDto;
+import com.ercanbeyen.bankingapplication.dto.response.RatingStatisticsResponse;
 import com.ercanbeyen.bankingapplication.service.RatingService;
 import com.ercanbeyen.bankingapplication.util.RatingUtils;
 import jakarta.validation.Valid;
@@ -37,6 +39,15 @@ public class RatingController {
     @PutMapping("/{id}")
     public ResponseEntity<RatingDto> updateRating(@PathVariable("id") UUID id, @RequestBody @Valid RatingDto request) {
         RatingUtils.checkRating(request);
-        return new ResponseEntity<>(ratingService.updateRating(id, request), HttpStatus.OK);
+        return ResponseEntity.ok(ratingService.updateRating(id, request));
+    }
+
+
+    @GetMapping("/statistics/reasons")
+    public ResponseEntity<RatingStatisticsResponse<RatingReason, Integer>> getRatingReasonStatistics(
+            @RequestParam(name = "from") Integer fromYear,
+            @RequestParam(name = "to") Integer toYear) {
+        RatingUtils.checkReasonStatisticsFilteringParameters(fromYear, toYear);
+        return ResponseEntity.ok(ratingService.getRatingReasonStatistics(fromYear, toYear));
     }
 }

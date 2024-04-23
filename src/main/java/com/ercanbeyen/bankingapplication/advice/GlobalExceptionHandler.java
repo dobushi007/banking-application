@@ -3,7 +3,7 @@ package com.ercanbeyen.bankingapplication.advice;
 import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
 import com.ercanbeyen.bankingapplication.exception.ResourceExpectationFailedException;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
-import com.ercanbeyen.bankingapplication.response.ExceptionResponse;
+import com.ercanbeyen.bankingapplication.dto.response.ExceptionResponse;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

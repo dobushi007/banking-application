@@ -8,7 +8,7 @@ import com.ercanbeyen.bankingapplication.entity.File;
 import com.ercanbeyen.bankingapplication.option.AccountFilteringOptions;
 import com.ercanbeyen.bankingapplication.option.CustomerFilteringOptions;
 import com.ercanbeyen.bankingapplication.option.TransactionFilteringOptions;
-import com.ercanbeyen.bankingapplication.response.MessageResponse;
+import com.ercanbeyen.bankingapplication.dto.response.MessageResponse;
 import com.ercanbeyen.bankingapplication.service.impl.CustomerService;
 import com.ercanbeyen.bankingapplication.util.PhotoUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -67,7 +67,9 @@ public class CustomerController extends BaseController<CustomerDto, CustomerFilt
     }
 
     @GetMapping("/{customerId}/accounts/{accountId}/regular-transfer-orders")
-    public ResponseEntity<List<RegularTransferOrderDto>> getRegularTransfers(@PathVariable("customerId") Integer customerId, @PathVariable("accountId") Integer accountId) {
+    public ResponseEntity<List<RegularTransferOrderDto>> getRegularTransfers(
+            @PathVariable("customerId") Integer customerId,
+            @PathVariable("accountId") Integer accountId) {
         return ResponseEntity.ok(customerService.getRegularTransferOrdersOfCustomer(customerId, accountId));
     }
 }

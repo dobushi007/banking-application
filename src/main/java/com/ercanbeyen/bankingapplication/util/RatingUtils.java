@@ -12,8 +12,17 @@ import java.time.Month;
 
 @UtilityClass
 public class RatingUtils {
-    private static final Month startMonth = Month.SEPTEMBER;
+    private static final Month START_MONTH = Month.SEPTEMBER;
     private static final int THRESHOLD_RATE = 3;
+    public static final int START_YEAR = 1900;
+
+    public static void checkReasonStatisticsFilteringParameters(int fromYear, int toYear) {
+        if ((fromYear < START_YEAR || toYear < START_YEAR) || (fromYear == Integer.MAX_VALUE)) {
+            throw new ResourceExpectationFailedException("Invalid parameter");
+        } else if (toYear < fromYear) {
+            throw new ResourceExpectationFailedException("from year must be smaller or equal than to year");
+        }
+    }
 
     public static void checkRating(RatingDto ratingDto) {
         checkTime();
@@ -49,8 +58,8 @@ public class RatingUtils {
         LocalDateTime now = LocalDateTime.now();
         int currentYear = now.getYear();
 
-        if (startMonth.getValue() > now.getMonth().getValue()) {
-            String message = String.format("%d ratings start in %s and ends in the end of the year", currentYear, startMonth);
+        if (START_MONTH.getValue() > now.getMonth().getValue()) {
+            String message = String.format("%d ratings start in %s and ends in the end of the year", currentYear, START_MONTH);
             throw new ResourceConflictException(message);
         }
     }

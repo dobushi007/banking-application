@@ -285,7 +285,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
                 .anyMatch(customerPredicate);
 
         if (customerExists) {
-            throw new ResourceConflictException(ResponseMessages.ALREADY_EXISTS);
+            throw new ResourceConflictException(String.format(ResponseMessages.ALREADY_EXISTS, Entity.CUSTOMER.getValue()));
         }
     }
 }
