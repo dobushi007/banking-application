@@ -3,6 +3,8 @@ package com.ercanbeyen.bankingapplication.repository;
 import com.ercanbeyen.bankingapplication.entity.Rating;
 import org.springframework.data.cassandra.repository.AllowFiltering;
 import org.springframework.data.cassandra.repository.CassandraRepository;
+import org.springframework.data.cassandra.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -19,6 +21,11 @@ public interface RatingRepository extends CassandraRepository<Rating, UUID> {
     List<Rating> findByYearGreaterThanEqual(int year);
     @AllowFiltering
     List<Rating> findByYearLessThanEqual(int year);
-    @AllowFiltering
-    List<Rating> findByYearBetween(int fromYear, int toYear);
+    @Query(value = """
+           SELECT *
+           FROM ratings
+           WHERE year >= :fromYear AND year <= :toYear
+           ALLOW FILTERING
+          """)
+    List<Rating> findByYearBetweenEquals(@Param("fromYear") int fromYear, @Param("toYear") int toYear);
 }

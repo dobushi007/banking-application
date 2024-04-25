@@ -110,7 +110,7 @@ public class RatingServiceImpl implements RatingService {
 
         if (fromYear != null && toYear != null) {
             ratings = (Objects.equals(fromYear, toYear)) ? ratingRepository.findByYear(fromYear)
-                    : ratingRepository.findByYearBetween(--fromYear, ++toYear); // method findByYearBetween is exclusive, that is why bounds are extended by 1
+                    : ratingRepository.findByYearBetweenEquals(fromYear, toYear);
         } else if (fromYear != null) {
             ratings = ratingRepository.findByYearGreaterThanEqual(fromYear);
         } else if (toYear != null) {
