@@ -13,12 +13,14 @@ import com.ercanbeyen.bankingapplication.mapper.RatingMapper;
 import com.ercanbeyen.bankingapplication.repository.RatingRepository;
 import com.ercanbeyen.bankingapplication.service.RatingService;
 import com.ercanbeyen.bankingapplication.util.LoggingUtils;
+import com.ercanbeyen.bankingapplication.util.StatisticsUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -101,35 +103,36 @@ public class RatingServiceImpl implements RatingService {
     }
 
     @Override
-    public RatingStatisticsResponse<RatingReason, Integer> getRatingReasonStatistics(Integer fromYear, Integer toYear) {
+    public RatingStatisticsResponse<RatingReason, Integer> getReasonStatistics(Integer fromYear, Integer toYear) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
-        List<Rating> ratings;
-
-        if (fromYear != null && toYear != null) {
-            ratings = (Objects.equals(fromYear, toYear)) ? ratingRepository.findByYear(fromYear)
-                    : ratingRepository.findByYearBetweenEquals(fromYear, toYear);
-        } else if (fromYear != null) {
-            ratings = ratingRepository.findByYearGreaterThanEqual(fromYear);
-        } else if (toYear != null) {
-            ratings = ratingRepository.findByYearLessThanEqual(toYear);
-        } else {
-            ratings = ratingRepository.findAll();
-        }
-
-        List<RatingReason> ratingReasons = ratings.stream()
+        List<Rating> ratings = getRatingsBetweenYears(fromYear, toYear);
+        List<RatingReason> reasons = ratings.stream()
                 .map(Rating::getReason)
                 .toList();
-        Map<RatingReason, Integer> ratingReasonToInteger = new EnumMap<>(RatingReason.class);
+        Map<RatingReason, Integer> reasonToOccurrence = StatisticsUtils.getFrequencies(reasons, Arrays.asList(RatingReason.values()));
 
-        for (RatingReason ratingReason : RatingReason.values()) {
-            int occurrence = Collections.frequency(ratingReasons, ratingReason);
-            ratingReasonToInteger.put(ratingReason, occurrence);
-        }
+        return new RatingStatisticsResponse<>(reasonToOccurrence);
+    }
 
-        return new RatingStatisticsResponse<>(ratingReasonToInteger);
+    @Override
+    public RatingStatisticsResponse<Integer, Integer> getRateStatistics(Integer fromYear, Integer toYear) {
+        log.info(LogMessages.ECHO,
+                LoggingUtils.getClassName(this),
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+
+        List<Rating> ratings = getRatingsBetweenYears(fromYear, toYear);
+        List<Integer> rates = ratings.stream()
+                .map(Rating::getRate)
+                .toList();
+        List<Integer> possibleRates = Arrays.stream(IntStream.rangeClosed(1, 5).toArray())
+                .boxed()
+                .toList();
+        Map<Integer, Integer> rateToOccurrence = StatisticsUtils.getFrequencies(rates, possibleRates);
+
+        return new RatingStatisticsResponse<>(rateToOccurrence);
     }
 
     private Rating findRatingById(UUID id) {
@@ -149,5 +152,22 @@ public class RatingServiceImpl implements RatingService {
             log.error(LogMessages.RESOURCE_FOUND, Entity.RATING.getValue());
             throw new ResourceExpectationFailedException(String.format("Customer is already rated in %d", currentYear));
         }
+    }
+
+    private List<Rating> getRatingsBetweenYears(Integer fromYear, Integer toYear) {
+        List<Rating> ratings;
+
+        if (fromYear != null && toYear != null) {
+            ratings = (Objects.equals(fromYear, toYear)) ? ratingRepository.findByYear(fromYear)
+                    : ratingRepository.findByYearBetweenEquals(fromYear, toYear);
+        } else if (fromYear != null) {
+            ratings = ratingRepository.findByYearGreaterThanEqual(fromYear);
+        } else if (toYear != null) {
+            ratings = ratingRepository.findByYearLessThanEqual(toYear);
+        } else {
+            ratings = ratingRepository.findAll();
+        }
+
+        return ratings;
     }
 }

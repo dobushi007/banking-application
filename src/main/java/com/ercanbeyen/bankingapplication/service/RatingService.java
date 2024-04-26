@@ -12,5 +12,6 @@ public interface RatingService {
     RatingDto getRating(UUID id);
     RatingDto createRating(RatingDto ratingDto);
     RatingDto updateRating(UUID id, RatingDto ratingDto);
-    RatingStatisticsResponse<RatingReason, Integer> getRatingReasonStatistics(Integer fromYear, Integer toYear);
+    RatingStatisticsResponse<RatingReason, Integer> getReasonStatistics(Integer fromYear, Integer toYear);
+    RatingStatisticsResponse<Integer, Integer> getRateStatistics(Integer fromYear, Integer toYear);
 }

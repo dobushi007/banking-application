@@ -43,10 +43,18 @@ public class RatingController {
     }
 
     @GetMapping("/statistics/reasons")
-    public ResponseEntity<RatingStatisticsResponse<RatingReason, Integer>> getRatingReasonStatistics(
+    public ResponseEntity<RatingStatisticsResponse<RatingReason, Integer>> getReasonStatistics(
             @RequestParam(name = "from", required = false) Integer fromYear,
             @RequestParam(name = "to", required = false) Integer toYear) {
         RatingUtils.checkReasonStatisticsFilteringParameters(fromYear, toYear);
-        return ResponseEntity.ok(ratingService.getRatingReasonStatistics(fromYear, toYear));
+        return ResponseEntity.ok(ratingService.getReasonStatistics(fromYear, toYear));
+    }
+
+    @GetMapping("/statistics/rates")
+    public ResponseEntity<RatingStatisticsResponse<Integer, Integer>> getRateStatistics(
+            @RequestParam(name = "from", required = false) Integer fromYear,
+            @RequestParam(name = "to", required = false) Integer toYear) {
+        RatingUtils.checkReasonStatisticsFilteringParameters(fromYear, toYear);
+        return ResponseEntity.ok(ratingService.getRateStatistics(fromYear, toYear));
     }
 }

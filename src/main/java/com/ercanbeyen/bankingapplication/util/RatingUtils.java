@@ -19,6 +19,10 @@ public class RatingUtils {
     private static final int START_YEAR = 1900;
 
     public static void checkReasonStatisticsFilteringParameters(Integer fromYear, Integer toYear) {
+        if ((fromYear != null && toYear != null) && (fromYear > toYear)) {
+            throw new ResourceExpectationFailedException("From year must be smaller than equal to to year");
+        }
+
         checkYear(fromYear);
         checkYear(toYear);
     }

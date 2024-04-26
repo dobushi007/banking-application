@@ -22,8 +22,8 @@ public class Rating {
     private LocalDateTime updatedAt;
     @PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING)
     private Integer year;
-    private Integer rate;
     @PrimaryKeyColumn(ordinal = 2, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.ASCENDING)
+    private Integer rate;
     @Enumerated(EnumType.STRING)
     private RatingReason reason;
     private String explanation;
