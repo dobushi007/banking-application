@@ -73,6 +73,7 @@ public class RatingServiceImpl implements RatingService {
         rating.setUpdatedAt(now);
         rating.setYear(now.getYear());
 
+
         log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
 
         Rating savedRating = ratingRepository.save(rating);
@@ -102,7 +103,7 @@ public class RatingServiceImpl implements RatingService {
     }
 
     @Override
-    public RatingStatisticsResponse<RatingReason, Integer> getReasonStatistics(Integer fromYear, Integer toYear) {
+    public RatingStatisticsResponse<RatingReason, Integer> getReasonStatistics(Integer fromYear, Integer toYear, Integer minimumFrequency) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
@@ -112,11 +113,11 @@ public class RatingServiceImpl implements RatingService {
                 .map(Rating::getReason)
                 .toList();
 
-        return new RatingStatisticsResponse<>(StatisticsUtils.getFrequencies(reasons));
+        return new RatingStatisticsResponse<>(StatisticsUtils.getFrequencies(reasons, minimumFrequency));
     }
 
     @Override
-    public RatingStatisticsResponse<Integer, Integer> getRateStatistics(Integer fromYear, Integer toYear) {
+    public RatingStatisticsResponse<Integer, Integer> getRateStatistics(Integer fromYear, Integer toYear, Integer minimumFrequency) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
@@ -126,7 +127,7 @@ public class RatingServiceImpl implements RatingService {
                 .map(Rating::getRate)
                 .toList();
 
-        return new RatingStatisticsResponse<>(StatisticsUtils.getFrequencies(rates));
+        return new RatingStatisticsResponse<>(StatisticsUtils.getFrequencies(rates, minimumFrequency));
     }
 
     private Rating findRatingById(UUID id) {

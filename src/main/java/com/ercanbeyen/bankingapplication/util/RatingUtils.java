@@ -18,18 +18,29 @@ public class RatingUtils {
     private static final int THRESHOLD_RATE = 3;
     private static final int START_YEAR = 1900;
 
-    public static void checkReasonStatisticsFilteringParameters(Integer fromYear, Integer toYear) {
-        if ((fromYear != null && toYear != null) && (fromYear > toYear)) {
-            throw new ResourceExpectationFailedException("Start year must be less than or equal to last end year");
-        }
-
-        checkYear(fromYear);
-        checkYear(toYear);
+    public static void checkRatingStatisticsFilteringParameters(Integer fromYear, Integer toYear, Integer frequency) {
+        checkFrequency(frequency);
+        checkYears(fromYear, toYear);
     }
 
     public static void checkRatingBeforeSave(RatingDto ratingDto) {
         checkTimeForCurrentYear();
         checkReason(ratingDto);
+    }
+
+    private static void checkFrequency(Integer frequency) {
+        if (frequency <= 0) {
+            throw new ResourceExpectationFailedException("Frequency should be greater than zero");
+        }
+    }
+
+    private static void checkYears(Integer fromYear, Integer toYear) {
+        if ((fromYear != null && toYear != null) && (fromYear > toYear)) {
+            throw new ResourceExpectationFailedException("Start year must be less than or equal to end year");
+        }
+
+        checkYear(fromYear);
+        checkYear(toYear);
     }
 
     private static void checkYear(Integer year) {

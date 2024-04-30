@@ -45,16 +45,18 @@ public class RatingController {
     @GetMapping("/statistics/reasons")
     public ResponseEntity<RatingStatisticsResponse<RatingReason, Integer>> getReasonStatistics(
             @RequestParam(name = "from", required = false) Integer fromYear,
-            @RequestParam(name = "to", required = false) Integer toYear) {
-        RatingUtils.checkReasonStatisticsFilteringParameters(fromYear, toYear);
-        return ResponseEntity.ok(ratingService.getReasonStatistics(fromYear, toYear));
+            @RequestParam(name = "to", required = false) Integer toYear,
+            @RequestParam(name = "minimum-frequency", required = false, defaultValue = "1") Integer minimumFrequency) {
+        RatingUtils.checkRatingStatisticsFilteringParameters(fromYear, toYear, minimumFrequency);
+        return ResponseEntity.ok(ratingService.getReasonStatistics(fromYear, toYear, minimumFrequency));
     }
 
     @GetMapping("/statistics/rates")
     public ResponseEntity<RatingStatisticsResponse<Integer, Integer>> getRateStatistics(
             @RequestParam(name = "from", required = false) Integer fromYear,
-            @RequestParam(name = "to", required = false) Integer toYear) {
-        RatingUtils.checkReasonStatisticsFilteringParameters(fromYear, toYear);
-        return ResponseEntity.ok(ratingService.getRateStatistics(fromYear, toYear));
+            @RequestParam(name = "to", required = false) Integer toYear,
+            @RequestParam(name = "minimum-frequency", required = false, defaultValue = "1") Integer minimumFrequency) {
+        RatingUtils.checkRatingStatisticsFilteringParameters(fromYear, toYear, minimumFrequency);
+        return ResponseEntity.ok(ratingService.getRateStatistics(fromYear, toYear, minimumFrequency));
     }
 }
