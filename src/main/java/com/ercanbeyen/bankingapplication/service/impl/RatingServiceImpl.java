@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -112,9 +111,8 @@ public class RatingServiceImpl implements RatingService {
         List<RatingReason> reasons = ratings.stream()
                 .map(Rating::getReason)
                 .toList();
-        Map<RatingReason, Integer> reasonToOccurrence = StatisticsUtils.getFrequencies(reasons, Arrays.asList(RatingReason.values()));
 
-        return new RatingStatisticsResponse<>(reasonToOccurrence);
+        return new RatingStatisticsResponse<>(StatisticsUtils.getFrequencies(reasons));
     }
 
     @Override
@@ -127,12 +125,8 @@ public class RatingServiceImpl implements RatingService {
         List<Integer> rates = ratings.stream()
                 .map(Rating::getRate)
                 .toList();
-        List<Integer> possibleRates = Arrays.stream(IntStream.rangeClosed(1, 5).toArray())
-                .boxed()
-                .toList();
-        Map<Integer, Integer> rateToOccurrence = StatisticsUtils.getFrequencies(rates, possibleRates);
 
-        return new RatingStatisticsResponse<>(rateToOccurrence);
+        return new RatingStatisticsResponse<>(StatisticsUtils.getFrequencies(rates));
     }
 
     private Rating findRatingById(UUID id) {

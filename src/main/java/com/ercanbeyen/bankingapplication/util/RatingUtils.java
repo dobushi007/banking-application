@@ -20,7 +20,7 @@ public class RatingUtils {
 
     public static void checkReasonStatisticsFilteringParameters(Integer fromYear, Integer toYear) {
         if ((fromYear != null && toYear != null) && (fromYear > toYear)) {
-            throw new ResourceExpectationFailedException("From year must be smaller than equal to to year");
+            throw new ResourceExpectationFailedException("Start year must be less than or equal to last end year");
         }
 
         checkYear(fromYear);
