@@ -25,7 +25,7 @@ public class RegularTransferOrderScheduledTasks {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
-    @Scheduled(cron = " 0 0 10 * * *") // 10:00 everyday
+    @Scheduled(cron = "0 0 10 * * *") // 10:00 everyday
     public void applyRegularTransferOrders() {
         final String task = "apply regular transfer orders";
         log.info(LogMessages.SCHEDULED_TASK_STARTED, task);

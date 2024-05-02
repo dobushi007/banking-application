@@ -27,7 +27,7 @@ public class CustomerScheduledTasks {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
-    @Scheduled(cron = " 0 0 12 * * *") // 12:00 everyday
+    @Scheduled(cron = "0 0 12 * * *") // 12:00 everyday
     public void celebrateCustomersBirthday() {
         final String task = "celebrate customers' birthday";
         log.info(LogMessages.SCHEDULED_TASK_STARTED, task);

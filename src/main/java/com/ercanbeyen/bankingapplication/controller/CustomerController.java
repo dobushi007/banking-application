@@ -1,9 +1,6 @@
 package com.ercanbeyen.bankingapplication.controller;
 
-import com.ercanbeyen.bankingapplication.dto.AccountDto;
-import com.ercanbeyen.bankingapplication.dto.CustomerDto;
-import com.ercanbeyen.bankingapplication.dto.RegularTransferOrderDto;
-import com.ercanbeyen.bankingapplication.dto.TransactionDto;
+import com.ercanbeyen.bankingapplication.dto.*;
 import com.ercanbeyen.bankingapplication.entity.File;
 import com.ercanbeyen.bankingapplication.option.AccountFilteringOptions;
 import com.ercanbeyen.bankingapplication.option.CustomerFilteringOptions;
@@ -13,7 +10,6 @@ import com.ercanbeyen.bankingapplication.service.impl.CustomerService;
 import com.ercanbeyen.bankingapplication.util.PhotoUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,7 +31,7 @@ public class CustomerController extends BaseController<CustomerDto, CustomerFilt
     public ResponseEntity<MessageResponse<String>> uploadProfilePhoto(@PathVariable("id") Integer id, @RequestParam("file") MultipartFile file) {
         PhotoUtils.checkPhoto(file);
         MessageResponse<String> response = new MessageResponse<>(customerService.uploadProfilePhoto(id, file));
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}/photo")
@@ -53,7 +49,7 @@ public class CustomerController extends BaseController<CustomerDto, CustomerFilt
     @DeleteMapping("/{id}/photo")
     public ResponseEntity<MessageResponse<String>> deleteProfilePhoto(@PathVariable("id") Integer id) {
         MessageResponse<String> response = new MessageResponse<>(customerService.deleteProfilePhoto(id));
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}/accounts")
@@ -64,6 +60,11 @@ public class CustomerController extends BaseController<CustomerDto, CustomerFilt
     @GetMapping("/{id}/transactions")
     public ResponseEntity<List<TransactionDto>> getTransactions(@PathVariable("id") Integer id, TransactionFilteringOptions options) {
         return ResponseEntity.ok(customerService.getTransactionsOfCustomer(id, options));
+    }
+
+    @GetMapping("/{id}/notifications")
+    public ResponseEntity<List<NotificationDto>> getNotifications(@PathVariable("id") Integer id) {
+        return ResponseEntity.ok(customerService.getNotifications(id));
     }
 
     @GetMapping("/{customerId}/accounts/{accountId}/regular-transfer-orders")
