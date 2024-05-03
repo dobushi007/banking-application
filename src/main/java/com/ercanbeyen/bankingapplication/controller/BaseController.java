@@ -44,7 +44,7 @@ public abstract class BaseController<T extends BaseDto, V extends BaseFilteringO
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteEntity(@PathVariable("id") Integer id) {
         return baseService.getEntity(id)
-                .map(t -> {
+                .map(entity -> {
                     baseService.deleteEntity(id);
                     return new ResponseEntity<>("Successfully deleted", HttpStatus.OK);
                 })
