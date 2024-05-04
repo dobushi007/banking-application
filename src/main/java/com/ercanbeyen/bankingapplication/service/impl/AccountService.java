@@ -15,7 +15,7 @@ import com.ercanbeyen.bankingapplication.exception.UnsuccessfulTransactionExcept
 import com.ercanbeyen.bankingapplication.mapper.AccountMapper;
 import com.ercanbeyen.bankingapplication.option.AccountFilteringOptions;
 import com.ercanbeyen.bankingapplication.repository.AccountRepository;
-import com.ercanbeyen.bankingapplication.response.StatisticsResponse;
+import com.ercanbeyen.bankingapplication.dto.response.CustomerStatisticsResponse;
 import com.ercanbeyen.bankingapplication.service.BaseService;
 import com.ercanbeyen.bankingapplication.service.TransactionService;
 import com.ercanbeyen.bankingapplication.util.AccountUtils;
@@ -227,7 +227,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         return String.format("Total %s accounts in %s currency in %s is %d", type, currency, city, count);
     }
 
-    public List<StatisticsResponse> getCustomersHaveMaximumBalance(AccountType type, Currency currency, City city) {
+    public List<CustomerStatisticsResponse> getCustomersHaveMaximumBalance(AccountType type, Currency currency, City city) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));

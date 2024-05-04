@@ -29,7 +29,7 @@ public class AccountScheduledTasks {
     private final ObjectMapper objectMapper;
     private static final String ID = "id";
 
-    @Scheduled(cron = " 0 0 9 * * *") // 9:00 everyday
+    @Scheduled(cron = "0 0 9 * * *") // 9:00 everyday
     public void addMoneyToDepositAccounts() {
         final String task = "periodic money deposit to deposit account";
         log.info(LogMessages.SCHEDULED_TASK_STARTED, task);

@@ -16,6 +16,7 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -26,21 +27,33 @@ public class CustomerScheduledTasks {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
-    @Scheduled(cron = " 0 0 12 * * *") // 12:00 everyday
+    @Scheduled(cron = "0 0 12 * * *") // 12:00 everyday
     public void celebrateCustomersBirthday() {
         final String task = "celebrate customers' birthday";
         log.info(LogMessages.SCHEDULED_TASK_STARTED, task);
         LocalDate birthday = LocalDate.now();
+        UriComponents uriComponents = UriComponentsBuilder.fromUriString(Entity.CUSTOMER.getCollectionUrl())
+                .queryParam("birthDate", birthday.toString())
+                .build();
+        String notificationMessage = "happy birthday";
+        notifyCustomers(task, uriComponents, notificationMessage);
+    }
+
+    @Scheduled(cron = "0 0 0 1 9 ?") // Every September 1st at midnight
+    public void announceStartOfRating() {
+        final String task = "announce start of rating";
+        UriComponents uriComponents = UriComponentsBuilder.fromUriString(Entity.CUSTOMER.getCollectionUrl())
+                .build();
+        String notificationMessage = "Ratings for " + LocalDateTime.now().getYear() + " is started";
+        notifyCustomers(task, uriComponents, notificationMessage);
+    }
+
+    private void notifyCustomers(String task, UriComponents uriComponents, String notificationMessage) {
+        log.info(LogMessages.SCHEDULED_TASK_STARTED, task);
         List<CustomerDto> customerDtos;
 
         try {
-            UriComponents uriComponents = UriComponentsBuilder.fromUriString(Entity.CUSTOMER.getCollectionUrl())
-                    .queryParam("birthDate", birthday.toString())
-                    .build();
-
             String url = uriComponents.toString();
-            log.info("Getting customers have birthday url: {}", url);
-
             List<?> response = restTemplate.getForObject(url, List.class);
             assert response != null;
             log.info(LogMessages.CLASS_OF_RESPONSE, response.getClass());
@@ -55,7 +68,7 @@ public class CustomerScheduledTasks {
         }
 
         customerDtos.forEach(customerDto -> {
-            NotificationDto request = new NotificationDto(customerDto.getNationalId(), "happy birthday");
+            NotificationDto request = new NotificationDto(customerDto.getNationalId(), notificationMessage);
 
             try {
                 log.info(LogMessages.BEFORE_REQUEST);

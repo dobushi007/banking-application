@@ -1,4 +1,4 @@
-package com.ercanbeyen.bankingapplication.response;
+package com.ercanbeyen.bankingapplication.dto.response;
 
 import java.time.LocalDateTime;
 

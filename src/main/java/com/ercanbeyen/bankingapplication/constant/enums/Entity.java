@@ -11,7 +11,8 @@ public enum Entity {
     FILE("File"),
     NOTIFICATION("Notification"),
     TRANSACTION("Transaction"),
-    REGULAR_TRANSFER_ORDER("RegularTransferOrder");
+    REGULAR_TRANSFER_ORDER("RegularTransferOrder"),
+    RATING("Rating");
 
     private final String value;
 

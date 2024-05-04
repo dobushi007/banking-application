@@ -3,10 +3,7 @@ package com.ercanbeyen.bankingapplication.service.impl;
 import com.ercanbeyen.bankingapplication.constant.enums.Entity;
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
-import com.ercanbeyen.bankingapplication.dto.AccountDto;
-import com.ercanbeyen.bankingapplication.dto.CustomerDto;
-import com.ercanbeyen.bankingapplication.dto.RegularTransferOrderDto;
-import com.ercanbeyen.bankingapplication.dto.TransactionDto;
+import com.ercanbeyen.bankingapplication.dto.*;
 import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.entity.Customer;
 import com.ercanbeyen.bankingapplication.entity.File;
@@ -14,6 +11,7 @@ import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import com.ercanbeyen.bankingapplication.mapper.AccountMapper;
 import com.ercanbeyen.bankingapplication.mapper.CustomerMapper;
+import com.ercanbeyen.bankingapplication.mapper.NotificationMapper;
 import com.ercanbeyen.bankingapplication.mapper.RegularTransferOrderMapper;
 import com.ercanbeyen.bankingapplication.option.AccountFilteringOptions;
 import com.ercanbeyen.bankingapplication.option.CustomerFilteringOptions;
@@ -44,6 +42,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
     private final CustomerMapper customerMapper;
     private final AccountMapper accountMapper;
     private final RegularTransferOrderMapper regularTransferOrderMapper;
+    private final NotificationMapper notificationMapper;
     private final FileStorageService fileStorageService;
     private final TransactionService transactionService;
 
@@ -228,6 +227,22 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
                 .toList();
     }
 
+    public List<NotificationDto> getNotifications(Integer id) {
+        log.info(LogMessages.ECHO,
+                LoggingUtils.getClassName(this),
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+
+        Customer customer = findCustomerById(id);
+        log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
+
+        List<NotificationDto> notificationDtos = new ArrayList<>();
+
+        customer.getNotifications()
+                .forEach(notification -> notificationDtos.add(notificationMapper.notificationToDto(notification)));
+
+        return notificationDtos;
+    }
+
     public List<RegularTransferOrderDto> getRegularTransferOrdersOfCustomer(Integer customerId, Integer accountId) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
@@ -256,6 +271,15 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.CUSTOMER.getValue())));
     }
 
+    /***
+     *
+     * @param nationalId is national identity which is unique for each customer
+     * @return status for customer existence corresponds to nationalId
+     */
+    public boolean doesCustomerExist(String nationalId) {
+        return customerRepository.existsByNationalId(nationalId);
+    }
+
     private Customer findCustomerById(Integer id) {
         return customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.CUSTOMER.getValue())));
@@ -276,7 +300,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
                 .anyMatch(customerPredicate);
 
         if (customerExists) {
-            throw new ResourceConflictException(ResponseMessages.ALREADY_EXISTS);
+            throw new ResourceConflictException(String.format(ResponseMessages.ALREADY_EXISTS, Entity.CUSTOMER.getValue()));
         }
     }
 }
