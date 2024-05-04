@@ -6,7 +6,7 @@
 
 ### Summary
 It is a banking application includes basic banking operations. Abstract crud approach is used throughout the development.<br/>
-There are 8 entities in this project
+There are 9 entities in this project
 
 Entities:
 - Customer
@@ -17,29 +17,28 @@ Entities:
 - Regular Transfer Order
 - News Report
 - News
+- Rating
 
 ### Requirements
-- Customer must have name, surname, national id, phone number, email, gender, birth date and address.
 - Customer's national id, email and phone number must be unique.
-- Account must have customer, type, branch location, currency and balance.
 - If account is deposit, then it must also have deposit period and interest ratio.
-- Notification must have customer and message.
-- Transaction must have an amount and at least sender account or receiver account.
-- Regular transfer order must have sender account, receiver account, period and amount.
 - News Report is used to add news.
-- News type should be either bank or offer.
+- Customers can rate the app between 1 and 5 once a year, starting in September.
 
 ### Additionals
 - Scheduled tasks run while application is running.
 - News are automatically added in chunks of size 40.
+- Scripts inside resources/db.stored_procedure must be written into related database containers to call procedures.
 
 ### Tech Stack
 ---
 - Java 21
 - Spring Boot
 - Spring Data JPA
+- Spring Data Cassandra
 - Spring Batch
 - MySQL
+- Cassandra
 - Docker
 
 ### Prerequisites
@@ -49,9 +48,11 @@ Entities:
 
 ### Build & Run & Debug
 ---
-In order to pull mysql image from Dockerhub, you should run the below command
-
-`$ docker pull mysql`
+In order to pull images from Dockerhub, you should run the below commands
+```
+$ docker pull mysql
+$ docker pull cassandra
+```
 
 Then, you should run the below commands in order to run the application
 
@@ -73,7 +74,6 @@ In order to debug the application, you should follow the below steps
 
 ### Api Documentation
 ---
-
 You may use Swagger-UI with the port of the application you configured to access the project's api documentation.<br/>
 You should use the below url to access the Swagger-UI. Default port is 8080.<br/>
 `http://localhost:${PORT}/swagger-ui.html`
