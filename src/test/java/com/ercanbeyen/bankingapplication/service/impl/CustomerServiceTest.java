@@ -10,6 +10,8 @@ import com.ercanbeyen.bankingapplication.repository.CustomerRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -55,6 +57,48 @@ class CustomerServiceTest {
     }
 
     @Test
+    @DisplayName("Happy path test: Get customers case")
+    void givenFilteringOptions_whenGetEntity_thenReturnCustomerDtos() {
+        // given
+        List<CustomerDto> expected = List.of(customerDtos.getFirst());
+        CustomerFilteringOptions filteringOptions = new CustomerFilteringOptions();
+        filteringOptions.setBirthDate(LocalDate.of(2005, 8, 15));
+
+        Mockito.doReturn(customers).when(customerRepository).findAll();
+        Mockito.doReturn(expected.getFirst()).when(customerMapper).customerToDto(Mockito.any());
+
+        // when
+        List<CustomerDto> actual = customerService.getEntities(filteringOptions);
+
+        // then
+        Mockito.verify(customerRepository, Mockito.times(1)).findAll();
+        Mockito.verify(customerMapper, Mockito.times(1)).customerToDto(Mockito.any());
+
+        Assertions.assertEquals(expected.size(), actual.size());
+    }
+
+    @Test
+    @DisplayName("Happy path test: Get customer case")
+    void givenId_whenGetEntity_thenReturnCustomerDto() {
+        // given
+        Optional<CustomerDto> expected = Optional.of(customerDtos.getFirst());
+        Customer customer = customers.getFirst();
+
+        Mockito.doReturn(Optional.of(customer)).when(customerRepository).findById(customer.getId());
+        Mockito.doReturn(expected.get()).when(customerMapper).customerToDto(customer);
+
+        // when
+        Optional<CustomerDto> actual = customerService.getEntity(customer.getId());
+
+        // then
+        Mockito.verify(customerRepository, Mockito.times(1)).findById(customer.getId());
+        Mockito.verify(customerMapper, Mockito.times(1)).customerToDto(Mockito.any());
+
+        Assumptions.assumeTrue(actual.isPresent());
+        Assertions.assertEquals(expected.get().getId(), actual.get().getId());
+    }
+
+    @Test
     @DisplayName("Happy path test: Create customer case")
     void givenCustomerDto_whenCreateEntity_thenReturnCustomerDto() {
         // given
@@ -86,30 +130,12 @@ class CustomerServiceTest {
         Assertions.assertEquals(expected, actual);
     }
 
-    @Test
-    @DisplayName("Happy path test: Get customers case")
-    void givenFilteringOptions_whenGetEntity_thenReturnCustomerDtos() {
-        List<CustomerDto> expected = List.of(customerDtos.getFirst());
-        CustomerFilteringOptions filteringOptions = new CustomerFilteringOptions();
-        filteringOptions.setBirthDate(LocalDate.of(2005, 8, 15));
-
-        Mockito.doReturn(customers).when(customerRepository).findAll();
-        Mockito.doReturn(expected.getFirst()).when(customerMapper).customerToDto(Mockito.any());
-
-        List<CustomerDto> actual = customerService.getEntities(filteringOptions);
-
-        Mockito.verify(customerRepository, Mockito.times(1)).findAll();
-        Mockito.verify(customerMapper, Mockito.times(1)).customerToDto(Mockito.any());
-
-        Assertions.assertEquals(expected.size(), actual.size());
-    }
-
-    @Test
-    @DisplayName("Happy path test: Update customer case")
-    void givenCustomerDto_whenUpdateEntity_thenReturnCustomerDto() {
+    @ParameterizedTest
+    @ValueSource(strings = {"test@email.com", "test_updated@email.com"})
+    @DisplayName("Happy path: Update customer case")
+    void givenCustomerDto_whenUpdateEntity_thenReturnCustomerDto(String email) {
         // given
         CustomerDto request = customerDtos.getFirst();
-        String email = "test_updated@email.com";
         request.setEmail(email);
 
         Customer customer = customers.getFirst();
@@ -144,6 +170,7 @@ class CustomerServiceTest {
         // when
         customerService.deleteEntity(customer.getId());
 
+        // then
         Mockito.verify(customerRepository, Mockito.times(1)).findById(customer.getId());
         Mockito.verify(customerRepository, Mockito.times(1)).delete(Mockito.any());
     }
