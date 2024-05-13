@@ -1,8 +1,11 @@
 package com.ercanbeyen.bankingapplication.service.impl;
 
-import com.ercanbeyen.bankingapplication.constant.enums.Gender;
+import com.ercanbeyen.bankingapplication.constant.enums.Entity;
+import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.CustomerDto;
 import com.ercanbeyen.bankingapplication.entity.Customer;
+import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
+import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import com.ercanbeyen.bankingapplication.factory.MockCustomerFactory;
 import com.ercanbeyen.bankingapplication.mapper.CustomerMapper;
 import com.ercanbeyen.bankingapplication.option.CustomerFilteringOptions;
@@ -64,38 +67,69 @@ class CustomerServiceTest {
         CustomerFilteringOptions filteringOptions = new CustomerFilteringOptions();
         filteringOptions.setBirthDate(LocalDate.of(2005, 8, 15));
 
-        Mockito.doReturn(customers).when(customerRepository).findAll();
-        Mockito.doReturn(expected.getFirst()).when(customerMapper).customerToDto(Mockito.any());
+        Mockito.doReturn(customers)
+                .when(customerRepository)
+                .findAll();
+        Mockito.doReturn(expected.getFirst())
+                .when(customerMapper)
+                .customerToDto(Mockito.any());
 
         // when
         List<CustomerDto> actual = customerService.getEntities(filteringOptions);
 
         // then
-        Mockito.verify(customerRepository, Mockito.times(1)).findAll();
-        Mockito.verify(customerMapper, Mockito.times(1)).customerToDto(Mockito.any());
+        Mockito.verify(customerRepository, Mockito.times(1))
+                .findAll();
+        Mockito.verify(customerMapper, Mockito.times(1))
+                .customerToDto(Mockito.any());
 
         Assertions.assertEquals(expected.size(), actual.size());
     }
 
     @Test
     @DisplayName("Happy path test: Get customer case")
-    void givenId_whenGetEntity_thenReturnCustomerDto() {
+    void givenExistingId_whenGetEntity_thenReturnCustomerDto() {
         // given
         Optional<CustomerDto> expected = Optional.of(customerDtos.getFirst());
         Customer customer = customers.getFirst();
 
-        Mockito.doReturn(Optional.of(customer)).when(customerRepository).findById(customer.getId());
-        Mockito.doReturn(expected.get()).when(customerMapper).customerToDto(customer);
+        Mockito.doReturn(Optional.of(customer))
+                .when(customerRepository)
+                .findById(Mockito.anyInt());
+        Mockito.doReturn(expected.get())
+                .when(customerMapper)
+                .customerToDto(Mockito.any());
 
         // when
         Optional<CustomerDto> actual = customerService.getEntity(customer.getId());
 
         // then
-        Mockito.verify(customerRepository, Mockito.times(1)).findById(customer.getId());
-        Mockito.verify(customerMapper, Mockito.times(1)).customerToDto(Mockito.any());
+        Mockito.verify(customerRepository, Mockito.times(1))
+                .findById(Mockito.anyInt());
+        Mockito.verify(customerMapper, Mockito.times(1))
+                .customerToDto(Mockito.any());
 
         Assumptions.assumeTrue(actual.isPresent());
         Assertions.assertEquals(expected.get().getId(), actual.get().getId());
+    }
+
+    @Test
+    @DisplayName("Happy path test: Get customer case")
+    void givenNotExistingId_whenGetEntity_thenReturnEmptyOptionalCustomerDto() {
+        // given
+        Mockito.doReturn(Optional.empty())
+                .when(customerRepository)
+                .findById(Mockito.anyInt());
+
+        // when
+        Optional<CustomerDto> actual = customerService.getEntity(20);
+
+        // then
+        Mockito.verify(customerRepository, Mockito.times(1))
+                .findById(Mockito.anyInt());
+        Mockito.verifyNoMoreInteractions(customerRepository, customerMapper);
+
+        Assertions.assertTrue(actual.isEmpty());
     }
 
     @Test
@@ -104,28 +138,51 @@ class CustomerServiceTest {
         // given
         Customer customer = customers.getFirst();
         CustomerDto expected = customerDtos.getFirst();
+        CustomerDto request = MockCustomerFactory.getCustomerDtoRequest();
 
-        CustomerDto request = new CustomerDto();
-        request.setId(1);
-        request.setName("Test-Name");
-        request.setSurname("Test-Surname");
-        request.setNationalId("12345678911");
-        request.setEmail("test1@email.com");
-        request.setGender(Gender.MALE);
-        request.setPhoneNumber("+905328465703");
-
-        Mockito.doReturn(customer).when(customerMapper).dtoToCustomer(request);
-        Mockito.doReturn(customer).when(customerRepository).save(Mockito.any());
-        Mockito.doReturn(expected).when(customerMapper).customerToDto(Mockito.any());
+        Mockito.doReturn(customer)
+                .when(customerMapper)
+                .dtoToCustomer(Mockito.any());
+        Mockito.doReturn(customer)
+                .when(customerRepository)
+                .save(Mockito.any());
+        Mockito.doReturn(expected)
+                .when(customerMapper)
+                .customerToDto(Mockito.any());
 
         // when
         CustomerDto actual = customerService.createEntity(request);
 
         // then
-        Mockito.verify(customerRepository, Mockito.times(1)).findAll();
-        Mockito.verify(customerMapper, Mockito.times(1)).dtoToCustomer(Mockito.any());
-        Mockito.verify(customerRepository, Mockito.times(1)).save(Mockito.any());
-        Mockito.verify(customerMapper, Mockito.times(1)).customerToDto(Mockito.any());
+        Mockito.verify(customerRepository, Mockito.times(1))
+                .findAll();
+        Mockito.verify(customerMapper, Mockito.times(1))
+                .dtoToCustomer(Mockito.any());
+        Mockito.verify(customerRepository, Mockito.times(1))
+                .save(Mockito.any());
+        Mockito.verify(customerMapper, Mockito.times(1))
+                .customerToDto(Mockito.any());
+
+        Assertions.assertEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("Exception path test: Create customer case")
+    void givenCustomerDto_whenCreateEntity_thenThrowResourceConflictException() {
+        // given
+        CustomerDto request = MockCustomerFactory.getCustomerDtoRequest();
+        String expected = String.format(ResponseMessages.ALREADY_EXISTS, Entity.CUSTOMER.getValue());
+
+        Mockito.doReturn(customers).when(customerRepository).findAll();
+
+        // when
+        RuntimeException exception = Assertions.assertThrows(ResourceConflictException.class, () -> customerService.createEntity(request));
+        String actual = exception.getMessage();
+
+        // then
+        Mockito.verify(customerRepository, Mockito.times(1))
+                .findAll();
+        Mockito.verifyNoMoreInteractions(customerRepository, customerMapper);
 
         Assertions.assertEquals(expected, actual);
     }
@@ -135,43 +192,117 @@ class CustomerServiceTest {
     @DisplayName("Happy path: Update customer case")
     void givenCustomerDto_whenUpdateEntity_thenReturnCustomerDto(String email) {
         // given
-        CustomerDto request = customerDtos.getFirst();
-        request.setEmail(email);
+        CustomerDto request = getUpdatedMockCustomerDtoRequest(email);
 
         Customer customer = customers.getFirst();
         customer.setEmail(email);
 
-        Mockito.doReturn(Optional.of(customers.getFirst())).when(customerRepository).findById(customer.getId());
-        Mockito.doReturn(customers.getFirst()).when(customerMapper).dtoToCustomer(request);
-        Mockito.doReturn(customer).when(customerRepository).save(Mockito.any());
-        Mockito.doReturn(request).when(customerMapper).customerToDto(Mockito.any());
+        Mockito.doReturn(Optional.of(customers.getFirst()))
+                .when(customerRepository)
+                .findById(Mockito.anyInt());
+        Mockito.doReturn(customers.getFirst())
+                .when(customerMapper)
+                .dtoToCustomer(Mockito.any());
+        Mockito.doReturn(customer)
+                .when(customerRepository)
+                .save(Mockito.any());
+        Mockito.doReturn(request)
+                .when(customerMapper)
+                .customerToDto(Mockito.any());
 
         // when
         CustomerDto actual = customerService.updateEntity(customer.getId(), request);
 
         // then
-        Mockito.verify(customerRepository, Mockito.times(1)).findById(customer.getId());
-        Mockito.verify(customerMapper, Mockito.times(1)).dtoToCustomer(Mockito.any());
-        Mockito.verify(customerRepository, Mockito.times(1)).save(Mockito.any());
-        Mockito.verify(customerMapper, Mockito.times(1)).customerToDto(Mockito.any());
+        Mockito.verify(customerRepository, Mockito.times(1))
+                .findById(Mockito.anyInt());
+        Mockito.verify(customerMapper, Mockito.times(1))
+                .dtoToCustomer(Mockito.any());
+        Mockito.verify(customerRepository, Mockito.times(1))
+                .save(Mockito.any());
+        Mockito.verify(customerMapper, Mockito.times(1))
+                .customerToDto(Mockito.any());
 
         Assertions.assertEquals(email, actual.getEmail());
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"test2@email.com", "test3@email.com"})
+    @DisplayName("Exception path test: Update customer case")
+    void givenCustomerDto_whenUpdateEntity_thenThrowResourceConflictException(String email) {
+        // given
+        CustomerDto request = getUpdatedMockCustomerDtoRequest(email);
+        String expected = String.format(ResponseMessages.ALREADY_EXISTS, Entity.CUSTOMER.getValue());
+
+        Mockito.doReturn(Optional.of(customers.getFirst()))
+                .when(customerRepository)
+                .findById(Mockito.anyInt());
+        Mockito.doReturn(customers)
+                .when(customerRepository)
+                .findAll();
+
+        // when
+        RuntimeException exception = Assertions.assertThrows(ResourceConflictException.class, () -> customerService.updateEntity(1, request));
+        String actual = exception.getMessage();
+
+        // then
+        Mockito.verify(customerRepository, Mockito.times(1))
+                .findById(Mockito.anyInt());
+        Mockito.verify(customerRepository, Mockito.times(1))
+                .findAll();
+        Mockito.verifyNoMoreInteractions(customerRepository, customerMapper);
+
+        Assertions.assertEquals(expected, actual);
+    }
+
     @Test
     @DisplayName("Happy path test: Delete customer case")
-    void givenId_whenDeleteEntity_thenReturnNothing() {
+    void givenExistingId_whenDeleteEntity_thenReturnNothing() {
         // given
         Customer customer = customers.getFirst();
 
-        Mockito.doReturn(Optional.of(customer)).when(customerRepository).findById(customer.getId());
-        Mockito.doNothing().when(customerRepository).delete(Mockito.any());
+        Mockito.doReturn(Optional.of(customer))
+                .when(customerRepository)
+                .findById(Mockito.anyInt());
+        Mockito.doNothing()
+                .when(customerRepository)
+                .delete(Mockito.any());
 
         // when
         customerService.deleteEntity(customer.getId());
 
         // then
-        Mockito.verify(customerRepository, Mockito.times(1)).findById(customer.getId());
-        Mockito.verify(customerRepository, Mockito.times(1)).delete(Mockito.any());
+        Mockito.verify(customerRepository, Mockito.times(1))
+                .findById(Mockito.anyInt());
+        Mockito.verify(customerRepository, Mockito.times(1))
+                .delete(Mockito.any());
+    }
+
+    private CustomerDto getUpdatedMockCustomerDtoRequest(String email) {
+        CustomerDto request = customerDtos.getFirst();
+        request.setEmail(email);
+        return request;
+    }
+
+    @Test
+    @DisplayName("Exception path test: Delete customer case")
+    void givenNotExistingId_whenDeleteEntity_thenThrowResourceNotFoundException() {
+        // given
+        String expected = String.format(ResponseMessages.NOT_FOUND, Entity.CUSTOMER.getValue());
+
+        Mockito.doReturn(Optional.empty())
+                .when(customerRepository)
+                .findById(Mockito.anyInt());
+
+        // when
+        RuntimeException exception = Assertions.assertThrows(ResourceNotFoundException.class, () -> customerService.deleteEntity(20));
+        String actual = exception.getMessage();
+
+        // then
+        Mockito.verify(customerRepository, Mockito.times(1))
+                .findById(Mockito.anyInt());
+        Mockito.verifyNoMoreInteractions(customerRepository, customerMapper);
+
+        Assertions.assertEquals(expected, actual);
     }
 }

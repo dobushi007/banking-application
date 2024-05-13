@@ -14,7 +14,7 @@ public class MockCustomerFactory {
         Customer customer1 = new Customer();
         customer1.setId(id);
         customer1.setName("Test-Name1");
-        customer1.setSurname("Test-Surname2");
+        customer1.setSurname("Test-Surname1");
         customer1.setNationalId("12345678911");
         customer1.setEmail("test1@email.com");
         customer1.setPhoneNumber("+905328465701");
@@ -33,7 +33,19 @@ public class MockCustomerFactory {
         customer2.setGender(Gender.FEMALE);
         customer2.setBirthDate(LocalDate.of(2007, 4, 6));
 
-        return List.of(customer1, customer2);
+        id++;
+
+        Customer customer3 = new Customer();
+        customer3.setId(id);
+        customer3.setName("Test-Name3");
+        customer3.setSurname("Test-Surname3");
+        customer3.setNationalId("12345678913");
+        customer3.setEmail("test3@email.com");
+        customer3.setPhoneNumber("+905328465702");
+        customer3.setGender(Gender.FEMALE);
+        customer3.setBirthDate(LocalDate.of(2003, 2, 20));
+
+        return List.of(customer1, customer2, customer3);
     }
 
     public static List<CustomerDto> getMockCustomerDtos() {
@@ -42,7 +54,7 @@ public class MockCustomerFactory {
         CustomerDto customerDto1 = new CustomerDto();
         customerDto1.setId(id);
         customerDto1.setName("Test-Name1");
-        customerDto1.setSurname("Test-Surname2");
+        customerDto1.setSurname("Test-Surname1");
         customerDto1.setNationalId("12345678911");
         customerDto1.setEmail("test1@email.com");
         customerDto1.setPhoneNumber("+905328465701");
@@ -61,6 +73,22 @@ public class MockCustomerFactory {
         customerDto2.setGender(Gender.FEMALE);
         customerDto2.setBirthDate(LocalDate.of(2007, 4, 6));
 
-        return List.of(customerDto1, customerDto2);
+        id++;
+
+        CustomerDto customerDto3 = new CustomerDto();
+        customerDto3.setId(id);
+        customerDto3.setName("Test-Name3");
+        customerDto3.setSurname("Test-Surname3");
+        customerDto3.setNationalId("12345678913");
+        customerDto3.setEmail("test3@email.com");
+        customerDto3.setPhoneNumber("+905328465703");
+        customerDto3.setGender(Gender.FEMALE);
+        customerDto3.setBirthDate(LocalDate.of(2003, 2, 20));
+
+        return List.of(customerDto1, customerDto2, customerDto3);
+    }
+
+    public static CustomerDto getCustomerDtoRequest() {
+        return getMockCustomerDtos().getFirst();
     }
 }
