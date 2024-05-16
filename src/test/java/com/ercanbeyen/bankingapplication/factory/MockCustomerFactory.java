@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public class MockCustomerFactory {
-    public static List<Customer> getMockCustomers() {
+    public static List<Customer> generateMockCustomers() {
         int id = 1;
 
         Customer customer1 = new Customer();
@@ -48,7 +48,7 @@ public class MockCustomerFactory {
         return List.of(customer1, customer2, customer3);
     }
 
-    public static List<CustomerDto> getMockCustomerDtos() {
+    public static List<CustomerDto> generateMockCustomerDtos() {
         int id = 1;
 
         CustomerDto customerDto1 = new CustomerDto();
@@ -88,7 +88,7 @@ public class MockCustomerFactory {
         return List.of(customerDto1, customerDto2, customerDto3);
     }
 
-    public static CustomerDto getCustomerDtoRequest() {
-        return getMockCustomerDtos().getFirst();
+    public static CustomerDto generateCustomerDtoRequest() {
+        return generateMockCustomerDtos().getFirst();
     }
 }
