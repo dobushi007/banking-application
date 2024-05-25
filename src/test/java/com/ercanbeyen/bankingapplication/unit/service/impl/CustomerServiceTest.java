@@ -1,4 +1,4 @@
-package com.ercanbeyen.bankingapplication.service.impl;
+package com.ercanbeyen.bankingapplication.unit.service.impl;
 
 import com.ercanbeyen.bankingapplication.constant.enums.Entity;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
@@ -13,6 +13,8 @@ import com.ercanbeyen.bankingapplication.factory.MockFileFactory;
 import com.ercanbeyen.bankingapplication.mapper.CustomerMapper;
 import com.ercanbeyen.bankingapplication.option.CustomerFilteringOptions;
 import com.ercanbeyen.bankingapplication.repository.CustomerRepository;
+import com.ercanbeyen.bankingapplication.service.impl.CustomerService;
+import com.ercanbeyen.bankingapplication.service.impl.FileStorageServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +22,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,6 +30,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @Slf4j
@@ -75,23 +79,23 @@ class CustomerServiceTest {
         CustomerFilteringOptions filteringOptions = new CustomerFilteringOptions();
         filteringOptions.setBirthDate(LocalDate.of(2005, 8, 15));
 
-        Mockito.doReturn(customers)
+        doReturn(customers)
                 .when(customerRepository)
                 .findAll();
-        Mockito.doReturn(expected.getFirst())
+        doReturn(expected.getFirst())
                 .when(customerMapper)
-                .customerToDto(Mockito.any());
+                .customerToDto(any());
 
         // when
         List<CustomerDto> actual = customerService.getEntities(filteringOptions);
 
         // then
-        Mockito.verify(customerRepository, Mockito.times(1))
+        verify(customerRepository, times(1))
                 .findAll();
-        Mockito.verify(customerMapper, Mockito.times(1))
-                .customerToDto(Mockito.any());
+        verify(customerMapper, times(1))
+                .customerToDto(any());
 
-        Assertions.assertEquals(expected.size(), actual.size());
+        assertEquals(expected.size(), actual.size());
     }
 
     @Test
@@ -101,43 +105,43 @@ class CustomerServiceTest {
         Optional<CustomerDto> expected = Optional.of(customerDtos.getFirst());
         Customer customer = customers.getFirst();
 
-        Mockito.doReturn(Optional.of(customer))
+        doReturn(Optional.of(customer))
                 .when(customerRepository)
-                .findById(Mockito.anyInt());
-        Mockito.doReturn(expected.get())
+                .findById(anyInt());
+        doReturn(expected.get())
                 .when(customerMapper)
-                .customerToDto(Mockito.any());
+                .customerToDto(any());
 
         // when
         Optional<CustomerDto> actual = customerService.getEntity(customer.getId());
 
         // then
-        Mockito.verify(customerRepository, Mockito.times(1))
-                .findById(Mockito.anyInt());
-        Mockito.verify(customerMapper, Mockito.times(1))
-                .customerToDto(Mockito.any());
+        verify(customerRepository, times(1))
+                .findById(anyInt());
+        verify(customerMapper, times(1))
+                .customerToDto(any());
 
         Assumptions.assumeTrue(actual.isPresent());
-        Assertions.assertEquals(expected.get().getId(), actual.get().getId());
+        assertEquals(expected.get().getId(), actual.get().getId());
     }
 
     @Test
     @DisplayName("Happy path test: Get customer case")
     void givenNotExistingId_whenGetEntity_thenReturnEmptyOptionalCustomerDto() {
         // given
-        Mockito.doReturn(Optional.empty())
+        doReturn(Optional.empty())
                 .when(customerRepository)
-                .findById(Mockito.anyInt());
+                .findById(anyInt());
 
         // when
         Optional<CustomerDto> actual = customerService.getEntity(20);
 
         // then
-        Mockito.verify(customerRepository, Mockito.times(1))
-                .findById(Mockito.anyInt());
-        Mockito.verifyNoMoreInteractions(customerRepository, customerMapper);
+        verify(customerRepository, times(1))
+                .findById(anyInt());
+        verifyNoMoreInteractions(customerRepository, customerMapper);
 
-        Assertions.assertTrue(actual.isEmpty());
+        assertTrue(actual.isEmpty());
     }
 
     @Test
@@ -148,30 +152,30 @@ class CustomerServiceTest {
         CustomerDto expected = customerDtos.getFirst();
         CustomerDto request = MockCustomerFactory.generateCustomerDtoRequest();
 
-        Mockito.doReturn(customer)
+        doReturn(customer)
                 .when(customerMapper)
-                .dtoToCustomer(Mockito.any());
-        Mockito.doReturn(customer)
+                .dtoToCustomer(any());
+        doReturn(customer)
                 .when(customerRepository)
-                .save(Mockito.any());
-        Mockito.doReturn(expected)
+                .save(any());
+        doReturn(expected)
                 .when(customerMapper)
-                .customerToDto(Mockito.any());
+                .customerToDto(any());
 
         // when
         CustomerDto actual = customerService.createEntity(request);
 
         // then
-        Mockito.verify(customerRepository, Mockito.times(1))
+        verify(customerRepository, times(1))
                 .findAll();
-        Mockito.verify(customerMapper, Mockito.times(1))
-                .dtoToCustomer(Mockito.any());
-        Mockito.verify(customerRepository, Mockito.times(1))
-                .save(Mockito.any());
-        Mockito.verify(customerMapper, Mockito.times(1))
-                .customerToDto(Mockito.any());
+        verify(customerMapper, times(1))
+                .dtoToCustomer(any());
+        verify(customerRepository, times(1))
+                .save(any());
+        verify(customerMapper, times(1))
+                .customerToDto(any());
 
-        Assertions.assertEquals(expected, actual);
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -181,18 +185,18 @@ class CustomerServiceTest {
         CustomerDto request = MockCustomerFactory.generateCustomerDtoRequest();
         String expected = String.format(ResponseMessages.ALREADY_EXISTS, Entity.CUSTOMER.getValue());
 
-        Mockito.doReturn(customers).when(customerRepository).findAll();
+        doReturn(customers).when(customerRepository).findAll();
 
         // when
-        RuntimeException exception = Assertions.assertThrows(ResourceConflictException.class, () -> customerService.createEntity(request));
+        RuntimeException exception = assertThrows(ResourceConflictException.class, () -> customerService.createEntity(request));
         String actual = exception.getMessage();
 
         // then
-        Mockito.verify(customerRepository, Mockito.times(1))
+        verify(customerRepository, times(1))
                 .findAll();
-        Mockito.verifyNoMoreInteractions(customerRepository, customerMapper);
+        verifyNoMoreInteractions(customerRepository, customerMapper);
 
-        Assertions.assertEquals(expected, actual);
+        assertEquals(expected, actual);
     }
 
     @ParameterizedTest
@@ -205,33 +209,33 @@ class CustomerServiceTest {
         Customer customer = customers.getFirst();
         customer.setEmail(email);
 
-        Mockito.doReturn(Optional.of(customers.getFirst()))
+        doReturn(Optional.of(customers.getFirst()))
                 .when(customerRepository)
-                .findById(Mockito.anyInt());
-        Mockito.doReturn(customers.getFirst())
+                .findById(anyInt());
+        doReturn(customers.getFirst())
                 .when(customerMapper)
-                .dtoToCustomer(Mockito.any());
-        Mockito.doReturn(customer)
+                .dtoToCustomer(any());
+        doReturn(customer)
                 .when(customerRepository)
-                .save(Mockito.any());
-        Mockito.doReturn(request)
+                .save(any());
+        doReturn(request)
                 .when(customerMapper)
-                .customerToDto(Mockito.any());
+                .customerToDto(any());
 
         // when
         CustomerDto actual = customerService.updateEntity(customer.getId(), request);
 
         // then
-        Mockito.verify(customerRepository, Mockito.times(1))
-                .findById(Mockito.anyInt());
-        Mockito.verify(customerMapper, Mockito.times(1))
-                .dtoToCustomer(Mockito.any());
-        Mockito.verify(customerRepository, Mockito.times(1))
-                .save(Mockito.any());
-        Mockito.verify(customerMapper, Mockito.times(1))
-                .customerToDto(Mockito.any());
+        verify(customerRepository, times(1))
+                .findById(anyInt());
+        verify(customerMapper, times(1))
+                .dtoToCustomer(any());
+        verify(customerRepository, times(1))
+                .save(any());
+        verify(customerMapper, times(1))
+                .customerToDto(any());
 
-        Assertions.assertEquals(email, actual.getEmail());
+        assertEquals(email, actual.getEmail());
     }
 
     @ParameterizedTest
@@ -242,25 +246,25 @@ class CustomerServiceTest {
         CustomerDto request = getUpdatedMockCustomerDtoRequest(email);
         String expected = String.format(ResponseMessages.ALREADY_EXISTS, Entity.CUSTOMER.getValue());
 
-        Mockito.doReturn(Optional.of(customers.getFirst()))
+        doReturn(Optional.of(customers.getFirst()))
                 .when(customerRepository)
-                .findById(Mockito.anyInt());
-        Mockito.doReturn(customers)
+                .findById(anyInt());
+        doReturn(customers)
                 .when(customerRepository)
                 .findAll();
 
         // when
-        RuntimeException exception = Assertions.assertThrows(ResourceConflictException.class, () -> customerService.updateEntity(1, request));
+        RuntimeException exception = assertThrows(ResourceConflictException.class, () -> customerService.updateEntity(1, request));
         String actual = exception.getMessage();
 
         // then
-        Mockito.verify(customerRepository, Mockito.times(1))
-                .findById(Mockito.anyInt());
-        Mockito.verify(customerRepository, Mockito.times(1))
+        verify(customerRepository, times(1))
+                .findById(anyInt());
+        verify(customerRepository, times(1))
                 .findAll();
-        Mockito.verifyNoMoreInteractions(customerRepository, customerMapper);
+        verifyNoMoreInteractions(customerRepository, customerMapper);
 
-        Assertions.assertEquals(expected, actual);
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -269,27 +273,21 @@ class CustomerServiceTest {
         // given
         Customer customer = customers.getFirst();
 
-        Mockito.doReturn(Optional.of(customer))
+        doReturn(Optional.of(customer))
                 .when(customerRepository)
-                .findById(Mockito.anyInt());
-        Mockito.doNothing()
+                .findById(anyInt());
+        doNothing()
                 .when(customerRepository)
-                .delete(Mockito.any());
+                .delete(any());
 
         // when
         customerService.deleteEntity(customer.getId());
 
         // then
-        Mockito.verify(customerRepository, Mockito.times(1))
-                .findById(Mockito.anyInt());
-        Mockito.verify(customerRepository, Mockito.times(1))
-                .delete(Mockito.any());
-    }
-
-    private CustomerDto getUpdatedMockCustomerDtoRequest(String email) {
-        CustomerDto request = customerDtos.getFirst();
-        request.setEmail(email);
-        return request;
+        verify(customerRepository, times(1))
+                .findById(anyInt());
+        verify(customerRepository, times(1))
+                .delete(any());
     }
 
     @Test
@@ -298,20 +296,20 @@ class CustomerServiceTest {
         // given
         String expected = String.format(ResponseMessages.NOT_FOUND, Entity.CUSTOMER.getValue());
 
-        Mockito.doReturn(Optional.empty())
+        doReturn(Optional.empty())
                 .when(customerRepository)
-                .findById(Mockito.anyInt());
+                .findById(anyInt());
 
         // when
-        RuntimeException exception = Assertions.assertThrows(ResourceNotFoundException.class, () -> customerService.deleteEntity(20));
+        RuntimeException exception = assertThrows(ResourceNotFoundException.class, () -> customerService.deleteEntity(20));
         String actual = exception.getMessage();
 
         // then
-        Mockito.verify(customerRepository, Mockito.times(1))
-                .findById(Mockito.anyInt());
-        Mockito.verifyNoMoreInteractions(customerRepository, customerMapper);
+        verify(customerRepository, times(1))
+                .findById(anyInt());
+        verifyNoMoreInteractions(customerRepository, customerMapper);
 
-        Assertions.assertEquals(expected, actual);
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -323,26 +321,26 @@ class CustomerServiceTest {
         File file = MockFileFactory.generateMockFile();
         CompletableFuture<File> fileCompletableFuture = CompletableFuture.supplyAsync(() -> file);
 
-        Mockito.doReturn(Optional.of(customers.getFirst()))
+        doReturn(Optional.of(customers.getFirst()))
                 .when(customerRepository)
                 .findById(customers.getFirst().getId());
-        Mockito.doReturn(fileCompletableFuture)
+        doReturn(fileCompletableFuture)
                 .when(fileStorageService)
-                .storeFile(Mockito.any());
-        Mockito.doReturn(customers.getFirst())
+                .storeFile(any());
+        doReturn(customers.getFirst())
                 .when(customerRepository)
-                .save(Mockito.any());
+                .save(any());
 
         // when
         String actual = customerService.uploadProfilePhoto(customers.getFirst().getId(), multipartFile);
 
         // then
-        Mockito.verify(customerRepository, Mockito.times(1))
-                .findById(Mockito.anyInt());
-        Mockito.verify(fileStorageService, Mockito.times(1))
-                .storeFile(Mockito.any());
+        verify(customerRepository, times(1))
+                .findById(anyInt());
+        verify(fileStorageService, times(1))
+                .storeFile(any());
 
-        Assertions.assertEquals(expected, actual);
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -353,25 +351,25 @@ class CustomerServiceTest {
         MultipartFile multipartFile = MockFileFactory.generateMockMultipartFile();
         int id = 20;
 
-        Mockito.doReturn(Optional.of(customers.getFirst()))
+        doReturn(Optional.of(customers.getFirst()))
                 .when(customerRepository)
-                .findById(Mockito.anyInt());
-        Mockito.doThrow(new ResourceExpectationFailedException(ResponseMessages.FILE_UPLOAD_ERROR))
+                .findById(anyInt());
+        doThrow(new ResourceExpectationFailedException(ResponseMessages.FILE_UPLOAD_ERROR))
                 .when(fileStorageService)
-                .storeFile(Mockito.any());
+                .storeFile(any());
 
         // when
-        RuntimeException exception = Assertions.assertThrows(ResourceExpectationFailedException.class, () -> customerService.uploadProfilePhoto(id, multipartFile));
+        RuntimeException exception = assertThrows(ResourceExpectationFailedException.class, () -> customerService.uploadProfilePhoto(id, multipartFile));
         String actual = exception.getMessage();
 
         // then
-        Mockito.verify(customerRepository, Mockito.times(1))
-                .findById(Mockito.anyInt());
-        Mockito.verify(fileStorageService, Mockito.times(1))
-                .storeFile(Mockito.any());
-        Mockito.verifyNoMoreInteractions(customerRepository);
+        verify(customerRepository, times(1))
+                .findById(anyInt());
+        verify(fileStorageService, times(1))
+                .storeFile(any());
+        verifyNoMoreInteractions(customerRepository);
 
-        Assertions.assertEquals(expected, actual);
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -382,18 +380,18 @@ class CustomerServiceTest {
         int id = customers.getFirst().getId();
         customers.getFirst().setProfilePhoto(expected);
 
-        Mockito.doReturn(Optional.of(customers.getFirst()))
+        doReturn(Optional.of(customers.getFirst()))
                 .when(customerRepository)
-                .findById(id);
+                .findById(anyInt());
 
         // when
         File actual = customerService.downloadProfilePhoto(id);
 
         // then
-        Mockito.verify(customerRepository, Mockito.times(1))
-                .findById(Mockito.anyInt());
+        verify(customerRepository, times(1))
+                .findById(anyInt());
 
-        Assertions.assertEquals(expected.getName(), actual.getName());
+        assertEquals(expected.getName(), actual.getName());
     }
 
     @Test
@@ -403,19 +401,19 @@ class CustomerServiceTest {
         // given
         String expected = String.format(ResponseMessages.NOT_FOUND, Entity.CUSTOMER.getValue());
 
-        Mockito.doReturn(Optional.empty())
+        doReturn(Optional.empty())
                 .when(customerRepository)
-                .findById(Mockito.anyInt());
+                .findById(anyInt());
 
         // when
-        RuntimeException exception = Assertions.assertThrows(ResourceNotFoundException.class, () -> customerService.downloadProfilePhoto(20));
+        RuntimeException exception = assertThrows(ResourceNotFoundException.class, () -> customerService.downloadProfilePhoto(20));
         String actual = exception.getMessage();
 
         // then
-        Mockito.verify(customerRepository, Mockito.times(1))
-                .findById(Mockito.anyInt());
+        verify(customerRepository, times(1))
+                .findById(anyInt());
 
-        Assertions.assertEquals(expected, actual);
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -425,17 +423,22 @@ class CustomerServiceTest {
         String expected = ResponseMessages.FILE_DELETE_SUCCESS;
         int id = customers.getFirst().getId();
 
-        Mockito.doReturn(Optional.of(customers.getFirst()))
+        doReturn(Optional.of(customers.getFirst()))
                 .when(customerRepository)
-                .findById(Mockito.anyInt());
+                .findById(anyInt());
 
         // when
         String actual = customerService.deleteProfilePhoto(id);
 
         // then
-        Mockito.verify(customerRepository, Mockito.times(1)).findById(id);
+        verify(customerRepository, times(1)).findById(id);
 
-        Assertions.assertEquals(expected, actual);
+        assertEquals(expected, actual);
     }
 
+    private CustomerDto getUpdatedMockCustomerDtoRequest(String email) {
+        CustomerDto request = customerDtos.getFirst();
+        request.setEmail(email);
+        return request;
+    }
 }
