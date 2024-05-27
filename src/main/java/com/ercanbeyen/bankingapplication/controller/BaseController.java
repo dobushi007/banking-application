@@ -2,6 +2,7 @@ package com.ercanbeyen.bankingapplication.controller;
 
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.BaseDto;
+import com.ercanbeyen.bankingapplication.dto.response.MessageResponse;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import com.ercanbeyen.bankingapplication.option.BaseFilteringOptions;
 import com.ercanbeyen.bankingapplication.service.BaseService;
@@ -42,11 +43,12 @@ public abstract class BaseController<T extends BaseDto, V extends BaseFilteringO
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteEntity(@PathVariable("id") Integer id) {
+    public ResponseEntity<MessageResponse<String>> deleteEntity(@PathVariable("id") Integer id) {
         return baseService.getEntity(id)
                 .map(entity -> {
                     baseService.deleteEntity(id);
-                    return new ResponseEntity<>("Successfully deleted", HttpStatus.OK);
+                    MessageResponse<String> response = new MessageResponse<>("Successfully deleted");
+                    return new ResponseEntity<>(response, HttpStatus.OK);
                 })
                 .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
     }
