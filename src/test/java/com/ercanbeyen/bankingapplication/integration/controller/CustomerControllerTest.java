@@ -44,9 +44,9 @@ class CustomerControllerTest {
 
     @DynamicPropertySource
     static void registerMySQLProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", () -> String.format("jdbc:mysql://localhost:%d/test", mySQLContainer.getFirstMappedPort()));
-        registry.add("spring.datasource.username", () -> "localhost");
-        registry.add("spring.datasource.password", () -> "password");
+        registry.add("spring.datasource.url", mySQLContainer::getJdbcUrl);
+        registry.add("spring.datasource.username", mySQLContainer::getUsername);
+        registry.add("spring.datasource.password", mySQLContainer::getPassword);
 
         mySQLContainer.start();
     }
@@ -54,12 +54,12 @@ class CustomerControllerTest {
     @DynamicPropertySource
     static void registerCassandraProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.data.cassandra.contactpoints", () -> cassandraContainer.getHost() + ":" + cassandraContainer.getFirstMappedPort());
-        registry.add("spring.data.cassandra.local-datacenter", () -> "datacenter1");
+        registry.add("spring.data.cassandra.local-datacenter", cassandraContainer::getLocalDatacenter);
         registry.add("spring.data.cassandra.port", cassandraContainer::getFirstMappedPort);
         registry.add("spring.data.cassandra.keyspace-name", () -> "mykeyspace");
         registry.add("spring.data.cassandra.entity-base-package", () -> "com.ercanbeyen.bankingapplication.entity");
-        registry.add("spring.data.cassandra.username", () -> "cassandra");
-        registry.add("spring.data.cassandra.password", () -> "cassandra");
+        registry.add("spring.data.cassandra.username", cassandraContainer::getUsername);
+        registry.add("spring.data.cassandra.password", cassandraContainer::getPassword);
 
         cassandraContainer.start();
     }
@@ -111,9 +111,9 @@ class CustomerControllerTest {
                 .body("nationalId", equalTo("12345678911"));
     }
 
+    @Test
     @Order(3)
     @DisplayName("Happy path test: Get customers case with birth date")
-    @Test
     void givenBirthDate_whenGetEntities_thenReturnCustomerDtos() {
         Customer newCustomer = new Customer();
         newCustomer.setName("Test-Name2");
