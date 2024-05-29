@@ -47,9 +47,9 @@ public abstract class BaseController<T extends BaseDto, V extends BaseFilteringO
         return baseService.getEntity(id)
                 .map(entity -> {
                     baseService.deleteEntity(id);
-                    MessageResponse<String> response = new MessageResponse<>("Successfully deleted");
+                    MessageResponse<String> response = new MessageResponse<>(ResponseMessages.DELETE_SUCCESS);
                     return new ResponseEntity<>(response, HttpStatus.OK);
                 })
-                .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, "Entity")));
     }
 }

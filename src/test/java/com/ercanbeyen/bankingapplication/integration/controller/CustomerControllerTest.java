@@ -1,6 +1,7 @@
 package com.ercanbeyen.bankingapplication.integration.controller;
 
 import com.ercanbeyen.bankingapplication.constant.enums.Gender;
+import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.entity.Customer;
 import com.ercanbeyen.bankingapplication.repository.CustomerRepository;
 import io.restassured.RestAssured;
@@ -83,6 +84,7 @@ class CustomerControllerTest {
                 .when()
                 .get("/api/v1/customers")
                 .then()
+                .assertThat()
                 .statusCode(HttpStatus.OK.value())
                 .body("size()", is(0));
     }
@@ -107,6 +109,7 @@ class CustomerControllerTest {
                 .when()
                 .post("/api/v1/customers")
                 .then()
+                .assertThat()
                 .statusCode(HttpStatus.CREATED.value())
                 .body("nationalId", equalTo("12345678911"));
     }
@@ -131,6 +134,7 @@ class CustomerControllerTest {
                 .when()
                 .get("/api/v1/customers")
                 .then()
+                .assertThat()
                 .statusCode(HttpStatus.OK.value())
                 .body("size()", is(1));
     }
@@ -143,6 +147,7 @@ class CustomerControllerTest {
                 .when()
                 .get("/api/v1/customers/{id}", 1)
                 .then()
+                .assertThat()
                 .statusCode(HttpStatus.OK.value())
                 .body("nationalId", equalTo("12345678911"));
     }
@@ -155,6 +160,7 @@ class CustomerControllerTest {
                 .when()
                 .get("/api/v1/customers/{id}", 25)
                 .then()
+                .assertThat()
                 .statusCode(HttpStatus.NOT_FOUND.value())
                 .body("message", equalTo("Entity is not found"));
     }
@@ -179,6 +185,7 @@ class CustomerControllerTest {
                 .when()
                 .put("/api/v1/customers/{id}", 1)
                 .then()
+                .assertThat()
                 .statusCode(HttpStatus.BAD_REQUEST.value())
                 .body("phoneNumber", equalTo("Invalid phone number"));
 
@@ -192,7 +199,8 @@ class CustomerControllerTest {
                 .when()
                 .delete("/api/v1/customers/{id}", 1)
                 .then()
+                .assertThat()
                 .statusCode(HttpStatus.OK.value())
-                .body("response", equalTo("Successfully deleted"));
+                .body("response", equalTo(ResponseMessages.DELETE_SUCCESS));
     }
 }

@@ -1,6 +1,7 @@
 package com.ercanbeyen.bankingapplication.unit.service.impl;
 
 import com.ercanbeyen.bankingapplication.constant.enums.Entity;
+import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.CustomerDto;
 import com.ercanbeyen.bankingapplication.entity.Customer;
@@ -34,9 +35,10 @@ import java.util.concurrent.CompletableFuture;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 @Slf4j
+@ExtendWith(MockitoExtension.class)
 class CustomerServiceTest {
+    public static final String TESTED_CLASS = "Customer Service";
     @InjectMocks
     private CustomerService customerService;
     @Mock
@@ -51,24 +53,24 @@ class CustomerServiceTest {
 
     @BeforeAll
     static void start() {
-        log.info("Unit tests of Customer Service are starting");
+        log.info(LogMessages.Test.START, LogMessages.Test.UNIT, TESTED_CLASS);
     }
 
     @AfterAll
     static void end() {
-        log.info("Unit tests of Customer Service are finishing");
+        log.info(LogMessages.Test.END, LogMessages.Test.UNIT, TESTED_CLASS);
     }
 
     @BeforeEach
     void setUp() {
-        log.info("Setup...");
+        log.info(LogMessages.Test.SETUP);
         customers = MockCustomerFactory.generateMockCustomers();
         customerDtos = MockCustomerFactory.generateMockCustomerDtos();
     }
 
     @AfterEach
     void tearDown() {
-        log.info("Tear down...");
+        log.info(LogMessages.Test.TEAR_DOWN);
     }
 
     @Test
@@ -202,9 +204,9 @@ class CustomerServiceTest {
     @ParameterizedTest
     @ValueSource(strings = {"test@email.com", "test_updated@email.com"})
     @DisplayName("Happy path: Update customer case")
-    void givenCustomerDto_whenUpdateEntity_thenReturnCustomerDto(String email) {
+    void givenIdAndCustomerDto_whenUpdateEntity_thenReturnCustomerDto(String email) {
         // given
-        CustomerDto request = getUpdatedMockCustomerDtoRequest(email);
+        CustomerDto request = getUpdateMockCustomerDtoRequest(email);
 
         Customer customer = customers.getFirst();
         customer.setEmail(email);
@@ -241,9 +243,9 @@ class CustomerServiceTest {
     @ParameterizedTest
     @ValueSource(strings = {"test2@email.com", "test3@email.com"})
     @DisplayName("Exception path test: Update customer case")
-    void givenCustomerDto_whenUpdateEntity_thenThrowResourceConflictException(String email) {
+    void givenIdAndCustomerDto_whenUpdateEntity_thenThrowResourceConflictException(String email) {
         // given
-        CustomerDto request = getUpdatedMockCustomerDtoRequest(email);
+        CustomerDto request = getUpdateMockCustomerDtoRequest(email);
         String expected = String.format(ResponseMessages.ALREADY_EXISTS, Entity.CUSTOMER.getValue());
 
         doReturn(Optional.of(customers.getFirst()))
@@ -436,7 +438,7 @@ class CustomerServiceTest {
         assertEquals(expected, actual);
     }
 
-    private CustomerDto getUpdatedMockCustomerDtoRequest(String email) {
+    private CustomerDto getUpdateMockCustomerDtoRequest(String email) {
         CustomerDto request = customerDtos.getFirst();
         request.setEmail(email);
         return request;
