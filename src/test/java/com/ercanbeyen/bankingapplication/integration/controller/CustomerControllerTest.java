@@ -5,14 +5,16 @@ import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.entity.Customer;
 import com.ercanbeyen.bankingapplication.repository.CustomerRepository;
 import io.restassured.RestAssured;
+import io.restassured.builder.MultiPartSpecBuilder;
 import io.restassured.http.ContentType;
-import lombok.extern.slf4j.Slf4j;
+import io.restassured.specification.MultiPartSpecification;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.CassandraContainer;
@@ -21,6 +23,9 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.time.LocalDate;
 
 import static io.restassured.RestAssured.given;
@@ -29,7 +34,6 @@ import static org.hamcrest.Matchers.is;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
-@Slf4j
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class CustomerControllerTest {
     @Container
@@ -172,16 +176,16 @@ class CustomerControllerTest {
         given()
                 .contentType(ContentType.JSON)
                 .body("""
-                        {
-                            "name": "Test-Name1",
-                            "surname": "Test-Surname1",
-                            "nationalId": "12345678911",
-                            "phoneNumber": "905322864662",
-                            "email": "test1@email.com",
-                            "birthDate": "2005-08-15",
-                            "gender": "MALE"
-                        }
-                       """)
+                         {
+                             "name": "Test-Name1",
+                             "surname": "Test-Surname1",
+                             "nationalId": "12345678911",
+                             "phoneNumber": "905322864662",
+                             "email": "test1@email.com",
+                             "birthDate": "2005-08-15",
+                             "gender": "MALE"
+                         }
+                        """)
                 .when()
                 .put("/api/v1/customers/{id}", 1)
                 .then()
@@ -202,5 +206,42 @@ class CustomerControllerTest {
                 .assertThat()
                 .statusCode(HttpStatus.OK.value())
                 .body("response", equalTo(ResponseMessages.DELETE_SUCCESS));
+    }
+
+    @Test
+    @Order(8)
+    @DisplayName("Happy path test: Upload profile photo")
+    void givenIdAndMultipartFile_whenUploadProfilePhoto_thenReturnMessage() throws IOException {
+        String pathName = "C:\\Users\\ercanbeyen\\Photos\\Test\\Banking-App\\profilePhoto-test.png";
+        File file = new File(pathName);
+        MultiPartSpecification multiPartSpecification = new MultiPartSpecBuilder(Files.readAllBytes(file.toPath()))
+                .fileName(file.getName())
+                .controlName("file")
+                .mimeType(MediaType.IMAGE_PNG_VALUE)
+                .build();
+
+
+        given()
+                .log()
+                .all()
+                .multiPart(multiPartSpecification)
+                .when()
+                .post("/api/v1/customers/{id}", 2)
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.OK.value())
+                .body("response", equalTo(ResponseMessages.FILE_UPLOAD_SUCCESS));
+    }
+
+    @Test
+    @Order(9)
+    @DisplayName("Happy path test: Download profile photo")
+    void givenId_whenDownloadProfilePhoto_thenReturnFile() {
+        customerRepository.findById(2)
+                .ifPresent(customer -> given()
+                        .when()
+                        .get("/api/v1/customers/{id}/photo", 2)
+                        .then()
+                        .statusCode(HttpStatus.OK.value()));
     }
 }

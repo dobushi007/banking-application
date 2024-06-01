@@ -19,8 +19,8 @@ public class MockFileFactory {
 
     private static MultipartFile generateMultipartFile() {
         return new MockMultipartFile(
-                "file",
-                "hello.txt",
+                "hello",
+                "hello.png",
                 MediaType.IMAGE_PNG_VALUE,
                 "Hello, World!".getBytes());
     }
