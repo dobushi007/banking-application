@@ -92,7 +92,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
-        checkCustomerUniqueness(request.getNationalId(), request.getPhoneNumber());
+        checkCustomerUniqueness(request.getNationalId(), request.getPhoneNumber(), request.getEmail());
         log.info(LogMessages.RESOURCE_UNIQUE, Entity.CUSTOMER.getValue());
 
         Customer customer = customerMapper.dtoToCustomer(request);
@@ -108,6 +108,9 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
 
         Customer customer = findCustomerById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
+
+        checkCustomerUniqueness(request.getNationalId(), request.getPhoneNumber(), request.getEmail());
+        log.info(LogMessages.RESOURCE_UNIQUE, Entity.CUSTOMER.getValue());
 
         Customer requestCustomer = customerMapper.dtoToCustomer(request);
 
@@ -293,8 +296,9 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
         transactionDtos.addAll(currentTransactionDtos);
     }
 
-    private void checkCustomerUniqueness(String nationalId, String phoneNumber) {
-        Predicate<Customer> customerPredicate = customer -> customer.getNationalId().equals(nationalId) || customer.getPhoneNumber().equals(phoneNumber);
+    private void checkCustomerUniqueness(String nationalId, String phoneNumber, String email) {
+        Predicate<Customer> customerPredicate = customer -> customer.getNationalId().equals(nationalId)
+                || customer.getPhoneNumber().equals(phoneNumber) || customer.getEmail().equals(email);
         boolean customerExists = customerRepository.findAll()
                 .stream()
                 .anyMatch(customerPredicate);

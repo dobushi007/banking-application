@@ -1,5 +1,6 @@
 package com.ercanbeyen.bankingapplication.annotation;
 
+import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.validator.PhoneNumberValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
@@ -13,7 +14,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = PhoneNumberValidator.class)
 public @interface PhoneNumberRequest {
-    String message() default "Invalid phone number";
+    String message() default ResponseMessages.INVALID_PHONE_NUMBER;
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }

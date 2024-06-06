@@ -19,11 +19,23 @@ public class LogMessages {
     public static final String RESOURCE_CREATE_SUCCESS = "{} {} is successfully created";
     public static final String CLASS_OF_RESPONSE = "Class of response: {}";
     public static final String CLASS_OF_OBJECT = "Class of {}: {}";
+
     public static class Batch {
         public static final String JOB_STATUS = "!!! Job {}! Time to verify the results";
         public static final String STEP_STATUS = "Step {} is {} time {}";
 
         private Batch() {}
+    }
+
+    public static class Test {
+        public static final String UNIT = "Unit";
+        public static final String SETUP = "Setup...";
+        public static final String TEAR_DOWN = "Tear down...";
+        private static final String TEMPLATE = "{} tests of {} are";
+        public static final String START = TEMPLATE + " starting";
+        public static final String END = TEMPLATE + " finishing";
+
+        private Test() {}
     }
 
     private LogMessages() {}

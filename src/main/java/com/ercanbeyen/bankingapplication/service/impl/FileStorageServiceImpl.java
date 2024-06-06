@@ -49,8 +49,7 @@ public class FileStorageServiceImpl implements FileStorageService {
             return fileRepository.save(file);
         }).exceptionally(exception -> {
             log.error(LogMessages.EXCEPTION, exception.getMessage());
-            String message = ResponseMessages.FILE_UPLOAD_ERROR;
-            throw new ResourceExpectationFailedException(message);
+            throw new ResourceExpectationFailedException(ResponseMessages.FILE_UPLOAD_ERROR);
         });
     }
 

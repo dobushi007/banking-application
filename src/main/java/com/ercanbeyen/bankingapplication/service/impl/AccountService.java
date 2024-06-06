@@ -45,8 +45,6 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
-        log.info("AccountFilteringOptions' type: {}", options.getType());
-
         Predicate<Account> accountPredicate = account -> (options.getType() == null || options.getType() == account.getType())
                 && (options.getCreateTime() == null || options.getCreateTime().toLocalDate().isEqual(options.getCreateTime().toLocalDate()));
         List<AccountDto> accountDtos = new ArrayList<>();
@@ -108,10 +106,12 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
-        Account account = findAccountById(id);
-        log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
+        if (!doesAccountExist(id)) {
+            throw new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.ACCOUNT.getValue()));
+        }
 
-        accountRepository.delete(account);
+        log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
+        accountRepository.deleteById(id);
     }
 
     public String applyUnidirectionalAccountOperation(Integer id, AccountOperation operation, Double amount) {
@@ -271,6 +271,10 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         accountRepository.save(account);
 
         return AccountUtils.constructResponseMessageForUnidirectionalAccountOperations(AccountOperation.WITHDRAW, amount, account.getId(), account.getCurrency());
+    }
+
+    private boolean doesAccountExist(Integer id) {
+        return accountRepository.existsById(id);
     }
 
     private Account findAccountById(Integer id) {

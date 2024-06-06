@@ -37,6 +37,8 @@ Entities:
 - Spring Data JPA
 - Spring Data Cassandra
 - Spring Batch
+- JUnit 5
+- Rest-assured
 - MySQL
 - Cassandra
 - Docker
