@@ -5,7 +5,6 @@ import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.controller.CustomerController;
 import com.ercanbeyen.bankingapplication.dto.CustomerDto;
 import com.ercanbeyen.bankingapplication.dto.response.MessageResponse;
-import com.ercanbeyen.bankingapplication.entity.Customer;
 import com.ercanbeyen.bankingapplication.factory.MockCustomerFactory;
 import com.ercanbeyen.bankingapplication.option.CustomerFilteringOptions;
 import com.ercanbeyen.bankingapplication.service.impl.CustomerService;
@@ -36,7 +35,6 @@ class CustomerControllerTest {
     private CustomerService customerService;
 
     public static final String TESTED_CLASS = "Customer Controller";
-    private List<Customer> customers;
     private List<CustomerDto> customerDtos;
 
     @BeforeEach
@@ -52,7 +50,6 @@ class CustomerControllerTest {
     @BeforeEach
     void setUp() {
         log.info(LogMessages.Test.SETUP);
-        customers = MockCustomerFactory.generateMockCustomers();
         customerDtos = MockCustomerFactory.generateMockCustomerDtos();
     }
 
@@ -108,7 +105,7 @@ class CustomerControllerTest {
                 .createEntity(any());
 
         // when
-        ResponseEntity<CustomerDto> responseEntity = customerController.createEntity(MockCustomerFactory.generateCustomerDtoRequest());
+        ResponseEntity<CustomerDto> responseEntity = customerController.createEntity(MockCustomerFactory.generateCustomerDtoRequests().getFirst());
 
         // then
         verify(customerService, times(1)).createEntity(any());

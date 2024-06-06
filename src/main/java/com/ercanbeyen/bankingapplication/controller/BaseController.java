@@ -1,5 +1,6 @@
 package com.ercanbeyen.bankingapplication.controller;
 
+import com.ercanbeyen.bankingapplication.constant.enums.Entity;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.BaseDto;
 import com.ercanbeyen.bankingapplication.dto.response.MessageResponse;
@@ -29,7 +30,7 @@ public abstract class BaseController<T extends BaseDto, V extends BaseFilteringO
     public ResponseEntity<T> getEntity(@PathVariable("id") Integer id) {
         return baseService.getEntity(id)
                 .map(t -> new ResponseEntity<>(t, HttpStatus.OK))
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, "Entity")));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.GENERAL.getValue())));
     }
 
     @PostMapping

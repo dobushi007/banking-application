@@ -88,7 +88,7 @@ public class MockCustomerFactory {
         return List.of(customerDto1, customerDto2, customerDto3);
     }
 
-    public static CustomerDto generateCustomerDtoRequest() {
-        return generateMockCustomerDtos().getFirst();
+    public static List<CustomerDto> generateCustomerDtoRequests() {
+        return generateMockCustomerDtos();
     }
 }

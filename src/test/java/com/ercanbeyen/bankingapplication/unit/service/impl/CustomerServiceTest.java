@@ -47,7 +47,6 @@ class CustomerServiceTest {
     private CustomerMapper customerMapper;
     @Mock
     private FileStorageServiceImpl fileStorageService;
-
     private List<Customer> customers;
     private List<CustomerDto> customerDtos;
 
@@ -152,7 +151,7 @@ class CustomerServiceTest {
         // given
         Customer customer = customers.getFirst();
         CustomerDto expected = customerDtos.getFirst();
-        CustomerDto request = MockCustomerFactory.generateCustomerDtoRequest();
+        CustomerDto request = MockCustomerFactory.generateCustomerDtoRequests().getFirst();
 
         doReturn(customer)
                 .when(customerMapper)
@@ -184,7 +183,7 @@ class CustomerServiceTest {
     @DisplayName("Exception path test: Create customer case")
     void givenCustomerDto_whenCreateEntity_thenThrowResourceConflictException() {
         // given
-        CustomerDto request = MockCustomerFactory.generateCustomerDtoRequest();
+        CustomerDto request = MockCustomerFactory.generateCustomerDtoRequests().getFirst();
         String expected = String.format(ResponseMessages.ALREADY_EXISTS, Entity.CUSTOMER.getValue());
 
         doReturn(customers).when(customerRepository).findAll();
@@ -315,6 +314,7 @@ class CustomerServiceTest {
     }
 
     @Test
+    @Timeout(value = 5) // The default time unit is seconds
     @DisplayName("Happy path test: Upload photo case")
     void givenMultipartFile_whenUploadPhoto_thenReturnMessage() throws IOException {
         // given

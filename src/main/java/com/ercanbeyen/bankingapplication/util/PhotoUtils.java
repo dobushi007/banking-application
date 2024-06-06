@@ -1,5 +1,6 @@
 package com.ercanbeyen.bankingapplication.util;
 
+import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.exception.ResourceExpectationFailedException;
 import lombok.experimental.UtilityClass;
 import org.springframework.web.multipart.MultipartFile;
@@ -8,7 +9,7 @@ import java.util.List;
 
 @UtilityClass
 public final class PhotoUtils {
-    private static final List<String> validContentTypeList = List.of(
+    private static final List<String> validContentTypes = List.of(
             "image/png", "image/jpg", "image/jpeg"
     );
 
@@ -18,10 +19,13 @@ public final class PhotoUtils {
         FileUtils.checkLengthOfFileName(file);
     }
 
+    public static List<String> getPlainContentTypes() {
+        return FileUtils.getPlainContentTypes(validContentTypes);
+    }
+
     private static void checkContentTypeOfPhoto(MultipartFile file) {
-        if (!validContentTypeList.contains(file.getContentType())) {
-            List<String> plainContentTypeList = FileUtils.getPlainContentTypes(validContentTypeList);
-            throw new ResourceExpectationFailedException("Invalid content type for photo. Valid content types are " + plainContentTypeList);
+        if (!validContentTypes.contains(file.getContentType())) {
+            throw new ResourceExpectationFailedException(ResponseMessages.INVALID_PHOTO_CONTENT_TYPE);
         }
     }
 }

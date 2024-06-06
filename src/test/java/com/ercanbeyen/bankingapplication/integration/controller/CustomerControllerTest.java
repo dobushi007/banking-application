@@ -1,8 +1,10 @@
 package com.ercanbeyen.bankingapplication.integration.controller;
 
-import com.ercanbeyen.bankingapplication.constant.enums.Gender;
+import com.ercanbeyen.bankingapplication.constant.enums.Entity;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
+import com.ercanbeyen.bankingapplication.dto.CustomerDto;
 import com.ercanbeyen.bankingapplication.entity.Customer;
+import com.ercanbeyen.bankingapplication.factory.MockCustomerFactory;
 import com.ercanbeyen.bankingapplication.repository.CustomerRepository;
 import io.restassured.RestAssured;
 import io.restassured.builder.MultiPartSpecBuilder;
@@ -26,7 +28,6 @@ import org.testcontainers.utility.DockerImageName;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.time.LocalDate;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
@@ -42,10 +43,14 @@ class CustomerControllerTest {
     @Container
     @ServiceConnection
     private final static CassandraContainer<?> cassandraContainer = new CassandraContainer<>(DockerImageName.parse("cassandra:latest"));
+    private static final String PHOTOS_LOCATION = "C:\\Users\\ercanbeyen\\Photos\\Test\\Banking-App\\";
     @LocalServerPort
     private Integer port;
     @Autowired
     private CustomerRepository customerRepository;
+
+    private static final String CUSTOMER_COLLECTION_ENDPOINT = "/api/v1/customers";
+    public static final String CUSTOMER_RESOURCE_ENDPOINT = CUSTOMER_COLLECTION_ENDPOINT + "/{id}";
 
     @DynamicPropertySource
     static void registerMySQLProperties(DynamicPropertyRegistry registry) {
@@ -86,7 +91,7 @@ class CustomerControllerTest {
     void whenGetEntities_thenReturnCustomerDtos() {
         given()
                 .when()
-                .get("/api/v1/customers")
+                .get(CUSTOMER_COLLECTION_ENDPOINT)
                 .then()
                 .assertThat()
                 .statusCode(HttpStatus.OK.value())
@@ -97,6 +102,8 @@ class CustomerControllerTest {
     @Order(2)
     @DisplayName("Happy path test: Create customer case")
     void givenCustomerDto_whenCreateEntity_thenReturnCustomerDto() {
+        CustomerDto request = MockCustomerFactory.generateCustomerDtoRequests().getFirst();
+
         given()
                 .contentType(ContentType.JSON)
                 .body("""
@@ -111,32 +118,24 @@ class CustomerControllerTest {
                         }
                         """)
                 .when()
-                .post("/api/v1/customers")
+                .post(CUSTOMER_COLLECTION_ENDPOINT)
                 .then()
                 .assertThat()
                 .statusCode(HttpStatus.CREATED.value())
-                .body("nationalId", equalTo("12345678911"));
+                .body("nationalId", equalTo(request.getNationalId()));
     }
 
     @Test
     @Order(3)
     @DisplayName("Happy path test: Get customers case with birth date")
     void givenBirthDate_whenGetEntities_thenReturnCustomerDtos() {
-        Customer newCustomer = new Customer();
-        newCustomer.setName("Test-Name2");
-        newCustomer.setSurname("Test-Surname2");
-        newCustomer.setNationalId("12345678912");
-        newCustomer.setEmail("test2@email.com");
-        newCustomer.setPhoneNumber("+905328465702");
-        newCustomer.setGender(Gender.FEMALE);
-        newCustomer.setBirthDate(LocalDate.of(2007, 4, 6));
-
+        Customer newCustomer = MockCustomerFactory.generateMockCustomers().getLast();
         customerRepository.save(newCustomer);
 
         given()
-                .queryParam("birthDate", "2003-08-15")
+                .queryParam("birthDate", String.valueOf(MockCustomerFactory.generateMockCustomers().getFirst().getBirthDate()))
                 .when()
-                .get("/api/v1/customers")
+                .get(CUSTOMER_COLLECTION_ENDPOINT)
                 .then()
                 .assertThat()
                 .statusCode(HttpStatus.OK.value())
@@ -149,11 +148,11 @@ class CustomerControllerTest {
     void givenId_whenGetEntity_thenReturnCustomerDto() {
         given()
                 .when()
-                .get("/api/v1/customers/{id}", 1)
+                .get(CUSTOMER_RESOURCE_ENDPOINT, 1)
                 .then()
                 .assertThat()
                 .statusCode(HttpStatus.OK.value())
-                .body("nationalId", equalTo("12345678911"));
+                .body("nationalId", equalTo(MockCustomerFactory.generateMockCustomers().getFirst().getNationalId()));
     }
 
     @Test
@@ -162,11 +161,11 @@ class CustomerControllerTest {
     void givenId_whenGetEntity_thenThrowResourceNotFoundException() {
         given()
                 .when()
-                .get("/api/v1/customers/{id}", 25)
+                .get(CUSTOMER_RESOURCE_ENDPOINT, 25)
                 .then()
                 .assertThat()
                 .statusCode(HttpStatus.NOT_FOUND.value())
-                .body("message", equalTo("Entity is not found"));
+                .body("message", equalTo(String.format(ResponseMessages.NOT_FOUND, Entity.GENERAL.getValue())));
     }
 
     @Test
@@ -187,11 +186,11 @@ class CustomerControllerTest {
                          }
                         """)
                 .when()
-                .put("/api/v1/customers/{id}", 1)
+                .put(CUSTOMER_RESOURCE_ENDPOINT, 1)
                 .then()
                 .assertThat()
                 .statusCode(HttpStatus.BAD_REQUEST.value())
-                .body("phoneNumber", equalTo("Invalid phone number"));
+                .body("phoneNumber", equalTo(ResponseMessages.INVALID_PHONE_NUMBER));
 
     }
 
@@ -201,7 +200,7 @@ class CustomerControllerTest {
     void givenId_whenDeleteEntity_thenReturnMessage() {
         given()
                 .when()
-                .delete("/api/v1/customers/{id}", 1)
+                .delete(CUSTOMER_RESOURCE_ENDPOINT, 1)
                 .then()
                 .assertThat()
                 .statusCode(HttpStatus.OK.value())
@@ -210,23 +209,16 @@ class CustomerControllerTest {
 
     @Test
     @Order(8)
-    @DisplayName("Happy path test: Upload profile photo")
-    void givenIdAndMultipartFile_whenUploadProfilePhoto_thenReturnMessage() throws IOException {
-        String pathName = "C:\\Users\\ercanbeyen\\Photos\\Test\\Banking-App\\profilePhoto-test.png";
-        File file = new File(pathName);
-        MultiPartSpecification multiPartSpecification = new MultiPartSpecBuilder(Files.readAllBytes(file.toPath()))
-                .fileName(file.getName())
-                .controlName("file")
-                .mimeType(MediaType.IMAGE_PNG_VALUE)
-                .build();
-
+    @DisplayName("Happy path test: Upload valid profile photo case")
+    void givenIdAndMultipartFile_whenUploadProfilePhoto_thenSuccessReturnMessage() throws IOException {
+        MultiPartSpecification multiPartSpecification = constructMultiPartSpecification("valid_profilePhoto.png", MediaType.IMAGE_PNG_VALUE);
 
         given()
                 .log()
                 .all()
                 .multiPart(multiPartSpecification)
                 .when()
-                .post("/api/v1/customers/{id}", 2)
+                .post(CUSTOMER_RESOURCE_ENDPOINT, 2)
                 .then()
                 .assertThat()
                 .statusCode(HttpStatus.OK.value())
@@ -235,13 +227,39 @@ class CustomerControllerTest {
 
     @Test
     @Order(9)
-    @DisplayName("Happy path test: Download profile photo")
+    @DisplayName("Exception path test: Upload invalid profile photo case")
+    void givenIdAndMultipartFile_whenUploadProfilePhoto_thenReturnFailMessage() throws IOException {
+        MultiPartSpecification multiPartSpecification = constructMultiPartSpecification("invalid_profilePhoto.txt", MediaType.TEXT_PLAIN_VALUE);
+
+        given()
+                .log()
+                .all()
+                .multiPart(multiPartSpecification)
+                .when()
+                .post(CUSTOMER_RESOURCE_ENDPOINT, 2)
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.EXPECTATION_FAILED.value())
+                .body("message", equalTo(ResponseMessages.INVALID_PHOTO_CONTENT_TYPE));
+    }
+
+    private static MultiPartSpecification constructMultiPartSpecification(String profilePhotoName, String mediaType) throws IOException {
+        File file = new File(PHOTOS_LOCATION + profilePhotoName);
+        return new MultiPartSpecBuilder(Files.readAllBytes(file.toPath()))
+                .fileName(file.getName())
+                .controlName("file")
+                .mimeType(mediaType)
+                .build();
+    }
+
+    @Test
+    @Order(10)
+    @DisplayName("Happy path test: Download profile photo case")
     void givenId_whenDownloadProfilePhoto_thenReturnFile() {
-        customerRepository.findById(2)
-                .ifPresent(customer -> given()
-                        .when()
-                        .get("/api/v1/customers/{id}/photo", 2)
-                        .then()
-                        .statusCode(HttpStatus.OK.value()));
+        given()
+                .when()
+                .get(CUSTOMER_RESOURCE_ENDPOINT + "/photo", 2)
+                .then()
+                .statusCode(HttpStatus.OK.value());
     }
 }
