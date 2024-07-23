@@ -20,3 +20,11 @@ spring:
       enabled: false # change the value to true to immediately enable batch processing on startup
     jdbc:
       initialize-schema: always
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always

@@ -56,7 +56,7 @@ $ docker pull mysql
 $ docker pull cassandra
 ```
 
-Then, you should run the below commands in order to run the application
+Then, you should run the below commands in order to run the application (Default port is 8080)
 
 1) Create jar file
 2) Create the image of the application via building
@@ -74,8 +74,16 @@ In order to debug the application, you should follow the below steps
 2) Run the containers
 3) Start debugging on configured port (Default port is 5005)
 
+### Monitor
+---
+In order to monitor the application, you should use below actuator url to get metrics you may monitor.<br/>
+`http://localhost:${PORT}/actuator`
+ 
+If you want to monitor specific metric, you should append the metric to the actuator url. For example, in order to check health, you should use the below url to check health.<br/>
+`http://localhost:${PORT}/actuator/health`
+
 ### Api Documentation
 ---
 You may use Swagger-UI with the port of the application you configured to access the project's api documentation.<br/>
-You should use the below url to access the Swagger-UI. Default port is 8080.<br/>
+You should use the below url to access the Swagger-UI.<br/>
 `http://localhost:${PORT}/swagger-ui.html`
