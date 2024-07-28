@@ -15,6 +15,7 @@ public enum Entity {
     TRANSACTION("Transaction"),
     REGULAR_TRANSFER_ORDER("RegularTransferOrder"),
     RATING("Rating"),
+    EXCHANGE("Exchange"),
     GENERAL("Entity");
 
     private final String value;
