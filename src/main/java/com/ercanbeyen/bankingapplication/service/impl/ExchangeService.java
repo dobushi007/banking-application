@@ -1,5 +1,6 @@
 package com.ercanbeyen.bankingapplication.service.impl;
 
+import com.ercanbeyen.bankingapplication.constant.enums.Currency;
 import com.ercanbeyen.bankingapplication.constant.enums.Entity;
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
@@ -89,11 +90,37 @@ public class ExchangeService implements BaseService<ExchangeDto, ExchangeFilteri
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
         if (!exchangeRepository.existsById(id)) {
-            throw new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.ACCOUNT.getValue()));
+            throw new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.EXCHANGE.getValue()));
         }
 
         log.info(LogMessages.RESOURCE_FOUND, Entity.EXCHANGE.getValue());
 
         exchangeRepository.deleteById(id);
     }
+
+
+    public String exchangeMoney(Currency fromCurrency, Currency toCurrency, Double amount) {
+        log.info(LogMessages.ECHO,
+                LoggingUtils.getClassName(this),
+                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+
+        double rate;
+        Optional<Exchange> maybeExchange = exchangeRepository.findByFromCurrencyAndToCurrency(fromCurrency, toCurrency);
+        log.info("Exchange is from {} to {}", fromCurrency, toCurrency);
+
+        if (maybeExchange.isPresent()) {
+            log.info("Exchange is present");
+            rate = maybeExchange.get().getRate();
+        } else {
+            Exchange reverseExchange = exchangeRepository.findByFromCurrencyAndToCurrency(toCurrency, fromCurrency)
+                    .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.EXCHANGE.getValue())));
+            log.info("Reverse exchange is present");
+            rate = Math.pow(reverseExchange.getRate(), -1);
+        }
+
+        double exchangedAmount = amount * rate;
+
+        return amount + " " + fromCurrency.name() + " is successfully exchanged to " + exchangedAmount + " " + toCurrency.name() + " with rate " + rate;
+    }
+
 }
