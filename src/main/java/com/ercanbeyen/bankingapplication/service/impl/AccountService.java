@@ -11,7 +11,6 @@ import com.ercanbeyen.bankingapplication.entity.Customer;
 import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
 import com.ercanbeyen.bankingapplication.exception.ResourceExpectationFailedException;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
-import com.ercanbeyen.bankingapplication.exception.UnsuccessfulTransactionException;
 import com.ercanbeyen.bankingapplication.mapper.AccountMapper;
 import com.ercanbeyen.bankingapplication.option.AccountFilteringOptions;
 import com.ercanbeyen.bankingapplication.repository.AccountRepository;
@@ -160,6 +159,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         return addMoney(account, amount);
     }
 
+    @Transactional
     public String transferMoney(TransferRequest request) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
@@ -171,39 +171,34 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         Account receiverAccount = findAccountById(request.receiverAccountId());
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
 
-        if (senderAccount.getCurrency() != receiverAccount.getCurrency()) {
-            throw new ResourceConflictException("Currencies of the accounts must be same");
-        }
-
         Double amount = request.amount();
 
-        /*
-            Money transfer flow:
-            1) Withdraw requested money amount from the sender account
-            2) Add requested money amount to the receiver account
-            3) Rollback the withdrawal of sender account, if any error occurred during money add to receiver account
-         */
+        checkAccountsBeforeMoneyTransfer(senderAccount, receiverAccount, amount);
 
-        String message = withdrawMoney(senderAccount, amount);
+        double newSenderBalance = senderAccount.getBalance() - request.amount();
+        double newReceiverBalance = receiverAccount.getBalance() + request.amount();
+
+        senderAccount.setBalance(newSenderBalance);
+        receiverAccount.setBalance(newReceiverBalance);
+
+        List<Account> accounts = List.of(senderAccount, receiverAccount);
+
+        accountRepository.saveAll(accounts);
+
+        String message = amount + " " + senderAccount.getCurrency() + " is successfully transferred from account "
+                + senderAccount.getId() + " to account " + receiverAccount.getId();
+
         log.info(LogMessages.TRANSACTION_MESSAGE, message);
 
-        try {
-            message = addMoney(receiverAccount, amount);
-            log.info(LogMessages.TRANSACTION_MESSAGE, message);
-        } catch (Exception exception) {
-            log.error("Unable to transfer the money");
-            message = addMoney(senderAccount, amount); // rollback
-            log.info(LogMessages.TRANSACTION_MESSAGE, message);
-            throw new UnsuccessfulTransactionException("Money transfer operation is unsuccessfully completed");
-        }
-
         TransactionRequest transactionRequest = new TransactionRequest(
-                TransactionType.MONEY_TRANSFER, senderAccount, receiverAccount, amount, request.explanation());
+                TransactionType.MONEY_TRANSFER,
+                senderAccount,
+                receiverAccount,
+                amount,
+                request.explanation()
+        );
 
         transactionService.createTransaction(transactionRequest);
-
-        message = amount + " " + senderAccount.getCurrency() + " is successfully transferred from account "
-                + senderAccount.getId() + " to account " + receiverAccount.getId();
 
         return message;
     }
@@ -212,16 +207,15 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         return findAccountById(id);
     }
 
-    @Transactional
     public String getTotalAccounts(City city, AccountType type, Currency currency) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
                 LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
 
         int count = accountRepository.getTotalAccountsByCityAndTypeAndCurrency(
-                String.valueOf(city),
-                String.valueOf(type),
-                String.valueOf(currency)
+                city.name(),
+                type.name(),
+                currency.name()
         );
         log.info("Total count: {}", count);
         return String.format("Total %s accounts in %s currency in %s is %d", type, currency, city, count);
@@ -280,5 +274,13 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     private Account findAccountById(Integer id) {
         return accountRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.ACCOUNT.getValue())));
+    }
+
+    private static void checkAccountsBeforeMoneyTransfer(Account senderAccount, Account receiverAccount, Double amount) {
+        if (senderAccount.getCurrency() != receiverAccount.getCurrency()) {
+            throw new ResourceConflictException("Currencies of the accounts must be same");
+        }
+
+        AccountUtils.checkBalance(senderAccount.getBalance(), amount);
     }
 }

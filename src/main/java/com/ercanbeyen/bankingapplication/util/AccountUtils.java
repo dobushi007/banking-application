@@ -18,16 +18,16 @@ import java.util.function.Predicate;
 
 @Slf4j
 @UtilityClass
-public final class AccountUtils {
-    private static final List<Integer> DEPOSIT_PERIODS = List.of(1, 3, 6, 12);
-    private static final Double MAXIMUM_TRANSFER_LIMIT = 1_000_000D;
+public class AccountUtils {
+    private final List<Integer> DEPOSIT_PERIODS = List.of(1, 3, 6, 12);
+    private final Double MAXIMUM_TRANSFER_LIMIT = 1_000_000D;
 
-    public static void checkAccountConstruction(AccountDto accountDto) {
+    public void checkAccountConstruction(AccountDto accountDto) {
         checkAccountType(accountDto);
         checkDepositPeriod(accountDto);
     }
 
-    public static void checkMoneyTransferRequest(TransferRequest request) {
+    public void checkMoneyTransferRequest(TransferRequest request) {
         if (Objects.equals(request.senderAccountId(), request.receiverAccountId())) {
             throw new ResourceExpectationFailedException("Identity of sender and receiver accounts should not be equal");
         }
@@ -37,18 +37,18 @@ public final class AccountUtils {
         }
     }
 
-    public static void checkBalance(Double balance, Double threshold) {
+    public void checkBalance(Double balance, Double threshold) {
         if (balance < threshold) {
             throw new ResourceExpectationFailedException("Insufficient funds");
         }
     }
 
-    public static double calculateInterest(Double balance, Double interestRatio) {
+    public double calculateInterest(Double balance, Double interestRatio) {
         checkValidityOfBalanceAndInterestRatio(balance, interestRatio);
         return (balance == 0 || interestRatio == 0) ? 0 : ((interestRatio * 100) / balance);
     }
 
-    public static boolean checkAccountForPeriodicMoneyAdd(AccountType accountType, LocalDateTime updatedAt, Integer depositPeriod) {
+    public boolean checkAccountForPeriodicMoneyAdd(AccountType accountType, LocalDateTime updatedAt, Integer depositPeriod) {
         checkAccountTypeAndDepositPeriodForPeriodMoneyAdd(accountType, depositPeriod);
 
         LocalDate isGoingToBeUpdatedAt = updatedAt
@@ -58,7 +58,7 @@ public final class AccountUtils {
         return isGoingToBeUpdatedAt.isEqual(LocalDate.now());
     }
 
-    public static String constructResponseMessageForUnidirectionalAccountOperations(AccountOperation operation, Double amount, Integer id, Currency currency) {
+    public String constructResponseMessageForUnidirectionalAccountOperations(AccountOperation operation, Double amount, Integer id, Currency currency) {
         String messageTemplate = amount + " " + currency + " is successfully %s account " + id;
 
         return switch (operation) {
@@ -67,7 +67,7 @@ public final class AccountUtils {
         };
     }
 
-    private static void checkAccountTypeAndDepositPeriodForPeriodMoneyAdd(AccountType accountType, Integer depositPeriod) {
+    private void checkAccountTypeAndDepositPeriodForPeriodMoneyAdd(AccountType accountType, Integer depositPeriod) {
         if (accountType != AccountType.DEPOSIT) {
             throw new ResourceConflictException("This money add operation is for deposit accounts");
         }
@@ -75,7 +75,7 @@ public final class AccountUtils {
         checkValidityOfDepositPeriod(depositPeriod);
     }
 
-    private static void checkValidityOfBalanceAndInterestRatio(Double balance, Double interestRatio) {
+    private void checkValidityOfBalanceAndInterestRatio(Double balance, Double interestRatio) {
         boolean isBalanceValid = balance < 0;
         boolean isInterestRatioValid = interestRatio < 0;
 
@@ -92,7 +92,7 @@ public final class AccountUtils {
         }
     }
 
-    private static void checkAccountType(AccountDto accountDto) {
+    private void checkAccountType(AccountDto accountDto) {
         boolean isInterestNull = isNull.test(accountDto.getInterestRatio());
         boolean isDepositPeriodNull = isNull.test(accountDto.getDepositPeriod());
 
@@ -108,7 +108,7 @@ public final class AccountUtils {
         }
     }
 
-    private static void checkDepositPeriod(AccountDto accountDto) {
+    private void checkDepositPeriod(AccountDto accountDto) {
       if (accountDto.getType() == AccountType.CHECKING) {
           log.warn("Checking Account does not have deposit period");
           return;

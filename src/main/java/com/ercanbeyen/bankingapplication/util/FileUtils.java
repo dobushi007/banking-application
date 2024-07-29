@@ -10,16 +10,16 @@ import java.util.List;
 
 @Slf4j
 @UtilityClass
-public final class FileUtils {
-    private static final int FILE_NAME_LENGTH_THRESHOLD = 100;
+public class FileUtils {
+    private final int FILE_NAME_LENGTH_THRESHOLD = 100;
 
-    public static void checkIsFileEmpty(MultipartFile file) {
+    public void checkIsFileEmpty(MultipartFile file) {
         if (file.isEmpty()) {
             throw new ResourceExpectationFailedException("File should not be empty");
         }
     }
 
-    public static void checkLengthOfFileName(MultipartFile file) {
+    public void checkLengthOfFileName(MultipartFile file) {
         String originalFileName = file.getOriginalFilename();
 
         if (originalFileName == null) {
@@ -42,20 +42,20 @@ public final class FileUtils {
         }
     }
 
-    public static List<String> getPlainContentTypes(List<String> contentTypes) {
+    public List<String> getPlainContentTypes(List<String> contentTypes) {
         return contentTypes.stream()
                 .map(FileUtils::getPlainContentType)
                 .toList();
     }
 
-    private static String getPlainContentTypeOfFile(MultipartFile file) {
+    private String getPlainContentTypeOfFile(MultipartFile file) {
         String contentType = file.getContentType();
         assert contentType != null;
 
         return getPlainContentType(contentType);
     }
 
-    private static String getPlainContentType(String contentType) {
+    private String getPlainContentType(String contentType) {
         String[] contentTypeSplitArray = contentType.split("/");
         String plainContentType = contentTypeSplitArray[1];
 

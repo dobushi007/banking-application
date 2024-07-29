@@ -2,7 +2,7 @@ package com.ercanbeyen.bankingapplication.constant.message;
 
 import com.ercanbeyen.bankingapplication.util.PhotoUtils;
 
-public class ResponseMessages {
+public final class ResponseMessages {
     public static final String NOT_FOUND = "%s is not found";
     public static final String ALREADY_EXISTS = "%s already exists";
     public static final String FILE_UPLOAD_SUCCESS = "File is successfully uploaded";
