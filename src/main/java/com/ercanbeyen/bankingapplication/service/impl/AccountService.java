@@ -19,10 +19,10 @@ import com.ercanbeyen.bankingapplication.service.BaseService;
 import com.ercanbeyen.bankingapplication.service.TransactionService;
 import com.ercanbeyen.bankingapplication.util.AccountUtils;
 import com.ercanbeyen.bankingapplication.util.LoggingUtils;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,7 +79,6 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
 
         account.setCustomer(customer);
-
         Account savedAccount = accountRepository.save(account);
 
         return accountMapper.accountToDto(savedAccount);
@@ -113,6 +112,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         accountRepository.deleteById(id);
     }
 
+    @Transactional
     public String applyUnidirectionalAccountOperation(Integer id, AccountOperation operation, Double amount) {
         log.info(LogMessages.ECHO,
                 LoggingUtils.getClassName(this),
@@ -122,23 +122,19 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
 
         TransactionRequest transactionRequest;
-        String result;
 
         switch (operation) {
-            case AccountOperation.ADD -> {
-                result = addMoney(account, amount);
-                transactionRequest = new TransactionRequest(TransactionType.ADD_MONEY, null, account, amount, null);
-            }
-            case AccountOperation.WITHDRAW -> {
-                result = withdrawMoney(account, amount);
-                transactionRequest = new TransactionRequest(TransactionType.WITHDRAW_MONEY, account, null, amount, null);
-            }
+            case AccountOperation.ADD -> transactionRequest = new TransactionRequest(TransactionType.ADD_MONEY, null, account, amount, null);
+            case AccountOperation.WITHDRAW -> transactionRequest = new TransactionRequest(TransactionType.WITHDRAW_MONEY, account, null, amount, null);
             default -> throw new ResourceExpectationFailedException("Unknown account operation");
         }
 
+        int numberOfUpdatedEntities = accountRepository.updateBalance(id, operation.name(), amount);
+        log.info(LogMessages.NUMBER_OF_UPDATED_ENTITIES, numberOfUpdatedEntities);
+
         transactionService.createTransaction(transactionRequest);
 
-        return result;
+        return AccountUtils.constructResponseMessageForUnidirectionalAccountOperations(operation, amount, account.getId(), account.getCurrency());
     }
 
     public String addMoneyToDepositAccount(Integer id) {
@@ -156,7 +152,10 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
 
         Double amount = AccountUtils.calculateInterest(account.getBalance(), account.getInterestRatio());
 
-        return addMoney(account, amount);
+        int numberOfUpdatedEntities = accountRepository.updateBalance(id, AccountOperation.ADD.name(), amount);
+        log.info(LogMessages.NUMBER_OF_UPDATED_ENTITIES, numberOfUpdatedEntities);
+
+        return AccountUtils.constructResponseMessageForUnidirectionalAccountOperations(AccountOperation.ADD, amount, account.getId(), account.getCurrency());
     }
 
     @Transactional
@@ -231,40 +230,6 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         } else {
             return accountRepository.getCustomersHaveMaximumBalanceByTypeAndCurrency(type, currency);
         }
-    }
-
-    @Transactional
-    private String addMoney(Account account, Double amount) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
-
-        Double previousBalance = account.getBalance();
-        Double nextBalance = previousBalance + amount;
-        log.info(LogMessages.BALANCE_UPDATE, previousBalance, nextBalance);
-
-        account.setBalance(nextBalance);
-        accountRepository.save(account);
-
-        return AccountUtils.constructResponseMessageForUnidirectionalAccountOperations(AccountOperation.ADD, amount, account.getId(), account.getCurrency());
-    }
-
-    @Transactional
-    private String withdrawMoney(Account account, Double amount) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
-
-        AccountUtils.checkBalance(account.getBalance(), amount);
-
-        Double previousBalance = account.getBalance();
-        Double nextBalance = previousBalance - amount;
-        log.info(LogMessages.BALANCE_UPDATE, previousBalance, nextBalance);
-
-        account.setBalance(nextBalance);
-        accountRepository.save(account);
-
-        return AccountUtils.constructResponseMessageForUnidirectionalAccountOperations(AccountOperation.WITHDRAW, amount, account.getId(), account.getCurrency());
     }
 
     private boolean doesAccountExist(Integer id) {

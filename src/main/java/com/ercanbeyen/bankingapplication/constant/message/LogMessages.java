@@ -7,7 +7,6 @@ public final class LogMessages {
     public static final String RESOURCE_UNIQUE = "{} is unique";
     public static final String EXCEPTION = "Exception message: {}";
     public static final String TRANSACTION_MESSAGE = "Transaction message: {}";
-    public static final String BALANCE_UPDATE = "Previous Balance: {} and Next Balance: {}";
     public static final String SCHEDULED_TASK_STARTED = "Scheduled task is started for {}";
     public static final String SCHEDULED_TASK_ENDED = "Scheduled task is ended for {}";
     public static final String BEFORE_REQUEST = "Before sending the request";
@@ -19,6 +18,7 @@ public final class LogMessages {
     public static final String RESOURCE_CREATE_SUCCESS = "{} {} is successfully created";
     public static final String CLASS_OF_RESPONSE = "Class of response: {}";
     public static final String CLASS_OF_OBJECT = "Class of {}: {}";
+    public static final String NUMBER_OF_UPDATED_ENTITIES = "Number of updated entities: {}";
 
     public static class Batch {
         public static final String JOB_STATUS = "!!! Job {}! Time to verify the results";
