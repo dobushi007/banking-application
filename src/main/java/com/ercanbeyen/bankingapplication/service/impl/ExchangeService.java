@@ -29,47 +29,36 @@ public class ExchangeService implements BaseService<ExchangeDto, ExchangeFilteri
 
     @Override
     public List<ExchangeDto> getEntities(ExchangeFilteringOptions options) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         List<ExchangeDto> exchangeDtos = new ArrayList<>();
-
         exchangeRepository.findAll()
-                .forEach(exchange -> exchangeDtos.add(exchangeMapper.exchangeToDto(exchange)));
+                .forEach(exchange -> exchangeDtos.add(exchangeMapper.entityToDto(exchange)));
 
         return exchangeDtos;
     }
 
     @Override
     public Optional<ExchangeDto> getEntity(Integer id) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
-
-        Optional<Exchange> maybeExchange = exchangeRepository.findById(id);
-
-        return maybeExchange.map(exchangeMapper::exchangeToDto);
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+        return exchangeRepository.findById(id)
+                .map(exchangeMapper::entityToDto);
     }
 
     @Override
     public ExchangeDto createEntity(ExchangeDto request) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
-        Exchange exchange = exchangeMapper.dtoToExchange(request);
+        Exchange exchange = exchangeMapper.dtoToEntity(request);
         Exchange savedExchange = exchangeRepository.save(exchange);
         log.info(LogMessages.RESOURCE_CREATE_SUCCESS, Entity.EXCHANGE.getValue(), savedExchange.getId());
 
-        return exchangeMapper.exchangeToDto(savedExchange);
+        return exchangeMapper.entityToDto(savedExchange);
     }
 
     @Override
     public ExchangeDto updateEntity(Integer id, ExchangeDto request) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         Exchange exchange = exchangeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.EXCHANGE.getValue())));
@@ -80,14 +69,12 @@ public class ExchangeService implements BaseService<ExchangeDto, ExchangeFilteri
         exchange.setToCurrency(request.getToCurrency());
         exchange.setRate(request.getRate());
 
-        return exchangeMapper.exchangeToDto(exchangeRepository.save(exchange));
+        return exchangeMapper.entityToDto(exchangeRepository.save(exchange));
     }
 
     @Override
     public void deleteEntity(Integer id) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         if (!exchangeRepository.existsById(id)) {
             throw new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.EXCHANGE.getValue()));
@@ -100,9 +87,7 @@ public class ExchangeService implements BaseService<ExchangeDto, ExchangeFilteri
 
 
     public String exchangeMoney(Currency fromCurrency, Currency toCurrency, Double amount) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         double rate;
         Optional<Exchange> maybeExchange = exchangeRepository.findByFromCurrencyAndToCurrency(fromCurrency, toCurrency);

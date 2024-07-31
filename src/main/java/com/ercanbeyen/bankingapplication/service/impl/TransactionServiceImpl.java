@@ -35,9 +35,7 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public List<TransactionDto> getTransactions(TransactionFilteringOptions options) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         Predicate<Transaction> transactionPredicate = transaction -> (options.type() == null || options.type() == transaction.getType())
                 && (options.senderAccountId() == null || options.senderAccountId().equals(transaction.getSenderAccount().getId()))
@@ -52,29 +50,25 @@ public class TransactionServiceImpl implements TransactionService {
                 .stream()
                 .filter(transactionPredicate)
                 .sorted(transactionComparator)
-                .forEach(transaction -> transactionDtos.add(transactionMapper.transactionToDto(transaction)));
+                .forEach(transaction -> transactionDtos.add(transactionMapper.entityToDto(transaction)));
 
         return transactionDtos;
     }
 
     @Override
     public TransactionDto getTransaction(String id) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         Transaction transaction = findTransactionById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT);
 
-        return transactionMapper.transactionToDto(transaction);
+        return transactionMapper.entityToDto(transaction);
     }
 
     @Async
     @Override
     public void createTransaction(TransactionRequest request) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         CompletableFuture.runAsync(() -> {
             Transaction transaction = new Transaction(
@@ -92,10 +86,7 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public List<TransactionView> getTransactions(Integer senderAccountId, Integer receiverAccountId) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
-
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
         return transactionViewRepository.findBySenderAccountIdAndReceiverAccountId(senderAccountId, receiverAccountId);
     }
 

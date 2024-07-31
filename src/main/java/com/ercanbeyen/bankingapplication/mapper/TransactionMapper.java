@@ -9,5 +9,5 @@ import org.mapstruct.Mapping;
 public interface TransactionMapper {
     @Mapping(target = "senderAccountId", source = "senderAccount.id")
     @Mapping(target = "receiverAccountId", source = "receiverAccount.id")
-    TransactionDto transactionToDto(Transaction transaction);
+    TransactionDto entityToDto(Transaction transaction);
 }

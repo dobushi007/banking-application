@@ -48,9 +48,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
 
     @Override
     public List<CustomerDto> getEntities(CustomerFilteringOptions options) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         Predicate<Customer> customerPredicate = customer -> {
             Boolean addressCondition = (options.getCity() == null || options.getCity() == customer.getAddress().getCity());
@@ -70,49 +68,44 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
         customerRepository.findAll()
                 .stream()
                 .filter(customerPredicate)
-                .forEach(customer -> customerDtos.add(customerMapper.customerToDto(customer)));
+                .forEach(customer -> customerDtos.add(customerMapper.entityToDto(customer)));
 
         return customerDtos;
     }
 
     @Override
     public Optional<CustomerDto> getEntity(Integer id) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
-
-        Optional<Customer> customerOptional = customerRepository.findById(id);
-
-        return customerOptional.map(customerMapper::customerToDto);
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+        return customerRepository.findById(id)
+                .map(customerMapper::entityToDto);
     }
 
     @Override
     public CustomerDto createEntity(CustomerDto request) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         checkCustomerUniqueness(request.getNationalId(), request.getPhoneNumber(), request.getEmail());
         log.info(LogMessages.RESOURCE_UNIQUE, Entity.CUSTOMER.getValue());
 
-        Customer customer = customerMapper.dtoToCustomer(request);
+        Customer customer = customerMapper.dtoToEntity(request);
 
-        return customerMapper.customerToDto(customerRepository.save(customer));
+        Customer savedCustomer = customerRepository.save(customer);
+        log.info(LogMessages.RESOURCE_CREATE_SUCCESS, Entity.CUSTOMER.getValue(), savedCustomer.getId());
+
+        return customerMapper.entityToDto(savedCustomer);
     }
 
     @Override
     public CustomerDto updateEntity(Integer id, CustomerDto request) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
-        Customer customer = findCustomerById(id);
+        Customer customer = findById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
 
         checkCustomerUniqueness(request.getNationalId(), request.getPhoneNumber(), request.getEmail());
         log.info(LogMessages.RESOURCE_UNIQUE, Entity.CUSTOMER.getValue());
 
-        Customer requestCustomer = customerMapper.dtoToCustomer(request);
+        Customer requestCustomer = customerMapper.dtoToEntity(request);
 
         customer.setName(requestCustomer.getName());
         customer.setSurname(requestCustomer.getSurname());
@@ -122,27 +115,23 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
         customer.setBirthDate(requestCustomer.getBirthDate());
         customer.setAddress(requestCustomer.getAddress());
 
-        return customerMapper.customerToDto(customerRepository.save(customer));
+        return customerMapper.entityToDto(customerRepository.save(customer));
     }
 
     @Override
     public void deleteEntity(Integer id) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
-        Customer customer = findCustomerById(id);
+        Customer customer = findById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
 
         customerRepository.delete(customer);
     }
 
     public String uploadProfilePhoto(Integer id, MultipartFile file) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
-        Customer customer = findCustomerById(id);
+        Customer customer = findById(id);
         CompletableFuture<File> photo = fileStorageService.storeFile(file);
         customer.setProfilePhoto(photo.join()); // Profile photo upload
         customerRepository.save(customer);
@@ -151,11 +140,9 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
     }
 
     public File downloadProfilePhoto(Integer id) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
-        Customer customer = findCustomerById(id);
+        Customer customer = findById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
 
         return customer.getProfilePhoto()
@@ -163,11 +150,9 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
     }
 
     public String deleteProfilePhoto(Integer id) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
-        Customer customer = findCustomerById(id);
+        Customer customer = findById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
 
         customer.setProfilePhoto(null); // Profile photo deletion
@@ -177,11 +162,9 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
     }
 
     public List<AccountDto> getAccountsOfCustomer(Integer id, AccountFilteringOptions options) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
-        Customer customer = findCustomerById(id);
+        Customer customer = findById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
 
         Predicate<Account> accountPredicate = account -> (account.getCustomer().getNationalId().equals(customer.getNationalId()))
@@ -197,17 +180,15 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
                 .toList();
 
         List<AccountDto> accountDtos = new ArrayList<>();
-        accounts.forEach(account -> accountDtos.add(accountMapper.accountToDto(account)));
+        accounts.forEach(account -> accountDtos.add(accountMapper.entityToDto(account)));
 
         return accountDtos;
     }
 
     public List<TransactionDto> getTransactionsOfCustomer(Integer id, TransactionFilteringOptions options) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
-        Customer customer = findCustomerById(id);
+        Customer customer = findById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
 
         List<TransactionDto> transactionDtos = new ArrayList<>();
@@ -231,27 +212,23 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
     }
 
     public List<NotificationDto> getNotifications(Integer id) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
-        Customer customer = findCustomerById(id);
+        Customer customer = findById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
 
         List<NotificationDto> notificationDtos = new ArrayList<>();
 
         customer.getNotifications()
-                .forEach(notification -> notificationDtos.add(notificationMapper.notificationToDto(notification)));
+                .forEach(notification -> notificationDtos.add(notificationMapper.entityToDto(notification)));
 
         return notificationDtos;
     }
 
     public List<RegularTransferOrderDto> getRegularTransferOrdersOfCustomer(Integer customerId, Integer accountId) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
-        Customer customer = findCustomerById(customerId);
+        Customer customer = findById(customerId);
         log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
 
         Account account = customer.getAccount(accountId)
@@ -260,7 +237,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
 
         return account.getRegularTransferOrders()
                 .stream()
-                .map(regularTransferOrderMapper::regularTransferOrderToDto)
+                .map(regularTransferOrderMapper::entityToDto)
                 .toList();
     }
 
@@ -269,7 +246,8 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
      * @param nationalId is national identity which is unique for each customer
      * @return customer corresponds to that nationalId
      */
-    public Customer findCustomerByNationalId(String nationalId) {
+    public Customer findByNationalId(String nationalId) {
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
         return customerRepository.findByNationalId(nationalId)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.CUSTOMER.getValue())));
     }
@@ -279,11 +257,12 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
      * @param nationalId is national identity which is unique for each customer
      * @return status for customer existence corresponds to nationalId
      */
-    public boolean doesCustomerExist(String nationalId) {
+    public boolean existsByNationalId(String nationalId) {
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
         return customerRepository.existsByNationalId(nationalId);
     }
 
-    private Customer findCustomerById(Integer id) {
+    private Customer findById(Integer id) {
         return customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.CUSTOMER.getValue())));
     }

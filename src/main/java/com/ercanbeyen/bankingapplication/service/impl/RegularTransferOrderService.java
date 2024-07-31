@@ -31,9 +31,7 @@ public class RegularTransferOrderService implements BaseService<RegularTransferO
 
     @Override
     public List<RegularTransferOrderDto> getEntities(RegularTransferOrderOptions options) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         List<RegularTransferOrderDto> regularTransferOrderDtos;
 
@@ -45,7 +43,7 @@ public class RegularTransferOrderService implements BaseService<RegularTransferO
          regularTransferOrderDtos = regularTransferOrderRepository.findAll()
                  .stream()
                  .filter(regularTransferOrderPredicate)
-                 .map(regularTransferOrderMapper::regularTransferOrderToDto)
+                 .map(regularTransferOrderMapper::entityToDto)
                  .toList();
 
         return regularTransferOrderDtos;
@@ -53,34 +51,27 @@ public class RegularTransferOrderService implements BaseService<RegularTransferO
 
     @Override
     public Optional<RegularTransferOrderDto> getEntity(Integer id) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
-
-        Optional<RegularTransferOrder> regularMoneyTransferOrderOptional = regularTransferOrderRepository.findById(id);
-        return regularMoneyTransferOrderOptional.map(regularTransferOrderMapper::regularTransferOrderToDto);
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+        return regularTransferOrderRepository.findById(id)
+                .map(regularTransferOrderMapper::entityToDto);
     }
 
     @Override
     public RegularTransferOrderDto createEntity(RegularTransferOrderDto request) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         RegularTransferOrder regularTransferOrder = createRegularTransferOrder(request);
         RegularTransferOrder savedRegularTransferOrder = regularTransferOrderRepository.save(regularTransferOrder);
         log.info(LogMessages.RESOURCE_CREATE_SUCCESS, Entity.REGULAR_TRANSFER_ORDER.getValue(), savedRegularTransferOrder.getId());
 
-        return regularTransferOrderMapper.regularTransferOrderToDto(savedRegularTransferOrder);
+        return regularTransferOrderMapper.entityToDto(savedRegularTransferOrder);
     }
 
     @Override
     public RegularTransferOrderDto updateEntity(Integer id, RegularTransferOrderDto request) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
-        RegularTransferOrder regularTransferOrder = findRegularTransferOrderById(id);
+        RegularTransferOrder regularTransferOrder = findById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.REGULAR_TRANSFER_ORDER);
 
         List<Account> accounts = getAccountsFromRegularTransferDto(request);
@@ -93,16 +84,14 @@ public class RegularTransferOrderService implements BaseService<RegularTransferO
 
         regularTransferOrder.setPeriod(regularTransferOrder.getPeriod());
 
-        return regularTransferOrderMapper.regularTransferOrderToDto(regularTransferOrderRepository.save(regularTransferOrder));
+        return regularTransferOrderMapper.entityToDto(regularTransferOrderRepository.save(regularTransferOrder));
     }
 
     @Override
     public void deleteEntity(Integer id) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
-        RegularTransferOrder regularTransferOrder = findRegularTransferOrderById(id);
+        RegularTransferOrder regularTransferOrder = findById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.REGULAR_TRANSFER_ORDER);
 
         regularTransferOrderRepository.delete(regularTransferOrder);
@@ -136,7 +125,7 @@ public class RegularTransferOrderService implements BaseService<RegularTransferO
         return List.of(senderAccount, receiverAccount);
     }
 
-    private RegularTransferOrder findRegularTransferOrderById(Integer id) {
+    private RegularTransferOrder findById(Integer id) {
         return regularTransferOrderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.REGULAR_TRANSFER_ORDER)));
     }

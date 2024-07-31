@@ -6,6 +6,6 @@ import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
 public interface RatingMapper {
-    RatingDto ratingToDto(Rating rating);
-    Rating dtoToRating(RatingDto ratingDto);
+    RatingDto entityToDto(Rating rating);
+    Rating dtoToEntity(RatingDto ratingDto);
 }

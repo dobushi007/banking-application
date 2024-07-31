@@ -40,9 +40,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
 
     @Override
     public List<AccountDto> getEntities(AccountFilteringOptions options) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         Predicate<Account> accountPredicate = account -> (options.getType() == null || options.getType() == account.getType())
                 && (options.getCreateTime() == null || options.getCreateTime().toLocalDate().isEqual(options.getCreateTime().toLocalDate()));
@@ -51,58 +49,49 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         accountRepository.findAll()
                 .stream()
                 .filter(accountPredicate)
-                .forEach(account -> accountDtos.add(accountMapper.accountToDto(account)));
+                .forEach(account -> accountDtos.add(accountMapper.entityToDto(account)));
 
         return accountDtos;
     }
 
     @Override
     public Optional<AccountDto> getEntity(Integer id) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
-
-        Optional<Account> accountOptional = accountRepository.findById(id);
-
-        return accountOptional.map(accountMapper::accountToDto);
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+        return accountRepository.findById(id)
+                .map(accountMapper::entityToDto);
     }
 
     @Override
     public AccountDto createEntity(AccountDto request) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
-        Account account = accountMapper.dtoToAccount(request);
+        Account account = accountMapper.dtoToEntity(request);
 
-        Customer customer = customerService.findCustomerByNationalId(request.getCustomerNationalId());
+        Customer customer = customerService.findByNationalId(request.getCustomerNationalId());
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
 
         account.setCustomer(customer);
         Account savedAccount = accountRepository.save(account);
+        log.info(LogMessages.RESOURCE_CREATE_SUCCESS, Entity.ACCOUNT.getValue(), savedAccount.getId());
 
-        return accountMapper.accountToDto(savedAccount);
+        return accountMapper.entityToDto(savedAccount);
     }
 
     @Override
     public AccountDto updateEntity(Integer id, AccountDto request) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         Account account = findAccountById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
 
         account.setCity(request.getCity());
 
-        return accountMapper.accountToDto(accountRepository.save(account));
+        return accountMapper.entityToDto(accountRepository.save(account));
     }
 
     @Override
     public void deleteEntity(Integer id) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         if (!doesAccountExist(id)) {
             throw new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.ACCOUNT.getValue()));
@@ -114,9 +103,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
 
     @Transactional
     public String applyUnidirectionalAccountOperation(Integer id, AccountOperation operation, Double amount) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         Account account = findAccountById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
@@ -137,10 +124,9 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         return AccountUtils.constructResponseMessageForUnidirectionalAccountOperations(operation, amount, account.getId(), account.getCurrency());
     }
 
+    @Transactional
     public String addMoneyToDepositAccount(Integer id) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         Account account = findAccountById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
@@ -160,9 +146,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
 
     @Transactional
     public String transferMoney(TransferRequest request) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         Account senderAccount = findAccountById(request.senderAccountId());
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
@@ -207,9 +191,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     }
 
     public String getTotalAccounts(City city, AccountType type, Currency currency) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         int count = accountRepository.getTotalAccountsByCityAndTypeAndCurrency(
                 city.name(),
@@ -221,9 +203,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     }
 
     public List<CustomerStatisticsResponse> getCustomersHaveMaximumBalance(AccountType type, Currency currency, City city) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         if (Optional.ofNullable(city).isPresent()) {
             return accountRepository.getCustomersHaveMaximumBalanceByTypeAndCurrencyAndCity(type, currency, city);
