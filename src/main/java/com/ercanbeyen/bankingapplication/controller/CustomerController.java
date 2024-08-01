@@ -4,7 +4,7 @@ import com.ercanbeyen.bankingapplication.dto.*;
 import com.ercanbeyen.bankingapplication.entity.File;
 import com.ercanbeyen.bankingapplication.option.AccountFilteringOptions;
 import com.ercanbeyen.bankingapplication.option.CustomerFilteringOptions;
-import com.ercanbeyen.bankingapplication.option.TransactionFilteringOptions;
+import com.ercanbeyen.bankingapplication.option.AccountActivityFilteringOptions;
 import com.ercanbeyen.bankingapplication.dto.response.MessageResponse;
 import com.ercanbeyen.bankingapplication.service.impl.CustomerService;
 import com.ercanbeyen.bankingapplication.util.PhotoUtils;
@@ -58,8 +58,8 @@ public class CustomerController extends BaseController<CustomerDto, CustomerFilt
     }
 
     @GetMapping("/{id}/transactions")
-    public ResponseEntity<List<TransactionDto>> getTransactions(@PathVariable("id") Integer id, TransactionFilteringOptions options) {
-        return ResponseEntity.ok(customerService.getTransactionsOfCustomer(id, options));
+    public ResponseEntity<List<AccountActivityDto>> getTransactions(@PathVariable("id") Integer id, AccountActivityFilteringOptions options) {
+        return ResponseEntity.ok(customerService.getAccountActivitiesOfCustomer(id, options));
     }
 
     @GetMapping("/{id}/notifications")

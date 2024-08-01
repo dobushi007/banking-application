@@ -12,7 +12,7 @@ public enum Entity {
     ACCOUNT("Account"),
     FILE("File"),
     NOTIFICATION("Notification"),
-    TRANSACTION("Transaction"),
+    ACCOUNT_ACTIVITY("AccountActivity"),
     REGULAR_TRANSFER_ORDER("RegularTransferOrder"),
     RATING("Rating"),
     EXCHANGE("Exchange"),
@@ -25,7 +25,15 @@ public enum Entity {
             throw new ResourceExpectationFailedException(ResponseMessages.INVALID_CONTENT_TYPE);
         }
 
-        String resource = (this == REGULAR_TRANSFER_ORDER) ? "regular-transfer-order" : value.toLowerCase();
+        String resource = getResource();
         return "http://localhost:8080/api/v1/" + resource + "s";
+    }
+
+    private String getResource() {
+        return switch (this) {
+            case REGULAR_TRANSFER_ORDER -> "regular-transfer-order";
+            case ACCOUNT_ACTIVITY -> "account-activitie";
+            default -> value.toLowerCase();
+        };
     }
 }

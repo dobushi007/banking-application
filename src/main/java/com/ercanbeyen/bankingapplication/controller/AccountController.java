@@ -1,9 +1,6 @@
 package com.ercanbeyen.bankingapplication.controller;
 
-import com.ercanbeyen.bankingapplication.constant.enums.AccountOperation;
-import com.ercanbeyen.bankingapplication.constant.enums.AccountType;
-import com.ercanbeyen.bankingapplication.constant.enums.City;
-import com.ercanbeyen.bankingapplication.constant.enums.Currency;
+import com.ercanbeyen.bankingapplication.constant.enums.*;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
 import com.ercanbeyen.bankingapplication.dto.request.TransferRequest;
 import com.ercanbeyen.bankingapplication.option.AccountFilteringOptions;
@@ -44,8 +41,12 @@ public class AccountController extends BaseController<AccountDto, AccountFilteri
     }
 
     @PutMapping("/{id}/individual")
-    public ResponseEntity<MessageResponse<String>> updateBalance(@PathVariable("id") Integer id, @RequestParam("operation") AccountOperation operation, @Valid @RequestParam("amount") @Min(value = 1, message = "Minimum amount should be {value}") Double amount) {
-        MessageResponse<String> response = new MessageResponse<>(accountService.applyUnidirectionalAccountOperation(id, operation, amount));
+    public ResponseEntity<MessageResponse<String>> updateBalance(
+            @PathVariable("id") Integer id,
+            @RequestParam("activityType") AccountActivityType activityType,
+            @RequestParam("amount") @Valid @Min(value = 1, message = "Minimum amount should be {value}") Double amount) {
+        AccountUtils.checkUnidirectionalAccountBalanceUpdate(activityType);
+        MessageResponse<String> response = new MessageResponse<>(accountService.applyUnidirectionalAccountOperation(id, activityType, amount));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -76,8 +77,7 @@ public class AccountController extends BaseController<AccountDto, AccountFilteri
             @RequestParam("type") AccountType type,
             @RequestParam("currency") Currency currency,
             @RequestParam(name = "city", required = false) City city) {
-        MessageResponse<List<CustomerStatisticsResponse>> response = new MessageResponse<>(
-                accountService.getCustomersHaveMaximumBalance(type, currency, city));
+        MessageResponse<List<CustomerStatisticsResponse>> response = new MessageResponse<>(accountService.getCustomersHaveMaximumBalance(type, currency, city));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

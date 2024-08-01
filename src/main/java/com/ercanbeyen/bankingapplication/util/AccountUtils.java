@@ -1,6 +1,6 @@
 package com.ercanbeyen.bankingapplication.util;
 
-import com.ercanbeyen.bankingapplication.constant.enums.AccountOperation;
+import com.ercanbeyen.bankingapplication.constant.enums.AccountActivityType;
 import com.ercanbeyen.bankingapplication.constant.enums.AccountType;
 import com.ercanbeyen.bankingapplication.constant.enums.Currency;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
@@ -21,6 +21,7 @@ import java.util.function.Predicate;
 public class AccountUtils {
     private final List<Integer> DEPOSIT_PERIODS = List.of(1, 3, 6, 12);
     private final Double MAXIMUM_TRANSFER_LIMIT = 1_000_000D;
+    private final String IMPROPER_ACCOUNT_ACTIVITY = "Account activity is improper";
 
     public void checkAccountConstruction(AccountDto accountDto) {
         checkAccountType(accountDto);
@@ -34,6 +35,12 @@ public class AccountUtils {
 
         if (request.amount() >= MAXIMUM_TRANSFER_LIMIT) {
             throw new ResourceExpectationFailedException("Maximum transfer limit (" + MAXIMUM_TRANSFER_LIMIT + ") is exceeded");
+        }
+    }
+
+    public void checkUnidirectionalAccountBalanceUpdate(AccountActivityType activityType) {
+        if (activityType != AccountActivityType.MONEY_DEPOSIT && activityType != AccountActivityType.WITHDRAWAL) {
+            throw new ResourceConflictException(IMPROPER_ACCOUNT_ACTIVITY);
         }
     }
 
@@ -58,18 +65,19 @@ public class AccountUtils {
         return isGoingToBeUpdatedAt.isEqual(LocalDate.now());
     }
 
-    public String constructResponseMessageForUnidirectionalAccountOperations(AccountOperation operation, Double amount, Integer id, Currency currency) {
+    public String constructResponseMessageForUnidirectionalAccountOperations(AccountActivityType activityType, Double amount, Integer id, Currency currency) {
         String messageTemplate = amount + " " + currency + " is successfully %s account " + id;
 
-        return switch (operation) {
-            case ADD -> String.format(messageTemplate, "added to");
-            case WITHDRAW -> String.format(messageTemplate, "withdrawn from");
+        return switch (activityType) {
+            case AccountActivityType.MONEY_DEPOSIT -> String.format(messageTemplate, "added to");
+            case AccountActivityType.WITHDRAWAL -> String.format(messageTemplate, "withdrawn from");
+            default -> throw new ResourceConflictException(IMPROPER_ACCOUNT_ACTIVITY);
         };
     }
 
     private void checkAccountTypeAndDepositPeriodForPeriodMoneyAdd(AccountType accountType, Integer depositPeriod) {
         if (accountType != AccountType.DEPOSIT) {
-            throw new ResourceConflictException("This money add operation is for deposit accounts");
+            throw new ResourceConflictException("Fees are for deposit accounts");
         }
 
         checkValidityOfDepositPeriod(depositPeriod);
@@ -102,14 +110,14 @@ public class AccountUtils {
         if ((accountType == AccountType.DEPOSIT) && (isInterestNull || isDepositPeriodNull)) {
             String exceptionMessage = accountType + " must " + message;
             throw new ResourceExpectationFailedException(exceptionMessage);
-        } else if ((accountType == AccountType.CHECKING) && (!isInterestNull || !isDepositPeriodNull)) {
+        } else if ((accountType == AccountType.CURRENT) && (!isInterestNull || !isDepositPeriodNull)) {
             String exceptionMessage = accountType + " does not " + message;
             throw new ResourceExpectationFailedException(exceptionMessage);
         }
     }
 
     private void checkDepositPeriod(AccountDto accountDto) {
-      if (accountDto.getType() == AccountType.CHECKING) {
+      if (accountDto.getType() == AccountType.CURRENT) {
           log.warn("Checking Account does not have deposit period");
           return;
       }

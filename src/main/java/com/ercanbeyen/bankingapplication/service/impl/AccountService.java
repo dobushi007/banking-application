@@ -4,7 +4,7 @@ import com.ercanbeyen.bankingapplication.constant.enums.*;
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
-import com.ercanbeyen.bankingapplication.dto.request.TransactionRequest;
+import com.ercanbeyen.bankingapplication.dto.request.AccountActivityRequest;
 import com.ercanbeyen.bankingapplication.dto.request.TransferRequest;
 import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.entity.Customer;
@@ -16,7 +16,7 @@ import com.ercanbeyen.bankingapplication.option.AccountFilteringOptions;
 import com.ercanbeyen.bankingapplication.repository.AccountRepository;
 import com.ercanbeyen.bankingapplication.dto.response.CustomerStatisticsResponse;
 import com.ercanbeyen.bankingapplication.service.BaseService;
-import com.ercanbeyen.bankingapplication.service.TransactionService;
+import com.ercanbeyen.bankingapplication.service.AccountActivityService;
 import com.ercanbeyen.bankingapplication.util.AccountUtils;
 import com.ercanbeyen.bankingapplication.util.LoggingUtils;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +36,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     private final AccountRepository accountRepository;
     private final AccountMapper accountMapper;
     private final CustomerService customerService;
-    private final TransactionService transactionService;
+    private final AccountActivityService accountActivityService;
 
     @Override
     public List<AccountDto> getEntities(AccountFilteringOptions options) {
@@ -102,26 +102,26 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     }
 
     @Transactional
-    public String applyUnidirectionalAccountOperation(Integer id, AccountOperation operation, Double amount) {
+    public String applyUnidirectionalAccountOperation(Integer id, AccountActivityType activityType, Double amount) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         Account account = findAccountById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
 
-        TransactionRequest transactionRequest;
+        AccountActivityRequest accountActivityRequest;
 
-        switch (operation) {
-            case AccountOperation.ADD -> transactionRequest = new TransactionRequest(TransactionType.ADD_MONEY, null, account, amount, null);
-            case AccountOperation.WITHDRAW -> transactionRequest = new TransactionRequest(TransactionType.WITHDRAW_MONEY, account, null, amount, null);
-            default -> throw new ResourceExpectationFailedException("Unknown account operation");
+        switch (activityType) {
+            case AccountActivityType.MONEY_DEPOSIT -> accountActivityRequest = new AccountActivityRequest(AccountActivityType.MONEY_DEPOSIT, null, account, amount, null);
+            case AccountActivityType.WITHDRAWAL -> accountActivityRequest = new AccountActivityRequest(AccountActivityType.WITHDRAWAL, account, null, amount, null);
+            default -> throw new ResourceExpectationFailedException("Unknown account activity type");
         }
 
-        int numberOfUpdatedEntities = accountRepository.updateBalance(id, operation.name(), amount);
+        int numberOfUpdatedEntities = accountRepository.updateBalance(id, activityType.name(), amount);
         log.info(LogMessages.NUMBER_OF_UPDATED_ENTITIES, numberOfUpdatedEntities);
 
-        transactionService.createTransaction(transactionRequest);
+        accountActivityService.createAccountActivity(accountActivityRequest);
 
-        return AccountUtils.constructResponseMessageForUnidirectionalAccountOperations(operation, amount, account.getId(), account.getCurrency());
+        return AccountUtils.constructResponseMessageForUnidirectionalAccountOperations(activityType, amount, account.getId(), account.getCurrency());
     }
 
     @Transactional
@@ -138,10 +138,20 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
 
         Double amount = AccountUtils.calculateInterest(account.getBalance(), account.getInterestRatio());
 
-        int numberOfUpdatedEntities = accountRepository.updateBalance(id, AccountOperation.ADD.name(), amount);
+        int numberOfUpdatedEntities = accountRepository.updateBalance(id, AccountActivityType.MONEY_DEPOSIT.name(), amount);
         log.info(LogMessages.NUMBER_OF_UPDATED_ENTITIES, numberOfUpdatedEntities);
 
-        return AccountUtils.constructResponseMessageForUnidirectionalAccountOperations(AccountOperation.ADD, amount, account.getId(), account.getCurrency());
+        AccountActivityRequest request = new AccountActivityRequest(
+                AccountActivityType.FEES_CHARGES,
+                null,
+                account,
+                amount,
+                "Fee is transferred, because deposit period is completed"
+        );
+
+        accountActivityService.createAccountActivity(request);
+
+        return AccountUtils.constructResponseMessageForUnidirectionalAccountOperations(AccountActivityType.MONEY_DEPOSIT, amount, account.getId(), account.getCurrency());
     }
 
     @Transactional
@@ -173,15 +183,15 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
 
         log.info(LogMessages.TRANSACTION_MESSAGE, message);
 
-        TransactionRequest transactionRequest = new TransactionRequest(
-                TransactionType.MONEY_TRANSFER,
+        AccountActivityRequest accountActivityRequest = new AccountActivityRequest(
+                AccountActivityType.MONEY_TRANSFER,
                 senderAccount,
                 receiverAccount,
                 amount,
                 request.explanation()
         );
 
-        transactionService.createTransaction(transactionRequest);
+        accountActivityService.createAccountActivity(accountActivityRequest);
 
         return message;
     }
