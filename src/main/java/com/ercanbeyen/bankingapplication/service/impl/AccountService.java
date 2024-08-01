@@ -9,7 +9,6 @@ import com.ercanbeyen.bankingapplication.dto.request.TransferRequest;
 import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.entity.Customer;
 import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
-import com.ercanbeyen.bankingapplication.exception.ResourceExpectationFailedException;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import com.ercanbeyen.bankingapplication.mapper.AccountMapper;
 import com.ercanbeyen.bankingapplication.option.AccountFilteringOptions;
@@ -81,7 +80,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     public AccountDto updateEntity(Integer id, AccountDto request) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
-        Account account = findAccountById(id);
+        Account account = findById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
 
         account.setCity(request.getCity());
@@ -105,18 +104,27 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     public String applyUnidirectionalAccountOperation(Integer id, AccountActivityType activityType, Double amount) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
-        Account account = findAccountById(id);
+        Account account = findById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
 
-        AccountActivityRequest accountActivityRequest;
+        Account[] accounts = new Account[2]; // first account is sender, second account is receiver
+        BalanceActivity balanceActivity;
 
         switch (activityType) {
-            case AccountActivityType.MONEY_DEPOSIT -> accountActivityRequest = new AccountActivityRequest(AccountActivityType.MONEY_DEPOSIT, null, account, amount, null);
-            case AccountActivityType.WITHDRAWAL -> accountActivityRequest = new AccountActivityRequest(AccountActivityType.WITHDRAWAL, account, null, amount, null);
-            default -> throw new ResourceExpectationFailedException("Unknown account activity type");
+            case MONEY_DEPOSIT -> {
+                accounts[1] = account;
+                balanceActivity = BalanceActivity.INCREASE;
+            }
+            case WITHDRAWAL -> {
+                accounts[0] = account;
+                balanceActivity = BalanceActivity.DECREASE;
+            }
+            default -> throw new ResourceConflictException(ResponseMessages.IMPROPER_ACCOUNT_ACTIVITY);
         }
 
-        int numberOfUpdatedEntities = accountRepository.updateBalance(id, activityType.name(), amount);
+        AccountActivityRequest accountActivityRequest = new AccountActivityRequest(activityType, accounts[0], accounts[1], amount, null);
+
+        int numberOfUpdatedEntities = accountRepository.updateBalanceById(id, balanceActivity.name(), amount);
         log.info(LogMessages.NUMBER_OF_UPDATED_ENTITIES, numberOfUpdatedEntities);
 
         accountActivityService.createAccountActivity(accountActivityRequest);
@@ -128,7 +136,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     public String addMoneyToDepositAccount(Integer id) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
-        Account account = findAccountById(id);
+        Account account = findById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
 
         if (!AccountUtils.checkAccountForPeriodicMoneyAdd(account.getType(), account.getUpdatedAt(), account.getDepositPeriod())) {
@@ -138,7 +146,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
 
         Double amount = AccountUtils.calculateInterest(account.getBalance(), account.getInterestRatio());
 
-        int numberOfUpdatedEntities = accountRepository.updateBalance(id, AccountActivityType.MONEY_DEPOSIT.name(), amount);
+        int numberOfUpdatedEntities = accountRepository.updateBalanceById(id, BalanceActivity.INCREASE.name(), amount);
         log.info(LogMessages.NUMBER_OF_UPDATED_ENTITIES, numberOfUpdatedEntities);
 
         AccountActivityRequest request = new AccountActivityRequest(
@@ -151,32 +159,28 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
 
         accountActivityService.createAccountActivity(request);
 
-        return AccountUtils.constructResponseMessageForUnidirectionalAccountOperations(AccountActivityType.MONEY_DEPOSIT, amount, account.getId(), account.getCurrency());
+        return amount + "" + account.getCurrency() + " fee is successfully transferred to account" + account.getId();
     }
 
     @Transactional
     public String transferMoney(TransferRequest request) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
-        Account senderAccount = findAccountById(request.senderAccountId());
+        Integer senderAccountId = request.senderAccountId();
+        Integer receiverAccountId = request.receiverAccountId();
+
+        Account senderAccount = findById(senderAccountId);
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
 
-        Account receiverAccount = findAccountById(request.receiverAccountId());
+        Account receiverAccount = findById(receiverAccountId);
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
 
         Double amount = request.amount();
 
         checkAccountsBeforeMoneyTransfer(senderAccount, receiverAccount, amount);
 
-        double newSenderBalance = senderAccount.getBalance() - request.amount();
-        double newReceiverBalance = receiverAccount.getBalance() + request.amount();
-
-        senderAccount.setBalance(newSenderBalance);
-        receiverAccount.setBalance(newReceiverBalance);
-
-        List<Account> accounts = List.of(senderAccount, receiverAccount);
-
-        accountRepository.saveAll(accounts);
+        accountRepository.updateBalanceById(senderAccountId, BalanceActivity.DECREASE.name(), amount);
+        accountRepository.updateBalanceById(receiverAccountId, BalanceActivity.INCREASE.name(), amount);
 
         String message = amount + " " + senderAccount.getCurrency() + " is successfully transferred from account "
                 + senderAccount.getId() + " to account " + receiverAccount.getId();
@@ -197,7 +201,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     }
 
     public Account findAccount(Integer id) {
-        return findAccountById(id);
+        return findById(id);
     }
 
     public String getTotalAccounts(City city, AccountType type, Currency currency) {
@@ -226,7 +230,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         return accountRepository.existsById(id);
     }
 
-    private Account findAccountById(Integer id) {
+    private Account findById(Integer id) {
         return accountRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.ACCOUNT.getValue())));
     }

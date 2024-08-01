@@ -3,6 +3,7 @@ package com.ercanbeyen.bankingapplication.util;
 import com.ercanbeyen.bankingapplication.constant.enums.AccountActivityType;
 import com.ercanbeyen.bankingapplication.constant.enums.AccountType;
 import com.ercanbeyen.bankingapplication.constant.enums.Currency;
+import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
 import com.ercanbeyen.bankingapplication.dto.request.TransferRequest;
 import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
@@ -21,7 +22,6 @@ import java.util.function.Predicate;
 public class AccountUtils {
     private final List<Integer> DEPOSIT_PERIODS = List.of(1, 3, 6, 12);
     private final Double MAXIMUM_TRANSFER_LIMIT = 1_000_000D;
-    private final String IMPROPER_ACCOUNT_ACTIVITY = "Account activity is improper";
 
     public void checkAccountConstruction(AccountDto accountDto) {
         checkAccountType(accountDto);
@@ -40,7 +40,7 @@ public class AccountUtils {
 
     public void checkUnidirectionalAccountBalanceUpdate(AccountActivityType activityType) {
         if (activityType != AccountActivityType.MONEY_DEPOSIT && activityType != AccountActivityType.WITHDRAWAL) {
-            throw new ResourceConflictException(IMPROPER_ACCOUNT_ACTIVITY);
+            throw new ResourceConflictException(ResponseMessages.IMPROPER_ACCOUNT_ACTIVITY);
         }
     }
 
@@ -71,7 +71,7 @@ public class AccountUtils {
         return switch (activityType) {
             case AccountActivityType.MONEY_DEPOSIT -> String.format(messageTemplate, "added to");
             case AccountActivityType.WITHDRAWAL -> String.format(messageTemplate, "withdrawn from");
-            default -> throw new ResourceConflictException(IMPROPER_ACCOUNT_ACTIVITY);
+            default -> throw new ResourceConflictException(ResponseMessages.IMPROPER_ACCOUNT_ACTIVITY);
         };
     }
 
@@ -111,14 +111,16 @@ public class AccountUtils {
             String exceptionMessage = accountType + " must " + message;
             throw new ResourceExpectationFailedException(exceptionMessage);
         } else if ((accountType == AccountType.CURRENT) && (!isInterestNull || !isDepositPeriodNull)) {
-            String exceptionMessage = accountType + " does not " + message;
+            String exceptionMessage = accountType + " account does not " + message;
             throw new ResourceExpectationFailedException(exceptionMessage);
         }
     }
 
     private void checkDepositPeriod(AccountDto accountDto) {
-      if (accountDto.getType() == AccountType.CURRENT) {
-          log.warn("Checking Account does not have deposit period");
+        AccountType accountType = accountDto.getType();
+
+        if (accountType == AccountType.CURRENT) {
+          log.warn("{} account does not have deposit period", accountType);
           return;
       }
 

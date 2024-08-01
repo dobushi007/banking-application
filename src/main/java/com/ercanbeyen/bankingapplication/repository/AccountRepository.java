@@ -60,9 +60,14 @@ public interface AccountRepository extends BaseRepository<Account> {
     @Modifying
     @Query(value = """
             UPDATE accounts
-            SET accounts.balance = IF(:operation = 'MONEY_DEPOSIT', accounts.balance + :amount, accounts.balance - :amount)
+            SET balance =
+            CASE
+                WHEN :activity = 'INCREASE' THEN balance + :amount
+                WHEN :activity = 'DECREASE' THEN balance - :amount
+                ELSE balance
+            END
             WHERE id = :id
             """,
             nativeQuery = true)
-    int updateBalance(@Param("id") Integer id, @Param("operation") String operation, @Param("amount") Double amount);
+    int updateBalanceById(@Param("id") Integer id, @Param("activity") String balanceActivity, @Param("amount") Double amount);
 }
