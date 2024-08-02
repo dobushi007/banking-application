@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, String> {
-    void deleteByCustomer(Customer customer);
+    void deleteAllByCustomer(Customer customer);
 }

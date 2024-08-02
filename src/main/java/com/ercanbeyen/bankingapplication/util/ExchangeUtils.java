@@ -1,6 +1,7 @@
 package com.ercanbeyen.bankingapplication.util;
 
 import com.ercanbeyen.bankingapplication.constant.enums.Currency;
+import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
 import lombok.experimental.UtilityClass;
 
@@ -8,7 +9,7 @@ import lombok.experimental.UtilityClass;
 public class ExchangeUtils {
     public void checkCurrencies(Currency from, Currency to) {
         if (from == to) {
-            throw new ResourceConflictException("Currencies should be different while exchange operation is executing");
+            throw new ResourceConflictException(String.format(ResponseMessages.UNPAIRED_CURRENCIES, "different"));
         }
     }
 }

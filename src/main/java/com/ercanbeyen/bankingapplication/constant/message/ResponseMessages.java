@@ -13,6 +13,7 @@ public final class ResponseMessages {
     public static final String INVALID_PHOTO_CONTENT_TYPE = INVALID_CONTENT_TYPE + ". Valid content types for photo are " + PhotoUtils.getPlainContentTypes();
     public static final String INVALID_PHONE_NUMBER = "Invalid phone number";
     public static final String IMPROPER_ACCOUNT_ACTIVITY = "Account activity is improper";
+    public static final String UNPAIRED_CURRENCIES = "Currencies must be %s";
 
     private ResponseMessages() {}
 }

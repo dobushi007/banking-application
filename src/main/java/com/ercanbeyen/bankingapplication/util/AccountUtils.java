@@ -22,8 +22,9 @@ import java.util.function.Predicate;
 public class AccountUtils {
     private final List<Integer> DEPOSIT_PERIODS = List.of(1, 3, 6, 12);
     private final Double MAXIMUM_TRANSFER_LIMIT = 1_000_000D;
+    private final int LOWEST_THRESHOLD = 0;
 
-    public void checkAccountConstruction(AccountDto accountDto) {
+    public void checkRequest(AccountDto accountDto) {
         checkAccountType(accountDto);
         checkDepositPeriod(accountDto);
     }
@@ -52,11 +53,11 @@ public class AccountUtils {
 
     public double calculateInterest(Double balance, Double interestRatio) {
         checkValidityOfBalanceAndInterestRatio(balance, interestRatio);
-        return (balance == 0 || interestRatio == 0) ? 0 : ((interestRatio * 100) / balance);
+        return (balance == LOWEST_THRESHOLD || interestRatio == LOWEST_THRESHOLD) ? LOWEST_THRESHOLD : ((interestRatio * 100) / balance);
     }
 
     public boolean checkAccountForPeriodicMoneyAdd(AccountType accountType, LocalDateTime updatedAt, Integer depositPeriod) {
-        checkAccountTypeAndDepositPeriodForPeriodMoneyAdd(accountType, depositPeriod);
+        checkAccountTypeAndDepositPeriodForPeriodBalanceUpdate(accountType, depositPeriod);
 
         LocalDate isGoingToBeUpdatedAt = updatedAt
                 .toLocalDate()
@@ -75,7 +76,13 @@ public class AccountUtils {
         };
     }
 
-    private void checkAccountTypeAndDepositPeriodForPeriodMoneyAdd(AccountType accountType, Integer depositPeriod) {
+    public void checkCurrencies(Currency from, Currency to) {
+        if (from != to) {
+            throw new ResourceConflictException(String.format(ResponseMessages.UNPAIRED_CURRENCIES, "same"));
+        }
+    }
+
+    private void checkAccountTypeAndDepositPeriodForPeriodBalanceUpdate(AccountType accountType, Integer depositPeriod) {
         if (accountType != AccountType.DEPOSIT) {
             throw new ResourceConflictException("Fees are for deposit accounts");
         }
@@ -84,19 +91,11 @@ public class AccountUtils {
     }
 
     private void checkValidityOfBalanceAndInterestRatio(Double balance, Double interestRatio) {
-        boolean isBalanceValid = balance < 0;
-        boolean isInterestRatioValid = interestRatio < 0;
+        boolean isBalanceValid = balance >= LOWEST_THRESHOLD;
+        boolean isInterestRatioValid = interestRatio >= LOWEST_THRESHOLD;
 
-        if (isBalanceValid && isInterestRatioValid) {
-            throw new ResourceConflictException("Invalid balance and interest ratio");
-        }
-
-        if (isInterestRatioValid) {
-            throw new ResourceConflictException("Invalid interest ratio");
-        }
-
-        if (isBalanceValid) {
-            throw new ResourceConflictException("Invalid balance");
+        if (!isBalanceValid || !isInterestRatioValid) {
+            throw new ResourceConflictException(String.format("Balance and interest ratio must be greater than or equal to %d", LOWEST_THRESHOLD));
         }
     }
 

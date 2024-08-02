@@ -29,30 +29,30 @@ public class AccountController extends BaseController<AccountDto, AccountFilteri
     @PostMapping
     @Override
     public ResponseEntity<AccountDto> createEntity(@RequestBody @Valid AccountDto request) {
-        AccountUtils.checkAccountConstruction(request);
+        AccountUtils.checkRequest(request);
         return new ResponseEntity<>(accountService.createEntity(request), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
     @Override
     public ResponseEntity<AccountDto> updateEntity(@PathVariable("id") Integer id, @RequestBody @Valid AccountDto request) {
-        AccountUtils.checkAccountConstruction(request);
+        AccountUtils.checkRequest(request);
         return new ResponseEntity<>(accountService.updateEntity(id, request), HttpStatus.OK);
     }
 
-    @PutMapping("/{id}/individual")
-    public ResponseEntity<MessageResponse<String>> updateBalance(
+    @PutMapping("/{id}/current")
+    public ResponseEntity<MessageResponse<String>> updateBalanceOfCurrentAccount(
             @PathVariable("id") Integer id,
             @RequestParam("activityType") AccountActivityType activityType,
             @RequestParam("amount") @Valid @Min(value = 1, message = "Minimum amount should be {value}") Double amount) {
         AccountUtils.checkUnidirectionalAccountBalanceUpdate(activityType);
-        MessageResponse<String> response = new MessageResponse<>(accountService.applyUnidirectionalAccountOperation(id, activityType, amount));
+        MessageResponse<String> response = new MessageResponse<>(accountService.updateBalanceOfCurrentAccount(id, activityType, amount));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PutMapping("/{id}/deposit")
     public ResponseEntity<MessageResponse<String>> updateBalanceOfDepositAccount(@PathVariable("id") Integer id) {
-        MessageResponse<String> response = new MessageResponse<>(accountService.addMoneyToDepositAccount(id));
+        MessageResponse<String> response = new MessageResponse<>(accountService.updateBalanceOfDepositAccount(id));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

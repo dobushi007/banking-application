@@ -61,6 +61,6 @@ public class NotificationServiceImpl implements NotificationService {
         Customer customer = customerService.findByNationalId(nationalId);
         log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
 
-        notificationRepository.deleteByCustomer(customer);
+        notificationRepository.deleteAllByCustomer(customer);
     }
 }

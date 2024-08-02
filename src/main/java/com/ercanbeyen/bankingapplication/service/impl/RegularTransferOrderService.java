@@ -116,10 +116,10 @@ public class RegularTransferOrderService implements BaseService<RegularTransferO
      * @return list which contains sender and receiver accounts respectively
      */
     private List<Account> getAccountsFromRegularTransferDto(RegularTransferOrderDto request) {
-        Account senderAccount = accountService.findAccount(request.getSenderAccountId());
+        Account senderAccount = accountService.findById(request.getSenderAccountId());
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
 
-        Account receiverAccount = accountService.findAccount(request.getRegularTransferDto().receiverAccountId());
+        Account receiverAccount = accountService.findById(request.getRegularTransferDto().receiverAccountId());
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
 
         return List.of(senderAccount, receiverAccount);

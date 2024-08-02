@@ -24,6 +24,7 @@ import com.ercanbeyen.bankingapplication.util.LoggingUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
@@ -95,6 +96,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
         return customerMapper.entityToDto(savedCustomer);
     }
 
+    @Transactional
     @Override
     public CustomerDto updateEntity(Integer id, CustomerDto request) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());

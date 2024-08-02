@@ -83,7 +83,11 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         Account account = findById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
 
+        AccountUtils.checkCurrencies(account.getCurrency(), request.getCurrency());
+
         account.setCity(request.getCity());
+        account.setInterestRatio(request.getInterestRatio());
+        account.setDepositPeriod(request.getDepositPeriod());
 
         return accountMapper.entityToDto(accountRepository.save(account));
     }
@@ -101,7 +105,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     }
 
     @Transactional
-    public String applyUnidirectionalAccountOperation(Integer id, AccountActivityType activityType, Double amount) {
+    public String updateBalanceOfCurrentAccount(Integer id, AccountActivityType activityType, Double amount) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         Account account = findById(id);
@@ -133,7 +137,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     }
 
     @Transactional
-    public String addMoneyToDepositAccount(Integer id) {
+    public String updateBalanceOfDepositAccount(Integer id) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         Account account = findById(id);
@@ -200,8 +204,9 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         return message;
     }
 
-    public Account findAccount(Integer id) {
-        return findById(id);
+    public Account findById(Integer id) {
+        return accountRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.ACCOUNT.getValue())));
     }
 
     public String getTotalAccounts(City city, AccountType type, Currency currency) {
@@ -230,16 +235,8 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         return accountRepository.existsById(id);
     }
 
-    private Account findById(Integer id) {
-        return accountRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.ACCOUNT.getValue())));
-    }
-
     private static void checkAccountsBeforeMoneyTransfer(Account senderAccount, Account receiverAccount, Double amount) {
-        if (senderAccount.getCurrency() != receiverAccount.getCurrency()) {
-            throw new ResourceConflictException("Currencies of the accounts must be same");
-        }
-
+        AccountUtils.checkCurrencies(senderAccount.getCurrency(), receiverAccount.getCurrency());
         AccountUtils.checkBalance(senderAccount.getBalance(), amount);
     }
 }
