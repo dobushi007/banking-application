@@ -54,10 +54,13 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     }
 
     @Override
-    public Optional<AccountDto> getEntity(Integer id) {
+    public AccountDto getEntity(Integer id) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
-        return accountRepository.findById(id)
-                .map(accountMapper::entityToDto);
+
+        Account account = findById(id);
+        log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
+
+        return accountMapper.entityToDto(account);
     }
 
     @Override
@@ -96,12 +99,14 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     public void deleteEntity(Integer id) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
-        if (!doesAccountExist(id)) {
+        if (!accountRepository.existsById(id)) {
             throw new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.ACCOUNT.getValue()));
         }
 
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
+
         accountRepository.deleteById(id);
+        log.info(LogMessages.RESOURCE_DELETE_SUCCESS, Entity.ACCOUNT.getValue(), id);
     }
 
     @Transactional
@@ -229,10 +234,6 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         } else {
             return accountRepository.getCustomersHaveMaximumBalanceByTypeAndCurrency(type, currency);
         }
-    }
-
-    private boolean doesAccountExist(Integer id) {
-        return accountRepository.existsById(id);
     }
 
     private static void checkAccountsBeforeMoneyTransfer(Account senderAccount, Account receiverAccount, Double amount) {

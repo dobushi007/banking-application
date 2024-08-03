@@ -1,10 +1,8 @@
 package com.ercanbeyen.bankingapplication.unit.controller;
 
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
-import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.controller.CustomerController;
 import com.ercanbeyen.bankingapplication.dto.CustomerDto;
-import com.ercanbeyen.bankingapplication.dto.response.MessageResponse;
 import com.ercanbeyen.bankingapplication.factory.MockCustomerFactory;
 import com.ercanbeyen.bankingapplication.option.CustomerFilteringOptions;
 import com.ercanbeyen.bankingapplication.service.impl.CustomerService;
@@ -19,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
@@ -83,7 +80,7 @@ class CustomerControllerTest {
     @DisplayName("Happy path test: Get Customer case")
     void givenId_whenGetCustomer_thenReturnCustomerDto() {
         // given
-        doReturn(Optional.of(customerDtos.getFirst()))
+        doReturn(customerDtos.getFirst())
                 .when(customerService)
                 .getEntity(any());
 
@@ -136,24 +133,19 @@ class CustomerControllerTest {
 
     @Test
     @DisplayName("Happy path test: Delete customer case")
-    void givenExistingId_whenDeleteEntity_thenReturnMessage() {
+    void givenExistingId_whenDeleteEntity_thenReturnNothing() {
         // given
-        doReturn(Optional.of(customerDtos.getFirst()))
-                .when(customerService)
-                        .getEntity(anyInt());
         doNothing()
                 .when(customerService)
                 .deleteEntity(anyInt());
 
         // when
-        ResponseEntity<MessageResponse<String>> responseEntity = customerController.deleteEntity(1);
+        ResponseEntity<Void> responseEntity = customerController.deleteEntity(1);
 
         // then
-        verify(customerService, times(1)).getEntity(anyInt());
         verify(customerService, times(1)).deleteEntity(anyInt());
 
-        assumeFalse(responseEntity.getBody() == null);
-        assertEquals(ResponseMessages.DELETE_SUCCESS, responseEntity.getBody().response());
+        assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
     }
 
     private CustomerDto getUpdateMockCustomerDtoRequest(String email) {

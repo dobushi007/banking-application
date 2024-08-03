@@ -39,10 +39,14 @@ public class ExchangeService implements BaseService<ExchangeDto, ExchangeFilteri
     }
 
     @Override
-    public Optional<ExchangeDto> getEntity(Integer id) {
+    public ExchangeDto getEntity(Integer id) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
-        return exchangeRepository.findById(id)
-                .map(exchangeMapper::entityToDto);
+
+        Exchange exchange = exchangeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.EXCHANGE.getValue())));
+        log.info(LogMessages.RESOURCE_FOUND, Entity.EXCHANGE.getValue());
+
+        return exchangeMapper.entityToDto(exchange);
     }
 
     @Override

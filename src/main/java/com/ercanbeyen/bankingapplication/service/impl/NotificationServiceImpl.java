@@ -50,6 +50,8 @@ public class NotificationServiceImpl implements NotificationService {
                     throw new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, entity));
                 });
 
+        log.info(LogMessages.RESOURCE_DELETE_SUCCESS, Entity.NOTIFICATION.getValue(), id);
+
         return entity + " " + id + " is successfully deleted";
     }
 

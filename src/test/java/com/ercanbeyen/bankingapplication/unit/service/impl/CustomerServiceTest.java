@@ -114,7 +114,7 @@ class CustomerServiceTest {
                 .entityToDto(any());
 
         // when
-        Optional<CustomerDto> actual = customerService.getEntity(customer.getId());
+        CustomerDto actual = customerService.getEntity(customer.getId());
 
         // then
         verify(customerRepository, times(1))
@@ -122,27 +122,29 @@ class CustomerServiceTest {
         verify(customerMapper, times(1))
                 .entityToDto(any());
 
-        Assumptions.assumeTrue(actual.isPresent());
-        assertEquals(expected.get().getId(), actual.get().getId());
+        assertEquals(expected.get().getId(), actual.getId());
     }
 
     @Test
-    @DisplayName("Happy path test: Get customer case")
-    void givenNotExistingId_whenGetEntity_thenReturnEmptyOptionalCustomerDto() {
+    @DisplayName("Exception path test: Get customer case")
+    void givenNotExistingId_whenGetEntity_thenThrowsResourceNotFoundException() {
         // given
+        String expected = String.format(ResponseMessages.NOT_FOUND, Entity.CUSTOMER.getValue());
+
         doReturn(Optional.empty())
                 .when(customerRepository)
                 .findById(anyInt());
 
         // when
-        Optional<CustomerDto> actual = customerService.getEntity(20);
+        RuntimeException exception = assertThrows(ResourceNotFoundException.class, () -> customerService.getEntity(20));
+        String actual = exception.getMessage();
 
         // then
         verify(customerRepository, times(1))
                 .findById(anyInt());
         verifyNoMoreInteractions(customerRepository, customerMapper);
 
-        assertTrue(actual.isEmpty());
+        assertEquals(expected, actual);
     }
 
     @Test

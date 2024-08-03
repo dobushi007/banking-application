@@ -78,6 +78,8 @@ public class FileStorageServiceImpl implements FileStorageService {
             throw new ResourceNotFoundException(ResponseMessages.NOT_FOUND);
         });
 
+        log.info(LogMessages.RESOURCE_DELETE_SUCCESS, Entity.FILE.getValue(), id);
+
         return ResponseMessages.FILE_DELETE_SUCCESS;
     }
 

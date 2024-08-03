@@ -18,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Predicate;
 
 @Service
@@ -50,10 +49,13 @@ public class RegularTransferOrderService implements BaseService<RegularTransferO
     }
 
     @Override
-    public Optional<RegularTransferOrderDto> getEntity(Integer id) {
+    public RegularTransferOrderDto getEntity(Integer id) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
-        return regularTransferOrderRepository.findById(id)
-                .map(regularTransferOrderMapper::entityToDto);
+
+        RegularTransferOrder regularTransferOrder = findById(id);
+        log.info(LogMessages.RESOURCE_FOUND, Entity.REGULAR_TRANSFER_ORDER.getValue());
+
+        return regularTransferOrderMapper.entityToDto(regularTransferOrder);
     }
 
     @Override
@@ -95,6 +97,7 @@ public class RegularTransferOrderService implements BaseService<RegularTransferO
         log.info(LogMessages.RESOURCE_FOUND, Entity.REGULAR_TRANSFER_ORDER);
 
         regularTransferOrderRepository.delete(regularTransferOrder);
+        log.info(LogMessages.RESOURCE_DELETE_SUCCESS, Entity.REGULAR_TRANSFER_ORDER.getValue(), id);
     }
 
     private RegularTransferOrder createRegularTransferOrder(RegularTransferOrderDto request) {

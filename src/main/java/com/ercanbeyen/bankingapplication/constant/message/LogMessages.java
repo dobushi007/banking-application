@@ -16,6 +16,7 @@ public final class LogMessages {
             Response: {}
             """;
     public static final String RESOURCE_CREATE_SUCCESS = "{} {} is successfully created";
+    public static final String RESOURCE_DELETE_SUCCESS = "{} {} is successfully deleted";
     public static final String CLASS_OF_RESPONSE = "Class of response: {}";
     public static final String CLASS_OF_OBJECT = "Class of {}: {}";
     public static final String NUMBER_OF_UPDATED_ENTITIES = "Number of updated entities: {}";

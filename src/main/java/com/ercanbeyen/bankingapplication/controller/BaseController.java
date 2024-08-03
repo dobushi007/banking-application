@@ -1,10 +1,6 @@
 package com.ercanbeyen.bankingapplication.controller;
 
-import com.ercanbeyen.bankingapplication.constant.enums.Entity;
-import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.BaseDto;
-import com.ercanbeyen.bankingapplication.dto.response.MessageResponse;
-import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import com.ercanbeyen.bankingapplication.option.BaseFilteringOptions;
 import com.ercanbeyen.bankingapplication.service.BaseService;
 import jakarta.validation.Valid;
@@ -28,9 +24,7 @@ public abstract class BaseController<T extends BaseDto, V extends BaseFilteringO
 
     @GetMapping("/{id}")
     public ResponseEntity<T> getEntity(@PathVariable("id") Integer id) {
-        return baseService.getEntity(id)
-                .map(t -> new ResponseEntity<>(t, HttpStatus.OK))
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.GENERAL.getValue())));
+        return new ResponseEntity<>(baseService.getEntity(id), HttpStatus.OK);
     }
 
     @PostMapping
@@ -44,13 +38,8 @@ public abstract class BaseController<T extends BaseDto, V extends BaseFilteringO
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<MessageResponse<String>> deleteEntity(@PathVariable("id") Integer id) {
-        return baseService.getEntity(id)
-                .map(entity -> {
-                    baseService.deleteEntity(id);
-                    MessageResponse<String> response = new MessageResponse<>(ResponseMessages.DELETE_SUCCESS);
-                    return new ResponseEntity<>(response, HttpStatus.OK);
-                })
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, "Entity")));
+    public ResponseEntity<Void> deleteEntity(@PathVariable("id") Integer id) {
+        baseService.deleteEntity(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

@@ -31,7 +31,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
@@ -75,10 +74,13 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
     }
 
     @Override
-    public Optional<CustomerDto> getEntity(Integer id) {
+    public CustomerDto getEntity(Integer id) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
-        return customerRepository.findById(id)
-                .map(customerMapper::entityToDto);
+
+        Customer customer = findById(id);
+        log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
+
+        return customerMapper.entityToDto(customer);
     }
 
     @Override
