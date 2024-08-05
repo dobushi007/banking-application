@@ -2,6 +2,7 @@ package com.ercanbeyen.bankingapplication.controller;
 
 import com.ercanbeyen.bankingapplication.constant.enums.Currency;
 import com.ercanbeyen.bankingapplication.dto.ExchangeDto;
+import com.ercanbeyen.bankingapplication.dto.response.MessageResponse;
 import com.ercanbeyen.bankingapplication.option.ExchangeFilteringOptions;
 import com.ercanbeyen.bankingapplication.service.impl.ExchangeService;
 import com.ercanbeyen.bankingapplication.util.ExchangeUtils;
@@ -21,11 +22,12 @@ public class ExchangeController extends BaseController<ExchangeDto, ExchangeFilt
     }
 
     @GetMapping("/{from}/{to}/{amount}")
-    public ResponseEntity<String> exchangeMoney(
+    public ResponseEntity<MessageResponse<String>> exchangeMoney(
             @PathVariable("from") Currency fromCurrency,
             @PathVariable("to") Currency toCurrency,
             @PathVariable("amount") @Valid @Min(value = 1, message = "Minimum amount should be {value}") Double amount) {
         ExchangeUtils.checkCurrencies(fromCurrency, toCurrency);
-        return ResponseEntity.ok(exchangeService.exchangeMoney(fromCurrency, toCurrency, amount));
+        MessageResponse<String> response = new MessageResponse<>(exchangeService.calculateMoneyExchange(fromCurrency, toCurrency, amount));
+        return ResponseEntity.ok(response);
     }
 }

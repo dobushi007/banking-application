@@ -4,9 +4,12 @@ import com.ercanbeyen.bankingapplication.constant.enums.*;
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
+import com.ercanbeyen.bankingapplication.dto.ExchangeDto;
 import com.ercanbeyen.bankingapplication.dto.request.AccountActivityRequest;
+import com.ercanbeyen.bankingapplication.dto.request.ExchangeRequest;
 import com.ercanbeyen.bankingapplication.dto.request.TransferRequest;
 import com.ercanbeyen.bankingapplication.entity.Account;
+import com.ercanbeyen.bankingapplication.entity.AccountActivity;
 import com.ercanbeyen.bankingapplication.entity.Customer;
 import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
@@ -23,9 +26,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
 @Service
@@ -36,6 +41,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     private final AccountMapper accountMapper;
     private final CustomerService customerService;
     private final AccountActivityService accountActivityService;
+    private final ExchangeService exchangeService;
 
     @Override
     public List<AccountDto> getEntities(AccountFilteringOptions options) {
@@ -207,6 +213,40 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         accountActivityService.createAccountActivity(accountActivityRequest);
 
         return message;
+    }
+
+    @Transactional
+    public String exchangeMoney(ExchangeRequest request) {
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+
+        Account buyerAccount = findById(request.buyerId());
+        log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
+
+        Account sellerAccount = findById(request.sellerId());
+        log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
+
+        Double exchangedAmount = exchangeService.exchangeMoney(sellerAccount, buyerAccount, request.currency(), request.amount());
+
+        accountRepository.updateBalanceById(request.sellerId(), BalanceActivity.DECREASE.name(), request.amount());
+        accountRepository.updateBalanceById(request.buyerId(), BalanceActivity.INCREASE.name(), exchangedAmount);
+
+        AccountActivityRequest accountActivityRequest = new AccountActivityRequest(
+                AccountActivityType.MONEY_EXCHANGE,
+                sellerAccount,
+                buyerAccount,
+                request.amount(),
+                        String.format("""
+                        Money exchange between accounts.
+                        Customer National Id: %s
+                        Seller Account Id: %s
+                        Buyer Account Id: %s
+                        Time: %s
+                        """, buyerAccount.getCustomer().getNationalId(), buyerAccount.getId(), sellerAccount.getId(), LocalDateTime.now())
+        );
+
+        accountActivityService.createAccountActivity(accountActivityRequest);
+
+        return  request.amount() + " " + sellerAccount.getType() + " is successfully exchanged to " + exchangedAmount + " " + request.currency();
     }
 
     public Account findById(Integer id) {

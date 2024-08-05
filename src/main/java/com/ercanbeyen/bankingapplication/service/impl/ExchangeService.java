@@ -1,11 +1,14 @@
 package com.ercanbeyen.bankingapplication.service.impl;
 
+import com.ercanbeyen.bankingapplication.constant.enums.AccountType;
 import com.ercanbeyen.bankingapplication.constant.enums.Currency;
 import com.ercanbeyen.bankingapplication.constant.enums.Entity;
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.ExchangeDto;
+import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.entity.Exchange;
+import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import com.ercanbeyen.bankingapplication.mapper.ExchangeMapper;
 import com.ercanbeyen.bankingapplication.option.ExchangeFilteringOptions;
@@ -19,6 +22,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiPredicate;
 
 @Service
 @RequiredArgsConstructor
@@ -89,10 +93,43 @@ public class ExchangeService implements BaseService<ExchangeDto, ExchangeFilteri
         exchangeRepository.deleteById(id);
     }
 
-
-    public String exchangeMoney(Currency fromCurrency, Currency toCurrency, Double amount) {
+    public String calculateMoneyExchange(Currency fromCurrency, Currency toCurrency, Double amount) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
+        double exchangedAmount = convertMoney(fromCurrency, toCurrency, amount);
+
+        return amount + " " + fromCurrency.name() + " is successfully exchanged to " + exchangedAmount + " " + toCurrency.name();
+    }
+
+    public Double exchangeMoney(Account sellerAccount, Account buyerAccount, Currency currency, Double amount) {
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+
+        checkAccountsBeforeMoneyExchange(sellerAccount, buyerAccount, currency);
+
+        return convertMoney(sellerAccount.getCurrency(), buyerAccount.getCurrency(), amount);
+    }
+
+    private static void checkAccountsBeforeMoneyExchange(Account sellerAccount, Account buyerAccount, Currency currency) {
+        if (buyerAccount.getCurrency() == sellerAccount.getCurrency()) {
+            throw new ResourceConflictException(String.format(ResponseMessages.UNPAIRED_CURRENCIES, "different"));
+        }
+
+        if (buyerAccount.getCurrency() != currency) {
+            throw new ResourceConflictException("Currencies of buyer account and request must be same");
+        }
+
+        if (!buyerAccount.getCustomer().getNationalId().equals(sellerAccount.getCustomer().getNationalId())) {
+            throw new ResourceConflictException("Money exchange between different customers is allowed");
+        }
+
+        BiPredicate<Account, Account> checkAccountTypeForExchange = (seller, buyer) -> seller.getType() == AccountType.CURRENT && buyer.getType() == AccountType.CURRENT;
+
+        if (!checkAccountTypeForExchange.test(buyerAccount, sellerAccount)) {
+            throw new ResourceConflictException("Both buyer and seller accounts must be current accounts");
+        }
+    }
+
+    private double convertMoney(Currency fromCurrency, Currency toCurrency, Double amount) {
         double rate;
         Optional<Exchange> maybeExchange = exchangeRepository.findByFromCurrencyAndToCurrency(fromCurrency, toCurrency);
         log.info("Exchange is from {} to {}", fromCurrency, toCurrency);
@@ -107,9 +144,7 @@ public class ExchangeService implements BaseService<ExchangeDto, ExchangeFilteri
             rate = Math.pow(reverseExchange.getRate(), -1);
         }
 
-        double exchangedAmount = amount * rate;
-
-        return amount + " " + fromCurrency.name() + " is successfully exchanged to " + exchangedAmount + " " + toCurrency.name() + " with rate " + rate;
+        return amount * rate;
     }
 
 }
