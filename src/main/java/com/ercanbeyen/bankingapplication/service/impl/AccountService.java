@@ -4,12 +4,10 @@ import com.ercanbeyen.bankingapplication.constant.enums.*;
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
-import com.ercanbeyen.bankingapplication.dto.ExchangeDto;
 import com.ercanbeyen.bankingapplication.dto.request.AccountActivityRequest;
 import com.ercanbeyen.bankingapplication.dto.request.ExchangeRequest;
 import com.ercanbeyen.bankingapplication.dto.request.TransferRequest;
 import com.ercanbeyen.bankingapplication.entity.Account;
-import com.ercanbeyen.bankingapplication.entity.AccountActivity;
 import com.ercanbeyen.bankingapplication.entity.Customer;
 import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
@@ -30,7 +28,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
 @Service
@@ -225,28 +222,43 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         Account sellerAccount = findById(request.sellerId());
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
 
-        Double exchangedAmount = exchangeService.exchangeMoney(sellerAccount, buyerAccount, request.currency(), request.amount());
+        Double requestedAmount = request.amount();
+        AccountUtils.checkBalance(sellerAccount.getBalance(), requestedAmount);
 
-        accountRepository.updateBalanceById(request.sellerId(), BalanceActivity.DECREASE.name(), request.amount());
+        Double exchangedAmount = exchangeService.exchangeMoney(sellerAccount, buyerAccount, requestedAmount);
+
+        accountRepository.updateBalanceById(request.sellerId(), BalanceActivity.DECREASE.name(), requestedAmount);
         accountRepository.updateBalanceById(request.buyerId(), BalanceActivity.INCREASE.name(), exchangedAmount);
+
+        String exchangeMessage = """
+                Money exchange (from %s to %s) operation is completed.
+                Customer National Id: %s
+                From Account Id: %s
+                To Account Id: %s
+                Converted Amount: %s,
+                Time: %s
+                """;
 
         AccountActivityRequest accountActivityRequest = new AccountActivityRequest(
                 AccountActivityType.MONEY_EXCHANGE,
                 sellerAccount,
                 buyerAccount,
-                request.amount(),
-                        String.format("""
-                        Money exchange between accounts.
-                        Customer National Id: %s
-                        Seller Account Id: %s
-                        Buyer Account Id: %s
-                        Time: %s
-                        """, buyerAccount.getCustomer().getNationalId(), buyerAccount.getId(), sellerAccount.getId(), LocalDateTime.now())
+                requestedAmount,
+                String.format(
+                        exchangeMessage,
+                        sellerAccount.getCurrency(),
+                        buyerAccount.getCurrency(),
+                        buyerAccount.getCustomer().getNationalId(),
+                        buyerAccount.getId(),
+                        sellerAccount.getId(),
+                        requestedAmount,
+                        LocalDateTime.now()
+                )
         );
 
         accountActivityService.createAccountActivity(accountActivityRequest);
 
-        return  request.amount() + " " + sellerAccount.getType() + " is successfully exchanged to " + exchangedAmount + " " + request.currency();
+        return  requestedAmount + " " + sellerAccount.getCurrency() + " is successfully exchanged to " + exchangedAmount + " " + buyerAccount.getCurrency();
     }
 
     public Account findById(Integer id) {

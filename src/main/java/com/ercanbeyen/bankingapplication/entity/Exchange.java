@@ -12,4 +12,6 @@ public final class Exchange extends BaseEntity {
     private Currency fromCurrency;
     private Currency toCurrency;
     private Double rate;
+    private Double buyPercentage;  // bank buy percentage
+    private Double sellPercentage; // bank sell percentage
 }

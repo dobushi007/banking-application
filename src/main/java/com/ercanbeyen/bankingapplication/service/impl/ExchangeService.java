@@ -76,6 +76,8 @@ public class ExchangeService implements BaseService<ExchangeDto, ExchangeFilteri
         exchange.setFromCurrency(request.getFromCurrency());
         exchange.setToCurrency(request.getToCurrency());
         exchange.setRate(request.getRate());
+        exchange.setSellPercentage(request.getSellPercentage());
+        exchange.setBuyPercentage(request.getBuyPercentage());
 
         return exchangeMapper.entityToDto(exchangeRepository.save(exchange));
     }
@@ -95,27 +97,19 @@ public class ExchangeService implements BaseService<ExchangeDto, ExchangeFilteri
 
     public String calculateMoneyExchange(Currency fromCurrency, Currency toCurrency, Double amount) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
-
         double exchangedAmount = convertMoney(fromCurrency, toCurrency, amount);
-
         return amount + " " + fromCurrency.name() + " is successfully exchanged to " + exchangedAmount + " " + toCurrency.name();
     }
 
-    public Double exchangeMoney(Account sellerAccount, Account buyerAccount, Currency currency, Double amount) {
+    public Double exchangeMoney(Account sellerAccount, Account buyerAccount, Double amount) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
-
-        checkAccountsBeforeMoneyExchange(sellerAccount, buyerAccount, currency);
-
+        checkAccountsBeforeMoneyExchange(sellerAccount, buyerAccount);
         return convertMoney(sellerAccount.getCurrency(), buyerAccount.getCurrency(), amount);
     }
 
-    private static void checkAccountsBeforeMoneyExchange(Account sellerAccount, Account buyerAccount, Currency currency) {
+    private static void checkAccountsBeforeMoneyExchange(Account sellerAccount, Account buyerAccount) {
         if (buyerAccount.getCurrency() == sellerAccount.getCurrency()) {
             throw new ResourceConflictException(String.format(ResponseMessages.UNPAIRED_CURRENCIES, "different"));
-        }
-
-        if (buyerAccount.getCurrency() != currency) {
-            throw new ResourceConflictException("Currencies of buyer account and request must be same");
         }
 
         if (!buyerAccount.getCustomer().getNationalId().equals(sellerAccount.getCustomer().getNationalId())) {
@@ -130,19 +124,28 @@ public class ExchangeService implements BaseService<ExchangeDto, ExchangeFilteri
     }
 
     private double convertMoney(Currency fromCurrency, Currency toCurrency, Double amount) {
-        double rate;
         Optional<Exchange> maybeExchange = exchangeRepository.findByFromCurrencyAndToCurrency(fromCurrency, toCurrency);
         log.info("Exchange is from {} to {}", fromCurrency, toCurrency);
 
+        Exchange exchange;
+        double exponential;
+        double bankActivityRate;
+
         if (maybeExchange.isPresent()) {
             log.info("Exchange is present");
-            rate = maybeExchange.get().getRate();
+            exchange = maybeExchange.get();
+            exponential = -1;
+            bankActivityRate = exchange.getRate() * ((100 + exchange.getSellPercentage()) / 100);
         } else {
-            Exchange reverseExchange = exchangeRepository.findByFromCurrencyAndToCurrency(toCurrency, fromCurrency)
+            exchange = exchangeRepository.findByFromCurrencyAndToCurrency(toCurrency, fromCurrency)
                     .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.EXCHANGE.getValue())));
             log.info("Reverse exchange is present");
-            rate = Math.pow(reverseExchange.getRate(), -1);
+            exponential = 1;
+            bankActivityRate = exchange.getRate() * ((100 - exchange.getBuyPercentage()) / 100);
         }
+
+        double rate = Math.pow(bankActivityRate, exponential);
+        log.info("Bank rate: {}", rate);
 
         return amount * rate;
     }
