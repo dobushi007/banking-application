@@ -8,11 +8,13 @@ import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.ExchangeDto;
 import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.entity.Exchange;
+import com.ercanbeyen.bankingapplication.entity.ExchangeView;
 import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import com.ercanbeyen.bankingapplication.mapper.ExchangeMapper;
 import com.ercanbeyen.bankingapplication.option.ExchangeFilteringOptions;
 import com.ercanbeyen.bankingapplication.repository.ExchangeRepository;
+import com.ercanbeyen.bankingapplication.repository.ExchangeViewRepository;
 import com.ercanbeyen.bankingapplication.service.BaseService;
 import com.ercanbeyen.bankingapplication.util.LoggingUtils;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +31,7 @@ import java.util.function.BiPredicate;
 @Slf4j
 public class ExchangeService implements BaseService<ExchangeDto, ExchangeFilteringOptions> {
     private final ExchangeRepository exchangeRepository;
+    private final ExchangeViewRepository exchangeViewRepository;
     private final ExchangeMapper exchangeMapper;
 
     @Override
@@ -124,30 +127,34 @@ public class ExchangeService implements BaseService<ExchangeDto, ExchangeFilteri
     }
 
     private double convertMoney(Currency fromCurrency, Currency toCurrency, Double amount) {
-        Optional<Exchange> maybeExchange = exchangeRepository.findByFromCurrencyAndToCurrency(fromCurrency, toCurrency);
         log.info("Exchange is from {} to {}", fromCurrency, toCurrency);
 
-        Exchange exchange;
-        double exponential;
-        double bankActivityRate;
+        Optional<ExchangeView> maybeExchangeView = exchangeViewRepository.findByFromCurrencyAndToCurrency(fromCurrency, toCurrency);
 
-        if (maybeExchange.isPresent()) {
+        double exponential;
+        double rate;
+        ExchangeView exchangeView;
+
+        if (maybeExchangeView.isPresent()) { // Bank sells foreign currency & Customer buys foreign currency
             log.info("Exchange is present");
-            exchange = maybeExchange.get();
-            exponential = -1;
-            bankActivityRate = exchange.getRate() * ((100 + exchange.getSellPercentage()) / 100);
-        } else {
-            exchange = exchangeRepository.findByFromCurrencyAndToCurrency(toCurrency, fromCurrency)
+            exchangeView = maybeExchangeView.get();
+            exponential = -1; // foreign currency sell
+            rate = exchangeView.getSellRate();
+
+        } else { // Bank buys foreign currency & Customer sells foreign currency
+            exchangeView = exchangeViewRepository.findByFromCurrencyAndToCurrency(toCurrency, fromCurrency)
                     .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.EXCHANGE.getValue())));
             log.info("Reverse exchange is present");
-            exponential = 1;
-            bankActivityRate = exchange.getRate() * ((100 - exchange.getBuyPercentage()) / 100);
+            exponential = 1; // foreign currency buy
+            rate = exchangeView.getBuyRate();
         }
 
-        double rate = Math.pow(bankActivityRate, exponential);
-        log.info("Bank rate: {}", rate);
+        log.info("Buy and sell rates: {} {}", exchangeView.getBuyRate(), exchangeView.getSellRate());
 
-        return amount * rate;
+        double effectOfRate = Math.pow(rate, exponential);
+        log.info("Effect of rate: {}", effectOfRate);
+
+        return amount * effectOfRate;
     }
 
 }
