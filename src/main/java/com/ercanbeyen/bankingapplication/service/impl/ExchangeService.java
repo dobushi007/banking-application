@@ -76,8 +76,8 @@ public class ExchangeService implements BaseService<ExchangeDto, ExchangeFilteri
 
         log.info(LogMessages.RESOURCE_FOUND, Entity.EXCHANGE.getValue());
 
-        exchange.setFromCurrency(request.getFromCurrency());
-        exchange.setToCurrency(request.getToCurrency());
+        exchange.setTargetCurrency(request.getTargetCurrency());
+        exchange.setBaseCurrency(request.getBaseCurrency());
         exchange.setRate(request.getRate());
         exchange.setSellPercentage(request.getSellPercentage());
         exchange.setBuyPercentage(request.getBuyPercentage());
@@ -110,6 +110,11 @@ public class ExchangeService implements BaseService<ExchangeDto, ExchangeFilteri
         return convertMoney(sellerAccount.getCurrency(), buyerAccount.getCurrency(), amount);
     }
 
+     public List<ExchangeView> getExchangeViews() {
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
+        return exchangeViewRepository.findAll();
+     }
+
     private static void checkAccountsBeforeMoneyExchange(Account sellerAccount, Account buyerAccount) {
         if (buyerAccount.getCurrency() == sellerAccount.getCurrency()) {
             throw new ResourceConflictException(String.format(ResponseMessages.UNPAIRED_CURRENCIES, "different"));
@@ -126,10 +131,10 @@ public class ExchangeService implements BaseService<ExchangeDto, ExchangeFilteri
         }
     }
 
-    private double convertMoney(Currency fromCurrency, Currency toCurrency, Double amount) {
-        log.info("Exchange is from {} to {}", fromCurrency, toCurrency);
+    private double convertMoney(Currency baseCurrency, Currency targetCurrency, Double amount) {
+        log.info("Exchange is from {} to {}", baseCurrency, targetCurrency);
 
-        Optional<ExchangeView> maybeExchangeView = exchangeViewRepository.findByFromCurrencyAndToCurrency(fromCurrency, toCurrency);
+        Optional<ExchangeView> maybeExchangeView = exchangeViewRepository.findByBaseCurrencyAndTargetCurrency(baseCurrency, targetCurrency);
 
         double exponential;
         double rate;
@@ -142,7 +147,7 @@ public class ExchangeService implements BaseService<ExchangeDto, ExchangeFilteri
             rate = exchangeView.getSellRate();
 
         } else { // Bank buys foreign currency & Customer sells foreign currency
-            exchangeView = exchangeViewRepository.findByFromCurrencyAndToCurrency(toCurrency, fromCurrency)
+            exchangeView = exchangeViewRepository.findByTargetCurrencyAndBaseCurrency(baseCurrency, targetCurrency)
                     .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.EXCHANGE.getValue())));
             log.info("Reverse exchange is present");
             exponential = 1; // foreign currency buy

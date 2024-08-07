@@ -9,5 +9,6 @@ import java.util.Optional;
 
 @Repository
 public interface ExchangeViewRepository extends JpaRepository<ExchangeView, Integer> {
-    Optional<ExchangeView> findByFromCurrencyAndToCurrency(Currency fromCurrency, Currency toCurrency);
+    Optional<ExchangeView> findByBaseCurrencyAndTargetCurrency(Currency baseCurrency, Currency targetCurrency);
+    Optional<ExchangeView> findByTargetCurrencyAndBaseCurrency(Currency targetCurrency, Currency baseCurrency);
 }

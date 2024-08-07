@@ -11,8 +11,8 @@ import org.hibernate.validator.constraints.Range;
 @AllArgsConstructor
 @NoArgsConstructor
 public final class ExchangeDto extends BaseDto {
-    private Currency fromCurrency;
-    private Currency toCurrency;
+    private Currency targetCurrency;
+    private Currency baseCurrency;
     @Min(value = 1, message = "Minimum rate is {value}")
     private Double rate;
     @Range(min = 1, max = 100, message = "Buy percentage should between {min} and {max}")

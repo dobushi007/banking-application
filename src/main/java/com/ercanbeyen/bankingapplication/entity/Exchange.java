@@ -9,8 +9,8 @@ import lombok.Data;
 @Entity
 @Table(name = "exchanges")
 public final class Exchange extends BaseEntity {
-    private Currency fromCurrency;
-    private Currency toCurrency;
+    private Currency targetCurrency;
+    private Currency baseCurrency;
     private Double rate;
     private Double buyPercentage;  // bank buy percentage
     private Double sellPercentage; // bank sell percentage

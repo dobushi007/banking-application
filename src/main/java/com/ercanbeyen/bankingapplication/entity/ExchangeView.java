@@ -14,17 +14,17 @@ import org.hibernate.annotations.Synchronize;
 @Entity(name = "exchange_views")
 @Immutable
 @Subselect("""
-        SELECT e.id, e.from_currency, e.to_currency, e.rate * ((100 + e.sell_percentage) / 100) AS sell_rate, e.rate * ((100 - e.buy_percentage) / 100) AS buy_rate
+        SELECT e.id, e.target_currency, e.base_currency, e.rate * ((100 + e.sell_percentage) / 100) AS sell_rate, e.rate * ((100 - e.buy_percentage) / 100) AS buy_rate
         FROM exchanges e
         """)
 @Synchronize("exchanges")
 public class ExchangeView {
     @Id
     private Integer id;
-    @Column(name = "from_currency")
-    private Currency fromCurrency;
-    @Column(name = "to_currency")
-    private Currency toCurrency;
+    @Column(name = "target_currency")
+    private Currency targetCurrency;
+    @Column(name = "base_currency")
+    private Currency baseCurrency;
     @Column(name = "buy_rate")
     private Double buyRate;  // bank buy rate
     @Column(name = "sell_rate")
