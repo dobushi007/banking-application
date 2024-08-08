@@ -16,6 +16,7 @@ import com.ercanbeyen.bankingapplication.option.ExchangeFilteringOptions;
 import com.ercanbeyen.bankingapplication.repository.ExchangeRepository;
 import com.ercanbeyen.bankingapplication.repository.ExchangeViewRepository;
 import com.ercanbeyen.bankingapplication.service.BaseService;
+import com.ercanbeyen.bankingapplication.util.ExchangeUtils;
 import com.ercanbeyen.bankingapplication.util.LoggingUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -61,6 +62,8 @@ public class ExchangeService implements BaseService<ExchangeDto, ExchangeFilteri
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         Exchange exchange = exchangeMapper.dtoToEntity(request);
+        checkExistsByBaseAndTargetCurrencies(exchange.getBaseCurrency(), exchange.getTargetCurrency());
+
         Exchange savedExchange = exchangeRepository.save(exchange);
         log.info(LogMessages.RESOURCE_CREATE_SUCCESS, Entity.EXCHANGE.getValue(), savedExchange.getId());
 
@@ -76,8 +79,12 @@ public class ExchangeService implements BaseService<ExchangeDto, ExchangeFilteri
 
         log.info(LogMessages.RESOURCE_FOUND, Entity.EXCHANGE.getValue());
 
-        exchange.setTargetCurrency(request.getTargetCurrency());
-        exchange.setBaseCurrency(request.getBaseCurrency());
+        if (exchange.getBaseCurrency() != request.getBaseCurrency() || exchange.getTargetCurrency() != request.getTargetCurrency()) {
+            checkExistsByBaseAndTargetCurrencies(request.getBaseCurrency(), request.getTargetCurrency());
+            exchange.setTargetCurrency(request.getTargetCurrency());
+            exchange.setBaseCurrency(request.getBaseCurrency());
+        }
+
         exchange.setRate(request.getRate());
         exchange.setSellPercentage(request.getSellPercentage());
         exchange.setBuyPercentage(request.getBuyPercentage());
@@ -162,4 +169,18 @@ public class ExchangeService implements BaseService<ExchangeDto, ExchangeFilteri
         return amount * effectOfRate;
     }
 
+    private void checkExistsByBaseAndTargetCurrencies(Currency base, Currency target) {
+        ExchangeUtils.checkCurrencies(base, target);
+
+        final String logMessage = "Existence of Exchange (Base: {} & Target: {}): {}";
+        boolean existsByBaseAndTarget = exchangeRepository.existsByBaseCurrencyAndTargetCurrency(base, target);
+        log.info(logMessage, base, target, existsByBaseAndTarget);
+
+        boolean existsByTargetAndBase = exchangeRepository.existsByTargetCurrencyAndBaseCurrency(base, target);
+        log.info(logMessage, target, base, existsByTargetAndBase);
+
+        if (existsByBaseAndTarget || existsByTargetAndBase) {
+            throw new ResourceConflictException(String.format(ResponseMessages.ALREADY_EXISTS, Entity.EXCHANGE.getValue()));
+        }
+    }
 }

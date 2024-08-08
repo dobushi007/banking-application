@@ -2,6 +2,7 @@ package com.ercanbeyen.bankingapplication.dto;
 
 import com.ercanbeyen.bankingapplication.constant.enums.Currency;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,9 @@ import org.hibernate.validator.constraints.Range;
 @AllArgsConstructor
 @NoArgsConstructor
 public final class ExchangeDto extends BaseDto {
+    @NotNull(message = "Target currency should not be null")
     private Currency targetCurrency;
+    @NotNull(message = "Base currency should not be null")
     private Currency baseCurrency;
     @Min(value = 1, message = "Minimum rate is {value}")
     private Double rate;
