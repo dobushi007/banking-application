@@ -8,6 +8,6 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface NotificationMapper {
     @Mapping(target = "customerNationalId", source = "customer.nationalId")
-    NotificationDto notificationToDto(Notification notification);
-    Notification dtoToNotification(NotificationDto notificationDto);
+    NotificationDto entityToDto(Notification notification);
+    Notification dtoToEntity(NotificationDto notificationDto);
 }

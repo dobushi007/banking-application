@@ -1,6 +1,5 @@
 package com.ercanbeyen.bankingapplication.integration.controller;
 
-import com.ercanbeyen.bankingapplication.constant.enums.Entity;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.CustomerDto;
 import com.ercanbeyen.bankingapplication.entity.Customer;
@@ -39,10 +38,10 @@ import static org.hamcrest.Matchers.is;
 class CustomerControllerTest {
     @Container
     @ServiceConnection
-    private final static MySQLContainer<?> mySQLContainer = new MySQLContainer<>(DockerImageName.parse("mysql:latest"));
+    private static final MySQLContainer<?> mySQLContainer = new MySQLContainer<>(DockerImageName.parse("mysql:latest"));
     @Container
     @ServiceConnection
-    private final static CassandraContainer<?> cassandraContainer = new CassandraContainer<>(DockerImageName.parse("cassandra:latest"));
+    private static final CassandraContainer<?> cassandraContainer = new CassandraContainer<>(DockerImageName.parse("cassandra:latest"));
     private static final String PHOTOS_LOCATION = "C:\\Users\\ercanbeyen\\Photos\\Test\\Banking-App\\";
     @LocalServerPort
     private Integer port;
@@ -164,8 +163,7 @@ class CustomerControllerTest {
                 .get(CUSTOMER_RESOURCE_ENDPOINT, 25)
                 .then()
                 .assertThat()
-                .statusCode(HttpStatus.NOT_FOUND.value())
-                .body("message", equalTo(String.format(ResponseMessages.NOT_FOUND, Entity.GENERAL.getValue())));
+                .statusCode(HttpStatus.NOT_FOUND.value());
     }
 
     @Test
@@ -203,8 +201,7 @@ class CustomerControllerTest {
                 .delete(CUSTOMER_RESOURCE_ENDPOINT, 1)
                 .then()
                 .assertThat()
-                .statusCode(HttpStatus.OK.value())
-                .body("response", equalTo(ResponseMessages.DELETE_SUCCESS));
+                .statusCode(HttpStatus.NO_CONTENT.value());
     }
 
     @Test

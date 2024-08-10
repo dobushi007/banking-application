@@ -11,7 +11,7 @@ import static java.util.stream.Collectors.groupingBy;
 
 @UtilityClass
 public class StatisticsUtils {
-    public static <T> Map<T, Integer> getFrequencies(List<T> elements, Integer minimumFrequency) {
+    public <T> Map<T, Integer> getFrequencies(List<T> elements, Integer minimumFrequency) {
         return elements.stream()
                 .collect(groupingBy(
                         Function.identity(),

@@ -31,14 +31,12 @@ public class RatingServiceImpl implements RatingService {
 
     @Override
     public List<RatingDto> getRatings() {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         List<RatingDto> ratingDtos = new ArrayList<>();
 
         ratingRepository.findAll()
-                .forEach(rating -> ratingDtos.add(ratingMapper.ratingToDto(rating)));
+                .forEach(rating -> ratingDtos.add(ratingMapper.entityToDto(rating)));
 
         return ratingDtos;
 
@@ -46,25 +44,21 @@ public class RatingServiceImpl implements RatingService {
 
     @Override
     public RatingDto getRating(UUID id) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
-        Rating rating = findRatingById(id);
+        Rating rating = findById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.RATING.getValue());
 
-        return ratingMapper.ratingToDto(rating);
+        return ratingMapper.entityToDto(rating);
     }
 
     @Override
     public RatingDto createRating(RatingDto ratingDto) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         checkRatingBeforeCreate(ratingDto);
 
-        Rating rating = ratingMapper.dtoToRating(ratingDto);
+        Rating rating = ratingMapper.dtoToEntity(ratingDto);
         rating.setId(UUID.randomUUID());
         rating.setExplanation(ratingDto.explanation());
 
@@ -79,16 +73,14 @@ public class RatingServiceImpl implements RatingService {
         Rating savedRating = ratingRepository.save(rating);
         log.info(LogMessages.RESOURCE_CREATE_SUCCESS, Entity.RATING.getValue(), savedRating.getId());
 
-        return ratingMapper.ratingToDto(savedRating);
+        return ratingMapper.entityToDto(savedRating);
     }
 
     @Override
     public RatingDto updateRating(UUID id, RatingDto ratingDto) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
-        Rating rating = findRatingById(id);
+        Rating rating = findById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.RATING.getValue());
 
         rating.setRate(ratingDto.rate());
@@ -99,17 +91,15 @@ public class RatingServiceImpl implements RatingService {
         Rating savedRating = ratingRepository.save(rating);
         log.info(LogMessages.RESOURCE_CREATE_SUCCESS, Entity.RATING.getValue(), savedRating.getId());
 
-        return ratingMapper.ratingToDto(savedRating);
+        return ratingMapper.entityToDto(savedRating);
     }
 
     @Override
     public RatingStatisticsResponse<RatingReason, Integer> getReasonStatistics(Integer fromYear, Integer toYear, Integer minimumFrequency) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
-        List<Rating> ratings = getRatingsBetweenYears(fromYear, toYear);
-        List<RatingReason> reasons = ratings.stream()
+        List<RatingReason> reasons = getRatingsBetweenYears(fromYear, toYear)
+                .stream()
                 .map(Rating::getReason)
                 .toList();
 
@@ -118,9 +108,7 @@ public class RatingServiceImpl implements RatingService {
 
     @Override
     public RatingStatisticsResponse<Integer, Integer> getRateStatistics(Integer fromYear, Integer toYear, Integer minimumFrequency) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         List<Rating> ratings = getRatingsBetweenYears(fromYear, toYear);
         List<Integer> rates = ratings.stream()
@@ -130,13 +118,13 @@ public class RatingServiceImpl implements RatingService {
         return new RatingStatisticsResponse<>(StatisticsUtils.getFrequencies(rates, minimumFrequency));
     }
 
-    private Rating findRatingById(UUID id) {
+    private Rating findById(UUID id) {
         return ratingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.RATING.getValue())));
     }
 
     private void checkRatingBeforeCreate(RatingDto ratingDto) {
-        if (!customerService.doesCustomerExist(ratingDto.userNationalId())) {
+        if (!customerService.existsByNationalId(ratingDto.userNationalId())) {
             log.error(LogMessages.RESOURCE_NOT_FOUND, Entity.CUSTOMER.getValue());
             throw new ResourceExpectationFailedException("User national id is not in database");
         }

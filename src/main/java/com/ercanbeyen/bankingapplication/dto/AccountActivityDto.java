@@ -1,11 +1,11 @@
 package com.ercanbeyen.bankingapplication.dto;
 
-import com.ercanbeyen.bankingapplication.constant.enums.TransactionType;
+import com.ercanbeyen.bankingapplication.constant.enums.AccountActivityType;
 
 import java.time.LocalDateTime;
 
-public record TransactionDto(
-        TransactionType type,
+public record AccountActivityDto(
+        AccountActivityType type,
         Integer senderAccountId,
         Integer receiverAccountId,
         Double amount,

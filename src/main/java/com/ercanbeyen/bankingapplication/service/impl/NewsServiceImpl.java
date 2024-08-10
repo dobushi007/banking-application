@@ -27,15 +27,15 @@ public class NewsServiceImpl implements NewsService {
     private final BankNewsRepository bankNewsRepository;
     private final OfferNewsRepository offerNewsRepository;
     private final NewsMapper newsMapper;
+
     @Override
     public List<NewsDto> getNews(NewsType type, int pageNumber, int pageSize) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         List<NewsDto> newsDtoList = new ArrayList<>();
 
-        Sort newsSort = Sort.by("createTime", "updateTime").descending()
+        Sort newsSort = Sort.by("createdAt", "updatedAt")
+                .descending()
                 .and(Sort.by("title").ascending());
 
         Pageable pageable = PageRequest.of(pageNumber, pageSize, newsSort);
@@ -44,11 +44,11 @@ public class NewsServiceImpl implements NewsService {
             case BANK_NEWS -> bankNewsRepository.findAll(pageable)
                     .stream()
                     .map(News.class::cast)
-                    .forEach(news -> newsDtoList.add(newsMapper.newsToDto(news)));
+                    .forEach(news -> newsDtoList.add(newsMapper.entityToDto(news)));
             case OFFER_NEWS -> offerNewsRepository.findAll(pageable)
                     .stream()
                     .map(News.class::cast)
-                    .forEach(news -> newsDtoList.add(newsMapper.newsToDto(news)));
+                    .forEach(news -> newsDtoList.add(newsMapper.entityToDto(news)));
             case null, default -> throw new ResourceExpectationFailedException("Invalid news type");
         }
 

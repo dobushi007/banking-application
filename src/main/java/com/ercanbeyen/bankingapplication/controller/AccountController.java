@@ -1,10 +1,8 @@
 package com.ercanbeyen.bankingapplication.controller;
 
-import com.ercanbeyen.bankingapplication.constant.enums.AccountOperation;
-import com.ercanbeyen.bankingapplication.constant.enums.AccountType;
-import com.ercanbeyen.bankingapplication.constant.enums.City;
-import com.ercanbeyen.bankingapplication.constant.enums.Currency;
+import com.ercanbeyen.bankingapplication.constant.enums.*;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
+import com.ercanbeyen.bankingapplication.dto.request.ExchangeRequest;
 import com.ercanbeyen.bankingapplication.dto.request.TransferRequest;
 import com.ercanbeyen.bankingapplication.option.AccountFilteringOptions;
 import com.ercanbeyen.bankingapplication.dto.response.MessageResponse;
@@ -32,26 +30,30 @@ public class AccountController extends BaseController<AccountDto, AccountFilteri
     @PostMapping
     @Override
     public ResponseEntity<AccountDto> createEntity(@RequestBody @Valid AccountDto request) {
-        AccountUtils.checkAccountConstruction(request);
+        AccountUtils.checkRequest(request);
         return new ResponseEntity<>(accountService.createEntity(request), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
     @Override
     public ResponseEntity<AccountDto> updateEntity(@PathVariable("id") Integer id, @RequestBody @Valid AccountDto request) {
-        AccountUtils.checkAccountConstruction(request);
+        AccountUtils.checkRequest(request);
         return new ResponseEntity<>(accountService.updateEntity(id, request), HttpStatus.OK);
     }
 
-    @PutMapping("/{id}/individual")
-    public ResponseEntity<MessageResponse<String>> updateBalance(@PathVariable("id") Integer id, @RequestParam("operation") AccountOperation operation, @Valid @RequestParam("amount") @Min(value = 1, message = "Minimum amount should be {value}") Double amount) {
-        MessageResponse<String> response = new MessageResponse<>(accountService.applyUnidirectionalAccountOperation(id, operation, amount));
+    @PutMapping("/{id}/current")
+    public ResponseEntity<MessageResponse<String>> updateBalanceOfCurrentAccount(
+            @PathVariable("id") Integer id,
+            @RequestParam("activityType") AccountActivityType activityType,
+            @RequestParam("amount") @Valid @Min(value = 1, message = "Minimum amount should be {value}") Double amount) {
+        AccountUtils.checkUnidirectionalAccountBalanceUpdate(activityType);
+        MessageResponse<String> response = new MessageResponse<>(accountService.updateBalanceOfCurrentAccount(id, activityType, amount));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PutMapping("/{id}/deposit")
     public ResponseEntity<MessageResponse<String>> updateBalanceOfDepositAccount(@PathVariable("id") Integer id) {
-        MessageResponse<String> response = new MessageResponse<>(accountService.addMoneyToDepositAccount(id));
+        MessageResponse<String> response = new MessageResponse<>(accountService.updateBalanceOfDepositAccount(id));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -59,6 +61,12 @@ public class AccountController extends BaseController<AccountDto, AccountFilteri
     public ResponseEntity<MessageResponse<String>> transferMoney(@RequestBody @Valid TransferRequest request) {
         AccountUtils.checkMoneyTransferRequest(request);
         MessageResponse<String> response = new MessageResponse<>(accountService.transferMoney(request));
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PutMapping("/exchange")
+    public ResponseEntity<MessageResponse<String>> exchangeMoney(@RequestBody @Valid ExchangeRequest request) {
+        MessageResponse<String> response = new MessageResponse<>(accountService.exchangeMoney(request));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -76,8 +84,7 @@ public class AccountController extends BaseController<AccountDto, AccountFilteri
             @RequestParam("type") AccountType type,
             @RequestParam("currency") Currency currency,
             @RequestParam(name = "city", required = false) City city) {
-        MessageResponse<List<CustomerStatisticsResponse>> response = new MessageResponse<>(
-                accountService.getCustomersHaveMaximumBalance(type, currency, city));
+        MessageResponse<List<CustomerStatisticsResponse>> response = new MessageResponse<>(accountService.getCustomersHaveMaximumBalance(type, currency, city));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

@@ -11,10 +11,10 @@ import com.ercanbeyen.bankingapplication.mapper.NotificationMapper;
 import com.ercanbeyen.bankingapplication.repository.NotificationRepository;
 import com.ercanbeyen.bankingapplication.service.NotificationService;
 import com.ercanbeyen.bankingapplication.util.LoggingUtils;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,25 +26,21 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public NotificationDto createNotification(NotificationDto notificationDto) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
-        Notification notification = notificationMapper.dtoToNotification(notificationDto);
-        Customer customer = customerService.findCustomerByNationalId(notificationDto.customerNationalId());
+        Notification notification = notificationMapper.dtoToEntity(notificationDto);
+        Customer customer = customerService.findByNationalId(notificationDto.customerNationalId());
         notification.setCustomer(customer);
 
         Notification savedNotification = notificationRepository.save(notification);
         log.info(LogMessages.RESOURCE_CREATE_SUCCESS, Entity.NOTIFICATION.getValue(), savedNotification.getId());
 
-        return notificationMapper.notificationToDto(savedNotification);
+        return notificationMapper.entityToDto(savedNotification);
     }
 
     @Override
     public String deleteNotification(String id) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         String entity = Entity.NOTIFICATION.getValue();
 
@@ -54,19 +50,19 @@ public class NotificationServiceImpl implements NotificationService {
                     throw new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, entity));
                 });
 
+        log.info(LogMessages.RESOURCE_DELETE_SUCCESS, Entity.NOTIFICATION.getValue(), id);
+
         return entity + " " + id + " is successfully deleted";
     }
 
     @Transactional
     @Override
     public void deleteNotifications(String nationalId) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
-        Customer customer = customerService.findCustomerByNationalId(nationalId);
+        Customer customer = customerService.findByNationalId(nationalId);
         log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
 
-        notificationRepository.deleteByCustomer(customer);
+        notificationRepository.deleteAllByCustomer(customer);
     }
 }

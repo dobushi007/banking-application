@@ -1,13 +1,13 @@
 package com.ercanbeyen.bankingapplication.mapper;
 
-import com.ercanbeyen.bankingapplication.dto.TransactionDto;
-import com.ercanbeyen.bankingapplication.entity.Transaction;
+import com.ercanbeyen.bankingapplication.dto.AccountActivityDto;
+import com.ercanbeyen.bankingapplication.entity.AccountActivity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
-public interface TransactionMapper {
+public interface AccountActivityMapper {
     @Mapping(target = "senderAccountId", source = "senderAccount.id")
     @Mapping(target = "receiverAccountId", source = "receiverAccount.id")
-    TransactionDto transactionToDto(Transaction transaction);
+    AccountActivityDto entityToDto(AccountActivity accountActivity);
 }

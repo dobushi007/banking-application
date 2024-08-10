@@ -5,6 +5,7 @@ import com.ercanbeyen.bankingapplication.constant.enums.City;
 import com.ercanbeyen.bankingapplication.constant.enums.Currency;
 import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.dto.response.CustomerStatisticsResponse;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.data.repository.query.Param;
@@ -56,4 +57,17 @@ public interface AccountRepository extends BaseRepository<Account> {
             @Param("city") City city
     );
 
+    @Modifying
+    @Query(value = """
+            UPDATE accounts
+            SET balance =
+            CASE
+                WHEN :activity = 'INCREASE' THEN balance + :amount
+                WHEN :activity = 'DECREASE' THEN balance - :amount
+                ELSE balance
+            END
+            WHERE id = :id
+            """,
+            nativeQuery = true)
+    int updateBalanceById(@Param("id") Integer id, @Param("activity") String balanceActivity, @Param("amount") Double amount);
 }

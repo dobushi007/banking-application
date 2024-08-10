@@ -14,27 +14,27 @@ import java.time.Month;
 @UtilityClass
 @Slf4j
 public class RatingUtils {
-    private static final Month START_MONTH = Month.SEPTEMBER;
-    private static final int THRESHOLD_RATE = 3;
-    private static final int START_YEAR = 1900;
+    private final Month START_MONTH = Month.SEPTEMBER;
+    private final int THRESHOLD_RATE = 3;
+    private final int START_YEAR = 1900;
 
-    public static void checkRatingStatisticsFilteringParameters(Integer fromYear, Integer toYear, Integer frequency) {
+    public void checkRatingStatisticsFilteringParameters(Integer fromYear, Integer toYear, Integer frequency) {
         checkFrequency(frequency);
         checkYears(fromYear, toYear);
     }
 
-    public static void checkRatingBeforeSave(RatingDto ratingDto) {
+    public void checkRatingBeforeSave(RatingDto ratingDto) {
         checkTimeForCurrentYear();
         checkReason(ratingDto);
     }
 
-    private static void checkFrequency(Integer frequency) {
+    private void checkFrequency(Integer frequency) {
         if (frequency <= 0) {
             throw new ResourceExpectationFailedException("Frequency should be greater than zero");
         }
     }
 
-    private static void checkYears(Integer fromYear, Integer toYear) {
+    private void checkYears(Integer fromYear, Integer toYear) {
         if ((fromYear != null && toYear != null) && (fromYear > toYear)) {
             throw new ResourceExpectationFailedException("Start year must be less than or equal to end year");
         }
@@ -43,7 +43,7 @@ public class RatingUtils {
         checkYear(toYear);
     }
 
-    private static void checkYear(Integer year) {
+    private void checkYear(Integer year) {
         if (year == null) {
             log.warn("Year is null");
             return;
@@ -58,7 +58,7 @@ public class RatingUtils {
         }
     }
 
-    private static void checkReason(RatingDto ratingDto) {
+    private void checkReason(RatingDto ratingDto) {
         RatingReason reason = RatingReason.OTHER;
         String message;
         RatingReason requestedReason = ratingDto.reason();
@@ -83,7 +83,7 @@ public class RatingUtils {
         }
     }
 
-    private static void checkTimeForCurrentYear() {
+    private void checkTimeForCurrentYear() {
         LocalDateTime now = LocalDateTime.now();
         int currentYear = now.getYear();
 

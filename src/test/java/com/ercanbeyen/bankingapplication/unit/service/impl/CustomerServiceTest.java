@@ -85,7 +85,7 @@ class CustomerServiceTest {
                 .findAll();
         doReturn(expected.getFirst())
                 .when(customerMapper)
-                .customerToDto(any());
+                .entityToDto(any());
 
         // when
         List<CustomerDto> actual = customerService.getEntities(filteringOptions);
@@ -94,7 +94,7 @@ class CustomerServiceTest {
         verify(customerRepository, times(1))
                 .findAll();
         verify(customerMapper, times(1))
-                .customerToDto(any());
+                .entityToDto(any());
 
         assertEquals(expected.size(), actual.size());
     }
@@ -111,38 +111,40 @@ class CustomerServiceTest {
                 .findById(anyInt());
         doReturn(expected.get())
                 .when(customerMapper)
-                .customerToDto(any());
+                .entityToDto(any());
 
         // when
-        Optional<CustomerDto> actual = customerService.getEntity(customer.getId());
+        CustomerDto actual = customerService.getEntity(customer.getId());
 
         // then
         verify(customerRepository, times(1))
                 .findById(anyInt());
         verify(customerMapper, times(1))
-                .customerToDto(any());
+                .entityToDto(any());
 
-        Assumptions.assumeTrue(actual.isPresent());
-        assertEquals(expected.get().getId(), actual.get().getId());
+        assertEquals(expected.get().getId(), actual.getId());
     }
 
     @Test
-    @DisplayName("Happy path test: Get customer case")
-    void givenNotExistingId_whenGetEntity_thenReturnEmptyOptionalCustomerDto() {
+    @DisplayName("Exception path test: Get customer case")
+    void givenNotExistingId_whenGetEntity_thenThrowsResourceNotFoundException() {
         // given
+        String expected = String.format(ResponseMessages.NOT_FOUND, Entity.CUSTOMER.getValue());
+
         doReturn(Optional.empty())
                 .when(customerRepository)
                 .findById(anyInt());
 
         // when
-        Optional<CustomerDto> actual = customerService.getEntity(20);
+        RuntimeException exception = assertThrows(ResourceNotFoundException.class, () -> customerService.getEntity(20));
+        String actual = exception.getMessage();
 
         // then
         verify(customerRepository, times(1))
                 .findById(anyInt());
         verifyNoMoreInteractions(customerRepository, customerMapper);
 
-        assertTrue(actual.isEmpty());
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -155,13 +157,13 @@ class CustomerServiceTest {
 
         doReturn(customer)
                 .when(customerMapper)
-                .dtoToCustomer(any());
+                .dtoToEntity(any());
         doReturn(customer)
                 .when(customerRepository)
                 .save(any());
         doReturn(expected)
                 .when(customerMapper)
-                .customerToDto(any());
+                .entityToDto(any());
 
         // when
         CustomerDto actual = customerService.createEntity(request);
@@ -170,11 +172,11 @@ class CustomerServiceTest {
         verify(customerRepository, times(1))
                 .findAll();
         verify(customerMapper, times(1))
-                .dtoToCustomer(any());
+                .dtoToEntity(any());
         verify(customerRepository, times(1))
                 .save(any());
         verify(customerMapper, times(1))
-                .customerToDto(any());
+                .entityToDto(any());
 
         assertEquals(expected, actual);
     }
@@ -215,13 +217,13 @@ class CustomerServiceTest {
                 .findById(anyInt());
         doReturn(customers.getFirst())
                 .when(customerMapper)
-                .dtoToCustomer(any());
+                .dtoToEntity(any());
         doReturn(customer)
                 .when(customerRepository)
                 .save(any());
         doReturn(request)
                 .when(customerMapper)
-                .customerToDto(any());
+                .entityToDto(any());
 
         // when
         CustomerDto actual = customerService.updateEntity(customer.getId(), request);
@@ -230,11 +232,11 @@ class CustomerServiceTest {
         verify(customerRepository, times(1))
                 .findById(anyInt());
         verify(customerMapper, times(1))
-                .dtoToCustomer(any());
+                .dtoToEntity(any());
         verify(customerRepository, times(1))
                 .save(any());
         verify(customerMapper, times(1))
-                .customerToDto(any());
+                .entityToDto(any());
 
         assertEquals(email, actual.getEmail());
     }

@@ -6,6 +6,5 @@ import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
 public interface NewsMapper {
-    NewsDto newsToDto(News news);
-    News dtoToNews(NewsDto newsDto);
+    NewsDto entityToDto(News news);
 }

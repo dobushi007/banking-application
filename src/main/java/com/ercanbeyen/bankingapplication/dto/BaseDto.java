@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Data
 @MappedSuperclass
-public sealed class BaseDto permits CustomerDto, AccountDto, RegularTransferOrderDto, NewsDto {
+public sealed class BaseDto permits CustomerDto, AccountDto, RegularTransferOrderDto, NewsDto, ExchangeDto {
     private Integer id;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

@@ -2,16 +2,23 @@ package com.ercanbeyen.bankingapplication.util;
 
 import lombok.experimental.UtilityClass;
 
-import java.lang.reflect.Method;
-
 @UtilityClass
-public final class LoggingUtils {
+public class LoggingUtils {
+    private final String NO_ITEMS_IN_STACK_TRACE = "There are no %s in the stack trace";
 
-    public static String getClassName(Object object) {
-        return object.getClass().getSimpleName();
+    public String getCurrentClassName() {
+        return StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
+                .walk(stackFrameStream -> stackFrameStream.skip(1).findFirst())
+                //.map(StackWalker.StackFrame::getClassName) --> works but not outputs simple name
+                .map(stackFrame -> stackFrame.getDeclaringClass().getSimpleName()) // works
+                .orElse(String.format(String.format(NO_ITEMS_IN_STACK_TRACE, "classes")));
     }
 
-    public static String getMethodName(Method method) {
-        return method.getName();
+    public String getCurrentMethodName() {
+        return StackWalker.getInstance()
+                .walk(stackFrameStream -> stackFrameStream.skip(1).findFirst())
+                //.walk(stackFrameStream -> stackFrameStream.skip(0).findFirst()) --> outputs getCurrentMethodName
+                .map(StackWalker.StackFrame::getMethodName)
+                .orElse(String.format(NO_ITEMS_IN_STACK_TRACE, "methods"));
     }
 }

@@ -30,9 +30,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     @Async
     @Override
     public CompletableFuture<File> storeFile(MultipartFile multipartFile) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         String fileName = StringUtils.cleanPath(Objects.requireNonNull(multipartFile.getOriginalFilename()));
 
@@ -45,8 +43,10 @@ public class FileStorageServiceImpl implements FileStorageService {
                 throw new ResourceExpectationFailedException("Error occurred in method getBytes");
             }
 
-            log.info("File is successfully stored");
-            return fileRepository.save(file);
+            File savedFile = fileRepository.save(file);
+            log.info(LogMessages.RESOURCE_CREATE_SUCCESS, Entity.FILE.getValue(), savedFile.getId());
+
+            return savedFile;
         }).exceptionally(exception -> {
             log.error(LogMessages.EXCEPTION, exception.getMessage());
             throw new ResourceExpectationFailedException(ResponseMessages.FILE_UPLOAD_ERROR);
@@ -55,18 +55,13 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     @Override
     public File getFile(String id) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(FileStorageServiceImpl.class.getEnclosingMethod()));
-
-        return findFileById(id);
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+        return findById(id);
     }
 
     @Override
     public String deleteFile(String id) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         fileRepository.findById(id).ifPresentOrElse(file -> {
             log.info(LogMessages.RESOURCE_FOUND, Entity.FILE.getValue());
@@ -83,20 +78,19 @@ public class FileStorageServiceImpl implements FileStorageService {
             throw new ResourceNotFoundException(ResponseMessages.NOT_FOUND);
         });
 
+        log.info(LogMessages.RESOURCE_DELETE_SUCCESS, Entity.FILE.getValue(), id);
+
         return ResponseMessages.FILE_DELETE_SUCCESS;
     }
 
     @Override
     public Stream<File> getAllFiles() {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
-
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
         return fileRepository.findAll()
                 .stream();
     }
 
-    private File findFileById(String id) {
+    private File findById(String id) {
         return fileRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.FILE.getValue())));
     }

@@ -7,9 +7,9 @@ import java.time.LocalDate;
 import java.util.function.Predicate;
 
 @UtilityClass
-public final class RegularTransferOrderUtils {
+public class RegularTransferOrderUtils {
 
-    public static Predicate<RegularTransferOrderDto> getRegularTransferOrderDtoPredicate() {
+    public Predicate<RegularTransferOrderDto> getRegularTransferOrderDtoPredicate() {
         /*
             Regular Transfer Date check flow:
             1) Increase transfer date adding by period until reaches to today date

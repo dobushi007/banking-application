@@ -4,27 +4,27 @@ import com.ercanbeyen.bankingapplication.constant.enums.*;
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
-import com.ercanbeyen.bankingapplication.dto.request.TransactionRequest;
+import com.ercanbeyen.bankingapplication.dto.request.AccountActivityRequest;
+import com.ercanbeyen.bankingapplication.dto.request.ExchangeRequest;
 import com.ercanbeyen.bankingapplication.dto.request.TransferRequest;
 import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.entity.Customer;
 import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
-import com.ercanbeyen.bankingapplication.exception.ResourceExpectationFailedException;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
-import com.ercanbeyen.bankingapplication.exception.UnsuccessfulTransactionException;
 import com.ercanbeyen.bankingapplication.mapper.AccountMapper;
 import com.ercanbeyen.bankingapplication.option.AccountFilteringOptions;
 import com.ercanbeyen.bankingapplication.repository.AccountRepository;
 import com.ercanbeyen.bankingapplication.dto.response.CustomerStatisticsResponse;
 import com.ercanbeyen.bankingapplication.service.BaseService;
-import com.ercanbeyen.bankingapplication.service.TransactionService;
+import com.ercanbeyen.bankingapplication.service.AccountActivityService;
 import com.ercanbeyen.bankingapplication.util.AccountUtils;
 import com.ercanbeyen.bankingapplication.util.LoggingUtils;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -37,13 +37,12 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     private final AccountRepository accountRepository;
     private final AccountMapper accountMapper;
     private final CustomerService customerService;
-    private final TransactionService transactionService;
+    private final AccountActivityService accountActivityService;
+    private final ExchangeService exchangeService;
 
     @Override
     public List<AccountDto> getEntities(AccountFilteringOptions options) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         Predicate<Account> accountPredicate = account -> (options.getType() == null || options.getType() == account.getType())
                 && (options.getCreateTime() == null || options.getCreateTime().toLocalDate().isEqual(options.getCreateTime().toLocalDate()));
@@ -52,102 +51,104 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         accountRepository.findAll()
                 .stream()
                 .filter(accountPredicate)
-                .forEach(account -> accountDtos.add(accountMapper.accountToDto(account)));
+                .forEach(account -> accountDtos.add(accountMapper.entityToDto(account)));
 
         return accountDtos;
     }
 
     @Override
-    public Optional<AccountDto> getEntity(Integer id) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+    public AccountDto getEntity(Integer id) {
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
-        Optional<Account> accountOptional = accountRepository.findById(id);
+        Account account = findById(id);
+        log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
 
-        return accountOptional.map(accountMapper::accountToDto);
+        return accountMapper.entityToDto(account);
     }
 
     @Override
     public AccountDto createEntity(AccountDto request) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
-        Account account = accountMapper.dtoToAccount(request);
+        Account account = accountMapper.dtoToEntity(request);
 
-        Customer customer = customerService.findCustomerByNationalId(request.getCustomerNationalId());
+        Customer customer = customerService.findByNationalId(request.getCustomerNationalId());
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
 
         account.setCustomer(customer);
-
         Account savedAccount = accountRepository.save(account);
+        log.info(LogMessages.RESOURCE_CREATE_SUCCESS, Entity.ACCOUNT.getValue(), savedAccount.getId());
 
-        return accountMapper.accountToDto(savedAccount);
+        return accountMapper.entityToDto(savedAccount);
     }
 
     @Override
     public AccountDto updateEntity(Integer id, AccountDto request) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
-        Account account = findAccountById(id);
+        Account account = findById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
 
-        account.setCity(request.getCity());
+        AccountUtils.checkCurrencies(account.getCurrency(), request.getCurrency());
 
-        return accountMapper.accountToDto(accountRepository.save(account));
+        account.setCity(request.getCity());
+        account.setInterestRatio(request.getInterestRatio());
+        account.setDepositPeriod(request.getDepositPeriod());
+
+        return accountMapper.entityToDto(accountRepository.save(account));
     }
 
     @Override
     public void deleteEntity(Integer id) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
-        if (!doesAccountExist(id)) {
+        if (!accountRepository.existsById(id)) {
             throw new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.ACCOUNT.getValue()));
         }
 
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
+
         accountRepository.deleteById(id);
+        log.info(LogMessages.RESOURCE_DELETE_SUCCESS, Entity.ACCOUNT.getValue(), id);
     }
 
-    public String applyUnidirectionalAccountOperation(Integer id, AccountOperation operation, Double amount) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+    @Transactional
+    public String updateBalanceOfCurrentAccount(Integer id, AccountActivityType activityType, Double amount) {
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
-        Account account = findAccountById(id);
+        Account account = findById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
 
-        TransactionRequest transactionRequest;
-        String result;
+        Account[] accounts = new Account[2]; // first account is sender, second account is receiver
+        BalanceActivity balanceActivity;
 
-        switch (operation) {
-            case AccountOperation.ADD -> {
-                result = addMoney(account, amount);
-                transactionRequest = new TransactionRequest(TransactionType.ADD_MONEY, null, account, amount, null);
+        switch (activityType) {
+            case MONEY_DEPOSIT -> {
+                accounts[1] = account;
+                balanceActivity = BalanceActivity.INCREASE;
             }
-            case AccountOperation.WITHDRAW -> {
-                result = withdrawMoney(account, amount);
-                transactionRequest = new TransactionRequest(TransactionType.WITHDRAW_MONEY, account, null, amount, null);
+            case WITHDRAWAL -> {
+                accounts[0] = account;
+                balanceActivity = BalanceActivity.DECREASE;
             }
-            default -> throw new ResourceExpectationFailedException("Unknown account operation");
+            default -> throw new ResourceConflictException(ResponseMessages.IMPROPER_ACCOUNT_ACTIVITY);
         }
 
-        transactionService.createTransaction(transactionRequest);
+        AccountActivityRequest accountActivityRequest = new AccountActivityRequest(activityType, accounts[0], accounts[1], amount, null);
 
-        return result;
+        int numberOfUpdatedEntities = accountRepository.updateBalanceById(id, balanceActivity.name(), amount);
+        log.info(LogMessages.NUMBER_OF_UPDATED_ENTITIES, numberOfUpdatedEntities);
+
+        accountActivityService.createAccountActivity(accountActivityRequest);
+
+        return AccountUtils.constructResponseMessageForUnidirectionalAccountOperations(activityType, amount, account.getId(), account.getCurrency());
     }
 
-    public String addMoneyToDepositAccount(Integer id) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+    @Transactional
+    public String updateBalanceOfDepositAccount(Integer id) {
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
-        Account account = findAccountById(id);
+        Account account = findById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
 
         if (!AccountUtils.checkAccountForPeriodicMoneyAdd(account.getType(), account.getUpdatedAt(), account.getDepositPeriod())) {
@@ -157,80 +158,128 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
 
         Double amount = AccountUtils.calculateInterest(account.getBalance(), account.getInterestRatio());
 
-        return addMoney(account, amount);
+        int numberOfUpdatedEntities = accountRepository.updateBalanceById(id, BalanceActivity.INCREASE.name(), amount);
+        log.info(LogMessages.NUMBER_OF_UPDATED_ENTITIES, numberOfUpdatedEntities);
+
+        AccountActivityRequest request = new AccountActivityRequest(
+                AccountActivityType.FEES_CHARGES,
+                null,
+                account,
+                amount,
+                "Fee is transferred, because deposit period is completed"
+        );
+
+        accountActivityService.createAccountActivity(request);
+
+        return amount + "" + account.getCurrency() + " fee is successfully transferred to account" + account.getId();
     }
 
+    @Transactional
     public String transferMoney(TransferRequest request) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
-        Account senderAccount = findAccountById(request.senderAccountId());
+        Integer senderAccountId = request.senderAccountId();
+        Integer receiverAccountId = request.receiverAccountId();
+
+        Account senderAccount = findById(senderAccountId);
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
 
-        Account receiverAccount = findAccountById(request.receiverAccountId());
+        Account receiverAccount = findById(receiverAccountId);
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
-
-        if (senderAccount.getCurrency() != receiverAccount.getCurrency()) {
-            throw new ResourceConflictException("Currencies of the accounts must be same");
-        }
 
         Double amount = request.amount();
 
-        /*
-            Money transfer flow:
-            1) Withdraw requested money amount from the sender account
-            2) Add requested money amount to the receiver account
-            3) Rollback the withdrawal of sender account, if any error occurred during money add to receiver account
-         */
+        checkAccountsBeforeMoneyTransfer(senderAccount, receiverAccount, amount);
 
-        String message = withdrawMoney(senderAccount, amount);
+        accountRepository.updateBalanceById(senderAccountId, BalanceActivity.DECREASE.name(), amount);
+        accountRepository.updateBalanceById(receiverAccountId, BalanceActivity.INCREASE.name(), amount);
+
+        String message = amount + " " + senderAccount.getCurrency() + " is successfully transferred from account "
+                + senderAccount.getId() + " to account " + receiverAccount.getId();
+
         log.info(LogMessages.TRANSACTION_MESSAGE, message);
 
-        try {
-            message = addMoney(receiverAccount, amount);
-            log.info(LogMessages.TRANSACTION_MESSAGE, message);
-        } catch (Exception exception) {
-            log.error("Unable to transfer the money");
-            message = addMoney(senderAccount, amount); // rollback
-            log.info(LogMessages.TRANSACTION_MESSAGE, message);
-            throw new UnsuccessfulTransactionException("Money transfer operation is unsuccessfully completed");
-        }
+        AccountActivityRequest accountActivityRequest = new AccountActivityRequest(
+                AccountActivityType.MONEY_TRANSFER,
+                senderAccount,
+                receiverAccount,
+                amount,
+                request.explanation()
+        );
 
-        TransactionRequest transactionRequest = new TransactionRequest(
-                TransactionType.MONEY_TRANSFER, senderAccount, receiverAccount, amount, request.explanation());
-
-        transactionService.createTransaction(transactionRequest);
-
-        message = amount + " " + senderAccount.getCurrency() + " is successfully transferred from account "
-                + senderAccount.getId() + " to account " + receiverAccount.getId();
+        accountActivityService.createAccountActivity(accountActivityRequest);
 
         return message;
     }
 
-    public Account findAccount(Integer id) {
-        return findAccountById(id);
+    @Transactional
+    public String exchangeMoney(ExchangeRequest request) {
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+
+        Account buyerAccount = findById(request.buyerId());
+        log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
+
+        Account sellerAccount = findById(request.sellerId());
+        log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
+
+        Double requestedAmount = request.amount();
+        AccountUtils.checkBalance(sellerAccount.getBalance(), requestedAmount);
+
+        Double exchangedAmount = exchangeService.exchangeMoney(sellerAccount, buyerAccount, requestedAmount);
+
+        accountRepository.updateBalanceById(request.sellerId(), BalanceActivity.DECREASE.name(), requestedAmount);
+        accountRepository.updateBalanceById(request.buyerId(), BalanceActivity.INCREASE.name(), exchangedAmount);
+
+        String exchangeMessage = """
+                Money exchange (from %s to %s) operation is completed.
+                Customer National Id: %s
+                From Account Id: %s
+                To Account Id: %s
+                Converted Amount: %s,
+                Time: %s
+                """;
+
+        AccountActivityRequest accountActivityRequest = new AccountActivityRequest(
+                AccountActivityType.MONEY_EXCHANGE,
+                sellerAccount,
+                buyerAccount,
+                requestedAmount,
+                String.format(
+                        exchangeMessage,
+                        sellerAccount.getCurrency(),
+                        buyerAccount.getCurrency(),
+                        buyerAccount.getCustomer().getNationalId(),
+                        buyerAccount.getId(),
+                        sellerAccount.getId(),
+                        requestedAmount,
+                        LocalDateTime.now()
+                )
+        );
+
+        accountActivityService.createAccountActivity(accountActivityRequest);
+
+        return  requestedAmount + " " + sellerAccount.getCurrency() + " is successfully exchanged to " + exchangedAmount + " " + buyerAccount.getCurrency();
     }
 
-    @Transactional
+    public Account findById(Integer id) {
+        return accountRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.ACCOUNT.getValue())));
+    }
+
     public String getTotalAccounts(City city, AccountType type, Currency currency) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         int count = accountRepository.getTotalAccountsByCityAndTypeAndCurrency(
-                String.valueOf(city),
-                String.valueOf(type),
-                String.valueOf(currency)
+                city.name(),
+                type.name(),
+                currency.name()
         );
         log.info("Total count: {}", count);
         return String.format("Total %s accounts in %s currency in %s is %d", type, currency, city, count);
     }
 
     public List<CustomerStatisticsResponse> getCustomersHaveMaximumBalance(AccountType type, Currency currency, City city) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         if (Optional.ofNullable(city).isPresent()) {
             return accountRepository.getCustomersHaveMaximumBalanceByTypeAndCurrencyAndCity(type, currency, city);
@@ -239,46 +288,8 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         }
     }
 
-    @Transactional
-    private String addMoney(Account account, Double amount) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
-
-        Double previousBalance = account.getBalance();
-        Double nextBalance = previousBalance + amount;
-        log.info(LogMessages.BALANCE_UPDATE, previousBalance, nextBalance);
-
-        account.setBalance(nextBalance);
-        accountRepository.save(account);
-
-        return AccountUtils.constructResponseMessageForUnidirectionalAccountOperations(AccountOperation.ADD, amount, account.getId(), account.getCurrency());
-    }
-
-    @Transactional
-    private String withdrawMoney(Account account, Double amount) {
-        log.info(LogMessages.ECHO,
-                LoggingUtils.getClassName(this),
-                LoggingUtils.getMethodName(new Object() {}.getClass().getEnclosingMethod()));
-
-        AccountUtils.checkBalance(account.getBalance(), amount);
-
-        Double previousBalance = account.getBalance();
-        Double nextBalance = previousBalance - amount;
-        log.info(LogMessages.BALANCE_UPDATE, previousBalance, nextBalance);
-
-        account.setBalance(nextBalance);
-        accountRepository.save(account);
-
-        return AccountUtils.constructResponseMessageForUnidirectionalAccountOperations(AccountOperation.WITHDRAW, amount, account.getId(), account.getCurrency());
-    }
-
-    private boolean doesAccountExist(Integer id) {
-        return accountRepository.existsById(id);
-    }
-
-    private Account findAccountById(Integer id) {
-        return accountRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.ACCOUNT.getValue())));
+    private static void checkAccountsBeforeMoneyTransfer(Account senderAccount, Account receiverAccount, Double amount) {
+        AccountUtils.checkCurrencies(senderAccount.getCurrency(), receiverAccount.getCurrency());
+        AccountUtils.checkBalance(senderAccount.getBalance(), amount);
     }
 }

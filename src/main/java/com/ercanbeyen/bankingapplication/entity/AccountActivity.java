@@ -1,6 +1,6 @@
 package com.ercanbeyen.bankingapplication.entity;
 
-import com.ercanbeyen.bankingapplication.constant.enums.TransactionType;
+import com.ercanbeyen.bankingapplication.constant.enums.AccountActivityType;
 import com.ercanbeyen.bankingapplication.constant.query.Queries;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -11,14 +11,14 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
-@Table(name = "transactions")
+@Table(name = "account_activities")
 @NoArgsConstructor
-public class Transaction {
+public class AccountActivity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
     @Enumerated(EnumType.STRING)
-    private TransactionType type;
+    private AccountActivityType type;
     @ManyToOne
     @JoinColumn(name = "sender_account_id", referencedColumnName = "id")
     private Account senderAccount;
@@ -32,7 +32,7 @@ public class Transaction {
     private LocalDateTime createdAt;
     private String explanation;
 
-    public Transaction(TransactionType type, Account senderAccount, Account receiverAccount, Double amount, String explanation) {
+    public AccountActivity(AccountActivityType type, Account senderAccount, Account receiverAccount, Double amount, String explanation) {
         this.type = type;
         this.senderAccount = senderAccount;
         this.receiverAccount = receiverAccount;
