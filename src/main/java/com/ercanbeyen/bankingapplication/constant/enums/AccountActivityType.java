@@ -5,5 +5,6 @@ public enum AccountActivityType {
     WITHDRAWAL,
     MONEY_TRANSFER,
     MONEY_EXCHANGE,
-    FEES_CHARGES
+    FEE,
+    CHARGE
 }

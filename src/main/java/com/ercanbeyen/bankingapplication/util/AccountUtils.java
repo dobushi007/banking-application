@@ -39,7 +39,7 @@ public class AccountUtils {
         }
     }
 
-    public void checkUnidirectionalAccountBalanceUpdate(AccountActivityType activityType) {
+    public void checkAccountActivityForCurrentAccount(AccountActivityType activityType) {
         if (activityType != AccountActivityType.MONEY_DEPOSIT && activityType != AccountActivityType.WITHDRAWAL) {
             throw new ResourceConflictException(ResponseMessages.IMPROPER_ACCOUNT_ACTIVITY);
         }
@@ -53,7 +53,7 @@ public class AccountUtils {
 
     public double calculateInterest(Double balance, Double interestRatio) {
         checkValidityOfBalanceAndInterestRatio(balance, interestRatio);
-        return (balance == LOWEST_THRESHOLD || interestRatio == LOWEST_THRESHOLD) ? LOWEST_THRESHOLD : ((interestRatio * 100) / balance);
+        return (balance == LOWEST_THRESHOLD || interestRatio == LOWEST_THRESHOLD) ? LOWEST_THRESHOLD : ((interestRatio * balance) / 100);
     }
 
     public boolean checkAccountForPeriodicMoneyAdd(AccountType accountType, LocalDateTime updatedAt, Integer depositPeriod) {

@@ -4,12 +4,12 @@ import com.ercanbeyen.bankingapplication.constant.enums.*;
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
+import com.ercanbeyen.bankingapplication.dto.NotificationDto;
 import com.ercanbeyen.bankingapplication.dto.request.AccountActivityRequest;
 import com.ercanbeyen.bankingapplication.dto.request.ExchangeRequest;
 import com.ercanbeyen.bankingapplication.dto.request.TransferRequest;
 import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.entity.Customer;
-import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import com.ercanbeyen.bankingapplication.mapper.AccountMapper;
 import com.ercanbeyen.bankingapplication.option.AccountFilteringOptions;
@@ -17,6 +17,7 @@ import com.ercanbeyen.bankingapplication.repository.AccountRepository;
 import com.ercanbeyen.bankingapplication.dto.response.CustomerStatisticsResponse;
 import com.ercanbeyen.bankingapplication.service.BaseService;
 import com.ercanbeyen.bankingapplication.service.AccountActivityService;
+import com.ercanbeyen.bankingapplication.service.NotificationService;
 import com.ercanbeyen.bankingapplication.util.AccountUtils;
 import com.ercanbeyen.bankingapplication.util.LoggingUtils;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,8 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     private final CustomerService customerService;
     private final AccountActivityService accountActivityService;
     private final ExchangeService exchangeService;
+    private final TransactionService transactionService;
+    private final NotificationService notificationService;
 
     @Override
     public List<AccountDto> getEntities(AccountFilteringOptions options) {
@@ -112,39 +115,17 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         log.info(LogMessages.RESOURCE_DELETE_SUCCESS, Entity.ACCOUNT.getValue(), id);
     }
 
-    @Transactional
     public String updateBalanceOfCurrentAccount(Integer id, AccountActivityType activityType, Double amount) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
         Account account = findById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
 
-        Account[] accounts = new Account[2]; // first account is sender, second account is receiver
-        BalanceActivity balanceActivity;
-
-        switch (activityType) {
-            case MONEY_DEPOSIT -> {
-                accounts[1] = account;
-                balanceActivity = BalanceActivity.INCREASE;
-            }
-            case WITHDRAWAL -> {
-                accounts[0] = account;
-                balanceActivity = BalanceActivity.DECREASE;
-            }
-            default -> throw new ResourceConflictException(ResponseMessages.IMPROPER_ACCOUNT_ACTIVITY);
-        }
-
-        AccountActivityRequest accountActivityRequest = new AccountActivityRequest(activityType, accounts[0], accounts[1], amount, null);
-
-        int numberOfUpdatedEntities = accountRepository.updateBalanceById(id, balanceActivity.name(), amount);
-        log.info(LogMessages.NUMBER_OF_UPDATED_ENTITIES, numberOfUpdatedEntities);
-
-        accountActivityService.createAccountActivity(accountActivityRequest);
+        transactionService.updateBalanceOfSingleAccount(activityType, amount, account, null);
 
         return AccountUtils.constructResponseMessageForUnidirectionalAccountOperations(activityType, amount, account.getId(), account.getCurrency());
     }
 
-    @Transactional
     public String updateBalanceOfDepositAccount(Integer id) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
 
@@ -157,21 +138,12 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         }
 
         Double amount = AccountUtils.calculateInterest(account.getBalance(), account.getInterestRatio());
+        transactionService.updateBalanceOfSingleAccount(AccountActivityType.FEE, amount, account, "Fee is transferred, because deposit period is completed");
 
-        int numberOfUpdatedEntities = accountRepository.updateBalanceById(id, BalanceActivity.INCREASE.name(), amount);
-        log.info(LogMessages.NUMBER_OF_UPDATED_ENTITIES, numberOfUpdatedEntities);
+        NotificationDto notificationDto = new NotificationDto(account.getCustomer().getNationalId(), String.format("Term of your %s is deposit account has been renewed.", account.getCurrency()));
+        notificationService.createNotification(notificationDto);
 
-        AccountActivityRequest request = new AccountActivityRequest(
-                AccountActivityType.FEES_CHARGES,
-                null,
-                account,
-                amount,
-                "Fee is transferred, because deposit period is completed"
-        );
-
-        accountActivityService.createAccountActivity(request);
-
-        return amount + "" + account.getCurrency() + " fee is successfully transferred to account" + account.getId();
+        return amount + " " + account.getCurrency() + " fee is successfully transferred to account " + account.getId();
     }
 
     @Transactional
