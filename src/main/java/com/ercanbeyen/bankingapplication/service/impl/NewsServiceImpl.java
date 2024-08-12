@@ -30,7 +30,7 @@ public class NewsServiceImpl implements NewsService {
 
     @Override
     public List<NewsDto> getNews(NewsType type, int pageNumber, int pageSize) {
-        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         List<NewsDto> newsDtoList = new ArrayList<>();
 

@@ -31,7 +31,7 @@ public class RatingServiceImpl implements RatingService {
 
     @Override
     public List<RatingDto> getRatings() {
-        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         List<RatingDto> ratingDtos = new ArrayList<>();
 
@@ -44,7 +44,7 @@ public class RatingServiceImpl implements RatingService {
 
     @Override
     public RatingDto getRating(UUID id) {
-        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         Rating rating = findById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.RATING.getValue());
@@ -54,7 +54,7 @@ public class RatingServiceImpl implements RatingService {
 
     @Override
     public RatingDto createRating(RatingDto ratingDto) {
-        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         checkRatingBeforeCreate(ratingDto);
 
@@ -78,7 +78,7 @@ public class RatingServiceImpl implements RatingService {
 
     @Override
     public RatingDto updateRating(UUID id, RatingDto ratingDto) {
-        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         Rating rating = findById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.RATING.getValue());
@@ -96,7 +96,7 @@ public class RatingServiceImpl implements RatingService {
 
     @Override
     public RatingStatisticsResponse<RatingReason, Integer> getReasonStatistics(Integer fromYear, Integer toYear, Integer minimumFrequency) {
-        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         List<RatingReason> reasons = getRatingsBetweenYears(fromYear, toYear)
                 .stream()
@@ -108,7 +108,7 @@ public class RatingServiceImpl implements RatingService {
 
     @Override
     public RatingStatisticsResponse<Integer, Integer> getRateStatistics(Integer fromYear, Integer toYear, Integer minimumFrequency) {
-        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         List<Rating> ratings = getRatingsBetweenYears(fromYear, toYear);
         List<Integer> rates = ratings.stream()

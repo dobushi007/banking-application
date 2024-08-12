@@ -30,7 +30,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Async
     @Override
     public CompletableFuture<NotificationDto> createNotification(NotificationDto notificationDto) {
-        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         return CompletableFuture.supplyAsync(() -> {
             Notification notification = notificationMapper.dtoToEntity(notificationDto);
@@ -46,7 +46,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public String deleteNotification(String id) {
-        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         String entity = Entity.NOTIFICATION.getValue();
 
@@ -64,7 +64,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Transactional
     @Override
     public void deleteNotifications(String nationalId) {
-        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         Customer customer = customerService.findByNationalId(nationalId);
         log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());

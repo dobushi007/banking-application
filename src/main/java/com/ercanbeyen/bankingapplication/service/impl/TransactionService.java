@@ -5,6 +5,7 @@ import com.ercanbeyen.bankingapplication.constant.enums.BalanceActivity;
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.request.AccountActivityRequest;
+import com.ercanbeyen.bankingapplication.dto.request.TransferRequest;
 import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
 import com.ercanbeyen.bankingapplication.repository.AccountRepository;
@@ -30,6 +31,18 @@ public class TransactionService {
         log.info(LogMessages.NUMBER_OF_UPDATED_ENTITIES, numberOfUpdatedEntities);
 
         createAccountActivity(activityType, amount, explanation, activityParameters.getValue1());
+    }
+
+    public void transferMoneyBetweenAccounts(TransferRequest request, Integer senderAccountId, Double amount, Integer receiverAccountId, Account senderAccount, Account receiverAccount) {
+        int numberOfUpdatedEntities = accountRepository.updateBalanceById(senderAccountId, BalanceActivity.DECREASE.name(), amount);
+        log.info(LogMessages.NUMBER_OF_UPDATED_ENTITIES, numberOfUpdatedEntities);
+
+        numberOfUpdatedEntities = accountRepository.updateBalanceById(receiverAccountId, BalanceActivity.INCREASE.name(), amount);
+        log.info(LogMessages.NUMBER_OF_UPDATED_ENTITIES, numberOfUpdatedEntities);
+
+        Account[] accounts = {senderAccount, receiverAccount};
+
+        createAccountActivity(AccountActivityType.MONEY_TRANSFER, request.amount(), request.explanation(), accounts);
     }
 
     private void createAccountActivity(AccountActivityType activityType, Double amount, String explanation, Account[] accounts) {
