@@ -11,6 +11,7 @@ import com.ercanbeyen.bankingapplication.repository.AccountRepository;
 import com.ercanbeyen.bankingapplication.service.AccountActivityService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.javatuples.Pair;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,29 +24,41 @@ public class TransactionService {
     private final AccountActivityService accountActivityService;
 
     public void updateBalanceOfSingleAccount(AccountActivityType activityType, Double amount, Account account, String explanation) {
-        Account[] accounts = new Account[2]; // first account is sender, second account is receiver
-        BalanceActivity balanceActivity;
+        Pair<BalanceActivity, Account[]> activityParameters = constructActivityParameters(activityType, account);
 
-        switch (activityType) {
-            case MONEY_DEPOSIT, FEE -> {
-                accounts[1] = account;
-                balanceActivity = BalanceActivity.INCREASE;
-            }
-            case WITHDRAWAL, CHARGE -> {
-                accounts[0] = account;
-                balanceActivity = BalanceActivity.DECREASE;
-            }
-            default -> throw new ResourceConflictException(ResponseMessages.IMPROPER_ACCOUNT_ACTIVITY);
-        }
-
-        int numberOfUpdatedEntities = accountRepository.updateBalanceById(account.getId(), balanceActivity.name(), amount);
+        int numberOfUpdatedEntities = accountRepository.updateBalanceById(account.getId(), activityParameters.getValue0().name(), amount);
         log.info(LogMessages.NUMBER_OF_UPDATED_ENTITIES, numberOfUpdatedEntities);
 
-        createAccountActivity(activityType, amount, explanation, accounts);
+        createAccountActivity(activityType, amount, explanation, activityParameters.getValue1());
     }
 
     private void createAccountActivity(AccountActivityType activityType, Double amount, String explanation, Account[] accounts) {
         AccountActivityRequest accountActivityRequest = new AccountActivityRequest(activityType, accounts[0], accounts[1], amount, explanation);
         accountActivityService.createAccountActivity(accountActivityRequest);
+    }
+
+    /***
+     *
+     * @param activityType is for determining account activity type
+     * @param account represents the responsible account
+     * @return balance activity and position of the account (is account sender or receiver?)
+     */
+    private static Pair<BalanceActivity, Account[]> constructActivityParameters(AccountActivityType activityType, Account account) {
+        Account[] accounts = new Account[2]; // first account is sender, second account is receiver
+        BalanceActivity balanceActivity;
+
+        switch (activityType) {
+            case AccountActivityType.MONEY_DEPOSIT, AccountActivityType.FEE -> {
+                accounts[1] = account; // receiver
+                balanceActivity = BalanceActivity.INCREASE;
+            }
+            case AccountActivityType.WITHDRAWAL, AccountActivityType.CHARGE -> {
+                accounts[0] = account; // sender
+                balanceActivity = BalanceActivity.DECREASE;
+            }
+            default -> throw new ResourceConflictException(ResponseMessages.IMPROPER_ACCOUNT_ACTIVITY);
+        }
+
+        return new Pair<>(balanceActivity, accounts);
     }
 }

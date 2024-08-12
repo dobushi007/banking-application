@@ -114,6 +114,11 @@
 			<artifactId>cassandra</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.javatuples</groupId>
+			<artifactId>javatuples</artifactId>
+			<version>1.2</version>
+		</dependency>
 	</dependencies>
 
 	<build>
