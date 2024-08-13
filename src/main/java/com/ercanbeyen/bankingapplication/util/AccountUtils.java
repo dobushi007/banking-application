@@ -66,16 +66,6 @@ public class AccountUtils {
         return isGoingToBeUpdatedAt.isEqual(LocalDate.now());
     }
 
-    public String constructResponseMessageForUnidirectionalAccountOperations(AccountActivityType activityType, Double amount, Integer id, Currency currency) {
-        String messageTemplate = amount + " " + currency + " is successfully %s account " + id;
-
-        return switch (activityType) {
-            case AccountActivityType.MONEY_DEPOSIT -> String.format(messageTemplate, "added to");
-            case AccountActivityType.WITHDRAWAL -> String.format(messageTemplate, "withdrawn from");
-            default -> throw new ResourceConflictException(ResponseMessages.IMPROPER_ACCOUNT_ACTIVITY);
-        };
-    }
-
     public void checkCurrencies(Currency from, Currency to) {
         if (from != to) {
             throw new ResourceConflictException(String.format(ResponseMessages.UNPAIRED_CURRENCIES, "same"));

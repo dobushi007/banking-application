@@ -5,6 +5,7 @@ import com.ercanbeyen.bankingapplication.constant.enums.BalanceActivity;
 import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.request.AccountActivityRequest;
+import com.ercanbeyen.bankingapplication.dto.request.ExchangeRequest;
 import com.ercanbeyen.bankingapplication.dto.request.TransferRequest;
 import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
@@ -16,6 +17,8 @@ import org.javatuples.Pair;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -23,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class TransactionService {
     private final AccountRepository accountRepository;
     private final AccountActivityService accountActivityService;
+    private final ExchangeService exchangeService;
 
     public void updateBalanceOfSingleAccount(AccountActivityType activityType, Double amount, Account account, String explanation) {
         Pair<BalanceActivity, Account[]> activityParameters = constructActivityParameters(activityType, account);
@@ -43,6 +47,40 @@ public class TransactionService {
         Account[] accounts = {senderAccount, receiverAccount};
 
         createAccountActivity(AccountActivityType.MONEY_TRANSFER, request.amount(), request.explanation(), accounts);
+    }
+
+    public void exchangeMoneyBetweenAccounts(ExchangeRequest request, Account sellerAccount, Account buyerAccount) {
+        Double requestedAmount = request.amount();
+        Double exchangedAmount = exchangeService.exchangeMoney(sellerAccount, buyerAccount, requestedAmount);
+
+        int numberOfUpdatedEntities = accountRepository.updateBalanceById(request.sellerId(), BalanceActivity.DECREASE.name(), requestedAmount);
+        log.info(LogMessages.NUMBER_OF_UPDATED_ENTITIES, numberOfUpdatedEntities);
+
+        numberOfUpdatedEntities = accountRepository.updateBalanceById(request.buyerId(), BalanceActivity.INCREASE.name(), exchangedAmount);
+        log.info(LogMessages.NUMBER_OF_UPDATED_ENTITIES, numberOfUpdatedEntities);
+
+        String explanationTemplate = """
+                Money exchange (from %s to %s) operation is completed.
+                Customer National Id: %s
+                From Account Id: %s
+                To Account Id: %s
+                Converted Amount: %s,
+                Time: %s
+                """;
+
+        String explanation = String.format(
+                explanationTemplate,
+                sellerAccount.getCurrency(),
+                buyerAccount.getCurrency(),
+                buyerAccount.getCustomer().getNationalId(),
+                buyerAccount.getId(),
+                sellerAccount.getId(),
+                requestedAmount,
+                LocalDateTime.now()
+        );
+
+        Account[] accounts = {sellerAccount, buyerAccount};
+        createAccountActivity(AccountActivityType.MONEY_EXCHANGE, requestedAmount, explanation, accounts);
     }
 
     private void createAccountActivity(AccountActivityType activityType, Double amount, String explanation, Account[] accounts) {

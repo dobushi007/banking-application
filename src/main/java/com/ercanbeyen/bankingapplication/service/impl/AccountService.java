@@ -5,7 +5,6 @@ import com.ercanbeyen.bankingapplication.constant.message.LogMessages;
 import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.AccountDto;
 import com.ercanbeyen.bankingapplication.dto.NotificationDto;
-import com.ercanbeyen.bankingapplication.dto.request.AccountActivityRequest;
 import com.ercanbeyen.bankingapplication.dto.request.ExchangeRequest;
 import com.ercanbeyen.bankingapplication.dto.request.TransferRequest;
 import com.ercanbeyen.bankingapplication.entity.Account;
@@ -17,7 +16,6 @@ import com.ercanbeyen.bankingapplication.option.AccountFilteringOptions;
 import com.ercanbeyen.bankingapplication.repository.AccountRepository;
 import com.ercanbeyen.bankingapplication.dto.response.CustomerStatisticsResponse;
 import com.ercanbeyen.bankingapplication.service.BaseService;
-import com.ercanbeyen.bankingapplication.service.AccountActivityService;
 import com.ercanbeyen.bankingapplication.service.NotificationService;
 import com.ercanbeyen.bankingapplication.util.AccountUtils;
 import com.ercanbeyen.bankingapplication.util.LoggingUtils;
@@ -26,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -39,8 +36,6 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     private final AccountRepository accountRepository;
     private final AccountMapper accountMapper;
     private final CustomerService customerService;
-    private final AccountActivityService accountActivityService;
-    private final ExchangeService exchangeService;
     private final TransactionService transactionService;
     private final NotificationService notificationService;
 
@@ -124,7 +119,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
 
         transactionService.updateBalanceOfSingleAccount(activityType, amount, account, null);
 
-        return AccountUtils.constructResponseMessageForUnidirectionalAccountOperations(activityType, amount, account.getId(), account.getCurrency());
+        return String.format(ResponseMessages.SUCCESS, activityType.getValue());
     }
 
     public String updateBalanceOfDepositAccount(Integer id) {
@@ -144,7 +139,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         NotificationDto notificationDto = new NotificationDto(account.getCustomer().getNationalId(), String.format("Term of your %s is deposit account has been renewed.", account.getCurrency()));
         notificationService.createNotification(notificationDto);
 
-        return amount + " " + account.getCurrency() + " fee is successfully transferred to account " + account.getId();
+        return String.format(ResponseMessages.SUCCESS, "Deposit account balance update");
     }
 
     public String transferMoney(TransferRequest request) {
@@ -172,13 +167,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         notificationService.createNotification(senderNotificationDto);
         notificationService.createNotification(receiverNotificationDto);
 
-        String message = amount + " " + senderAccount.getCurrency()
-                + " is successfully transferred from account " + senderAccount.getId()
-                + " to account " + receiverAccount.getId();
-
-        log.info(LogMessages.TRANSACTION_MESSAGE, "Money transfer is successfully completed");
-
-        return message;
+        return String.format(ResponseMessages.SUCCESS, AccountActivityType.MONEY_TRANSFER.getValue());
     }
 
     @Transactional
@@ -194,42 +183,9 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         Double requestedAmount = request.amount();
         AccountUtils.checkBalance(sellerAccount.getBalance(), requestedAmount);
 
-        Double exchangedAmount = exchangeService.exchangeMoney(sellerAccount, buyerAccount, requestedAmount);
+        transactionService.exchangeMoneyBetweenAccounts(request, sellerAccount, buyerAccount);
 
-        accountRepository.updateBalanceById(request.sellerId(), BalanceActivity.DECREASE.name(), requestedAmount);
-        accountRepository.updateBalanceById(request.buyerId(), BalanceActivity.INCREASE.name(), exchangedAmount);
-
-        String exchangeMessage = """
-                Money exchange (from %s to %s) operation is completed.
-                Customer National Id: %s
-                From Account Id: %s
-                To Account Id: %s
-                Converted Amount: %s,
-                Time: %s
-                """;
-
-        AccountActivityRequest accountActivityRequest = new AccountActivityRequest(
-                AccountActivityType.MONEY_EXCHANGE,
-                sellerAccount,
-                buyerAccount,
-                requestedAmount,
-                String.format(
-                        exchangeMessage,
-                        sellerAccount.getCurrency(),
-                        buyerAccount.getCurrency(),
-                        buyerAccount.getCustomer().getNationalId(),
-                        buyerAccount.getId(),
-                        sellerAccount.getId(),
-                        requestedAmount,
-                        LocalDateTime.now()
-                )
-        );
-
-        accountActivityService.createAccountActivity(accountActivityRequest);
-
-        return requestedAmount + " " + sellerAccount.getCurrency()
-                + " is successfully exchanged to " + exchangedAmount
-                + " " + buyerAccount.getCurrency();
+        return String.format(ResponseMessages.SUCCESS, AccountActivityType.MONEY_EXCHANGE.getValue());
     }
 
     public Account findById(Integer id) {
