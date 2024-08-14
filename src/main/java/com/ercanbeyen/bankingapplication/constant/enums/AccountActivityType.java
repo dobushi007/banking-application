@@ -14,5 +14,4 @@ public enum AccountActivityType {
     CHARGE("Charge");
 
     private final String value;
-
 }

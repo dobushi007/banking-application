@@ -6,7 +6,7 @@ import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.AccountActivityDto;
 import com.ercanbeyen.bankingapplication.dto.request.AccountActivityRequest;
 import com.ercanbeyen.bankingapplication.entity.AccountActivity;
-import com.ercanbeyen.bankingapplication.entity.AccountActivityView;
+import com.ercanbeyen.bankingapplication.view.AccountActivityView;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import com.ercanbeyen.bankingapplication.mapper.AccountActivityMapper;
 import com.ercanbeyen.bankingapplication.option.AccountActivityFilteringOptions;

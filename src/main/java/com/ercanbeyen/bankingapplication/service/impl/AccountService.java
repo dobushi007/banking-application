@@ -9,7 +9,6 @@ import com.ercanbeyen.bankingapplication.dto.request.ExchangeRequest;
 import com.ercanbeyen.bankingapplication.dto.request.TransferRequest;
 import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.entity.Customer;
-import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import com.ercanbeyen.bankingapplication.mapper.AccountMapper;
 import com.ercanbeyen.bankingapplication.option.AccountFilteringOptions;
@@ -139,7 +138,9 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         NotificationDto notificationDto = new NotificationDto(account.getCustomer().getNationalId(), String.format("Term of your %s is deposit account has been renewed.", account.getCurrency()));
         notificationService.createNotification(notificationDto);
 
-        return String.format(ResponseMessages.SUCCESS, "Deposit account balance update");
+        String response = AccountActivityType.FEE.getValue() + " transfer";
+
+        return String.format(ResponseMessages.SUCCESS, response);
     }
 
     public String transferMoney(TransferRequest request) {
@@ -216,10 +217,6 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     }
 
     private static void checkAccountsBeforeMoneyTransfer(Account senderAccount, Account receiverAccount, Double amount) {
-        if (senderAccount.getType() == AccountType.DEPOSIT || receiverAccount.getType() == AccountType.DEPOSIT) {
-            throw new ResourceConflictException("Money transfer cannot be done between deposit accounts");
-        }
-
         AccountUtils.checkCurrencies(senderAccount.getCurrency(), receiverAccount.getCurrency());
         AccountUtils.checkBalance(senderAccount.getBalance(), amount);
     }
