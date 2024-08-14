@@ -8,7 +8,7 @@ import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.ExchangeDto;
 import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.entity.Exchange;
-import com.ercanbeyen.bankingapplication.entity.ExchangeView;
+import com.ercanbeyen.bankingapplication.view.ExchangeView;
 import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import com.ercanbeyen.bankingapplication.mapper.ExchangeMapper;
@@ -37,7 +37,7 @@ public class ExchangeService implements BaseService<ExchangeDto, ExchangeFilteri
 
     @Override
     public List<ExchangeDto> getEntities(ExchangeFilteringOptions options) {
-        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         List<ExchangeDto> exchangeDtos = new ArrayList<>();
         exchangeRepository.findAll()
@@ -48,7 +48,7 @@ public class ExchangeService implements BaseService<ExchangeDto, ExchangeFilteri
 
     @Override
     public ExchangeDto getEntity(Integer id) {
-        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         Exchange exchange = exchangeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.EXCHANGE.getValue())));
@@ -59,7 +59,7 @@ public class ExchangeService implements BaseService<ExchangeDto, ExchangeFilteri
 
     @Override
     public ExchangeDto createEntity(ExchangeDto request) {
-        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         Exchange exchange = exchangeMapper.dtoToEntity(request);
         checkExistsByBaseAndTargetCurrencies(exchange.getBaseCurrency(), exchange.getTargetCurrency());
@@ -72,7 +72,7 @@ public class ExchangeService implements BaseService<ExchangeDto, ExchangeFilteri
 
     @Override
     public ExchangeDto updateEntity(Integer id, ExchangeDto request) {
-        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         Exchange exchange = exchangeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.EXCHANGE.getValue())));
@@ -94,7 +94,7 @@ public class ExchangeService implements BaseService<ExchangeDto, ExchangeFilteri
 
     @Override
     public void deleteEntity(Integer id) {
-        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         if (!exchangeRepository.existsById(id)) {
             throw new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.EXCHANGE.getValue()));
@@ -106,21 +106,21 @@ public class ExchangeService implements BaseService<ExchangeDto, ExchangeFilteri
     }
 
     public String calculateMoneyExchange(Currency fromCurrency, Currency toCurrency, Double amount) {
-        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
         double exchangedAmount = convertMoney(fromCurrency, toCurrency, amount);
         return amount + " " + fromCurrency.name() + " is successfully exchanged to " + exchangedAmount + " " + toCurrency.name();
     }
 
     public Double exchangeMoney(Account sellerAccount, Account buyerAccount, Double amount) {
-        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
         checkAccountsBeforeMoneyExchange(sellerAccount, buyerAccount);
         return convertMoney(sellerAccount.getCurrency(), buyerAccount.getCurrency(), amount);
     }
 
-     public List<ExchangeView> getExchangeViews() {
+    public List<ExchangeView> getExchangeViews() {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
         return exchangeViewRepository.findAll();
-     }
+    }
 
     private static void checkAccountsBeforeMoneyExchange(Account sellerAccount, Account buyerAccount) {
         if (buyerAccount.getCurrency() == sellerAccount.getCurrency()) {

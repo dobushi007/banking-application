@@ -46,7 +46,7 @@ public class AccountController extends BaseController<AccountDto, AccountFilteri
             @PathVariable("id") Integer id,
             @RequestParam("activityType") AccountActivityType activityType,
             @RequestParam("amount") @Valid @Min(value = 1, message = "Minimum amount should be {value}") Double amount) {
-        AccountUtils.checkUnidirectionalAccountBalanceUpdate(activityType);
+        AccountUtils.checkAccountActivityForCurrentAccount(activityType);
         MessageResponse<String> response = new MessageResponse<>(accountService.updateBalanceOfCurrentAccount(id, activityType, amount));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

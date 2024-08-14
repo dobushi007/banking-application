@@ -3,7 +3,7 @@ package com.ercanbeyen.bankingapplication.controller;
 import com.ercanbeyen.bankingapplication.constant.enums.Currency;
 import com.ercanbeyen.bankingapplication.dto.ExchangeDto;
 import com.ercanbeyen.bankingapplication.dto.response.MessageResponse;
-import com.ercanbeyen.bankingapplication.entity.ExchangeView;
+import com.ercanbeyen.bankingapplication.view.ExchangeView;
 import com.ercanbeyen.bankingapplication.option.ExchangeFilteringOptions;
 import com.ercanbeyen.bankingapplication.service.impl.ExchangeService;
 import com.ercanbeyen.bankingapplication.util.ExchangeUtils;

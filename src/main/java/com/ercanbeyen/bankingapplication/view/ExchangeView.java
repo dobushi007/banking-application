@@ -1,4 +1,4 @@
-package com.ercanbeyen.bankingapplication.entity;
+package com.ercanbeyen.bankingapplication.view;
 
 import com.ercanbeyen.bankingapplication.constant.enums.Currency;
 import jakarta.persistence.Column;

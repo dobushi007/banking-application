@@ -1,7 +1,7 @@
 package com.ercanbeyen.bankingapplication.controller;
 
 import com.ercanbeyen.bankingapplication.dto.AccountActivityDto;
-import com.ercanbeyen.bankingapplication.entity.AccountActivityView;
+import com.ercanbeyen.bankingapplication.view.AccountActivityView;
 import com.ercanbeyen.bankingapplication.option.AccountActivityFilteringOptions;
 import com.ercanbeyen.bankingapplication.service.AccountActivityService;
 import lombok.RequiredArgsConstructor;

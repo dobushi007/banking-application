@@ -6,7 +6,7 @@ import com.ercanbeyen.bankingapplication.constant.message.ResponseMessages;
 import com.ercanbeyen.bankingapplication.dto.AccountActivityDto;
 import com.ercanbeyen.bankingapplication.dto.request.AccountActivityRequest;
 import com.ercanbeyen.bankingapplication.entity.AccountActivity;
-import com.ercanbeyen.bankingapplication.entity.AccountActivityView;
+import com.ercanbeyen.bankingapplication.view.AccountActivityView;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import com.ercanbeyen.bankingapplication.mapper.AccountActivityMapper;
 import com.ercanbeyen.bankingapplication.option.AccountActivityFilteringOptions;
@@ -33,7 +33,7 @@ public class AccountActivityServiceImpl implements AccountActivityService {
 
     @Override
     public List<AccountActivityDto> getAccountActivities(AccountActivityFilteringOptions options) {
-        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         Predicate<AccountActivity> transactionPredicate = accountActivity -> (options.type() == null || options.type() == accountActivity.getType())
                 && (options.senderAccountId() == null || options.senderAccountId().equals(accountActivity.getSenderAccount().getId()))
@@ -55,7 +55,7 @@ public class AccountActivityServiceImpl implements AccountActivityService {
 
     @Override
     public AccountActivityDto getAccountActivity(String id) {
-        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         AccountActivity accountActivity = findById(id);
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT);
@@ -65,7 +65,7 @@ public class AccountActivityServiceImpl implements AccountActivityService {
 
     @Override
     public void createAccountActivity(AccountActivityRequest request) {
-        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         if (request == null) {
             throw new ResourceNotFoundException("Account Activity request is not found");
@@ -85,7 +85,7 @@ public class AccountActivityServiceImpl implements AccountActivityService {
 
     @Override
     public List<AccountActivityView> getAccountActivityViews(Integer senderAccountId, Integer receiverAccountId) {
-        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
         return accountActivityViewRepository.findBySenderAccountIdAndReceiverAccountId(senderAccountId, receiverAccountId);
     }
 

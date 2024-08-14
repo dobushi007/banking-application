@@ -39,7 +39,7 @@ public class AccountUtils {
         }
     }
 
-    public void checkUnidirectionalAccountBalanceUpdate(AccountActivityType activityType) {
+    public void checkAccountActivityForCurrentAccount(AccountActivityType activityType) {
         if (activityType != AccountActivityType.MONEY_DEPOSIT && activityType != AccountActivityType.WITHDRAWAL) {
             throw new ResourceConflictException(ResponseMessages.IMPROPER_ACCOUNT_ACTIVITY);
         }
@@ -53,7 +53,7 @@ public class AccountUtils {
 
     public double calculateInterest(Double balance, Double interestRatio) {
         checkValidityOfBalanceAndInterestRatio(balance, interestRatio);
-        return (balance == LOWEST_THRESHOLD || interestRatio == LOWEST_THRESHOLD) ? LOWEST_THRESHOLD : ((interestRatio * 100) / balance);
+        return (balance == LOWEST_THRESHOLD || interestRatio == LOWEST_THRESHOLD) ? LOWEST_THRESHOLD : ((interestRatio * balance) / 100);
     }
 
     public boolean checkAccountForPeriodicMoneyAdd(AccountType accountType, LocalDateTime updatedAt, Integer depositPeriod) {
@@ -64,16 +64,6 @@ public class AccountUtils {
                 .plusMonths(depositPeriod);
 
         return isGoingToBeUpdatedAt.isEqual(LocalDate.now());
-    }
-
-    public String constructResponseMessageForUnidirectionalAccountOperations(AccountActivityType activityType, Double amount, Integer id, Currency currency) {
-        String messageTemplate = amount + " " + currency + " is successfully %s account " + id;
-
-        return switch (activityType) {
-            case AccountActivityType.MONEY_DEPOSIT -> String.format(messageTemplate, "added to");
-            case AccountActivityType.WITHDRAWAL -> String.format(messageTemplate, "withdrawn from");
-            default -> throw new ResourceConflictException(ResponseMessages.IMPROPER_ACCOUNT_ACTIVITY);
-        };
     }
 
     public void checkCurrencies(Currency from, Currency to) {

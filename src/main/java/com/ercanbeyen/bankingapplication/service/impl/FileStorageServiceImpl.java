@@ -30,7 +30,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     @Async
     @Override
     public CompletableFuture<File> storeFile(MultipartFile multipartFile) {
-        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         String fileName = StringUtils.cleanPath(Objects.requireNonNull(multipartFile.getOriginalFilename()));
 
@@ -55,13 +55,13 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     @Override
     public File getFile(String id) {
-        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
         return findById(id);
     }
 
     @Override
     public String deleteFile(String id) {
-        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         fileRepository.findById(id).ifPresentOrElse(file -> {
             log.info(LogMessages.RESOURCE_FOUND, Entity.FILE.getValue());
@@ -85,7 +85,7 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     @Override
     public Stream<File> getAllFiles() {
-        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(),LoggingUtils.getCurrentMethodName());
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
         return fileRepository.findAll()
                 .stream();
     }

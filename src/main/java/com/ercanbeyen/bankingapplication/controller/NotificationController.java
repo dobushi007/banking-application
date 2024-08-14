@@ -8,13 +8,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.concurrent.CompletableFuture;
+
 @RestController
 @RequestMapping("/api/v1/notifications")
 @RequiredArgsConstructor
 public class NotificationController {
     private final NotificationService notificationService;
     @PostMapping
-    public ResponseEntity<NotificationDto> createNotification(@RequestBody @Valid NotificationDto request) {
+    public ResponseEntity<CompletableFuture<NotificationDto>> createNotification(@RequestBody @Valid NotificationDto request) {
         return ResponseEntity.ok(notificationService.createNotification(request));
     }
 
