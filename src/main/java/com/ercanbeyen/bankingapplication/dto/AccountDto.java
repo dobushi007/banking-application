@@ -10,6 +10,8 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 import org.hibernate.validator.constraints.Range;
 
+import java.time.LocalDateTime;
+
 @Data
 public non-sealed class AccountDto extends BaseDto {
     @NotBlank(message = "National identity should not be blank")
@@ -21,6 +23,7 @@ public non-sealed class AccountDto extends BaseDto {
     @Min(value = 0, message = "Minimum balance should be {value}")
     private Double balance;
     private AccountType type;
+    private LocalDateTime closedAt;
     /* Deposit Account fields */
     @Range(min = 0, max = 100, message = "Interest ratio is not between {min} and {max}")
     private Double interestRatio;

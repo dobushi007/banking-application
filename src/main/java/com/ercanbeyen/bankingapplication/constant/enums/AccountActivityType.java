@@ -11,7 +11,8 @@ public enum AccountActivityType {
     MONEY_TRANSFER("Money transfer"),
     MONEY_EXCHANGE("Money exchange"),
     FEE("Fee"),
-    CHARGE("Charge");
+    CHARGE("Charge"),
+    ACCOUNT_CLOSE("Account close");
 
     private final String value;
 }

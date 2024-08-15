@@ -6,6 +6,7 @@ import com.ercanbeyen.bankingapplication.constant.enums.Currency;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +33,7 @@ public non-sealed class Account extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Currency currency;
     private Double balance;
+    private LocalDateTime closedAt;
     @OneToMany(mappedBy = "senderAccount", cascade = CascadeType.ALL)
     private List<RegularTransferOrder> regularTransferOrders = new ArrayList<>();
     /* Deposit Account fields */

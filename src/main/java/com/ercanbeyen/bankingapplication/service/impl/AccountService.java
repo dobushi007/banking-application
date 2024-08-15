@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -171,7 +172,6 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         return String.format(ResponseMessages.SUCCESS, AccountActivityType.MONEY_TRANSFER.getValue());
     }
 
-    @Transactional
     public String exchangeMoney(ExchangeRequest request) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
@@ -189,9 +189,17 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         return String.format(ResponseMessages.SUCCESS, AccountActivityType.MONEY_EXCHANGE.getValue());
     }
 
-    public Account findById(Integer id) {
-        return accountRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.ACCOUNT.getValue())));
+    @Transactional
+    public String closeAccount(Integer id) {
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
+
+        Account account = findById(id);
+        log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
+
+        account.setClosedAt(LocalDateTime.now());
+        accountRepository.save(account);
+
+        return String.format(ResponseMessages.SUCCESS, AccountActivityType.ACCOUNT_CLOSE.getValue());
     }
 
     public String getTotalAccounts(City city, AccountType type, Currency currency) {
@@ -214,6 +222,11 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         } else {
             return accountRepository.getCustomersHaveMaximumBalanceByTypeAndCurrency(type, currency);
         }
+    }
+
+    public Account findById(Integer id) {
+        return accountRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.ACCOUNT.getValue())));
     }
 
     private static void checkAccountsBeforeMoneyTransfer(Account senderAccount, Account receiverAccount, Double amount) {
