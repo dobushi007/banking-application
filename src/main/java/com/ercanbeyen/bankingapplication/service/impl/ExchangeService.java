@@ -49,11 +49,7 @@ public class ExchangeService implements BaseService<ExchangeDto, ExchangeFilteri
     @Override
     public ExchangeDto getEntity(Integer id) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
-
-        Exchange exchange = exchangeRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.EXCHANGE.getValue())));
-        log.info(LogMessages.RESOURCE_FOUND, Entity.EXCHANGE.getValue());
-
+        Exchange exchange = findById(id);
         return exchangeMapper.entityToDto(exchange);
     }
 
@@ -74,10 +70,7 @@ public class ExchangeService implements BaseService<ExchangeDto, ExchangeFilteri
     public ExchangeDto updateEntity(Integer id, ExchangeDto request) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
-        Exchange exchange = exchangeRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.EXCHANGE.getValue())));
-
-        log.info(LogMessages.RESOURCE_FOUND, Entity.EXCHANGE.getValue());
+        Exchange exchange = findById(id);
 
         if (exchange.getBaseCurrency() != request.getBaseCurrency() || exchange.getTargetCurrency() != request.getTargetCurrency()) {
             checkExistsByBaseAndTargetCurrencies(request.getBaseCurrency(), request.getTargetCurrency());
@@ -120,6 +113,16 @@ public class ExchangeService implements BaseService<ExchangeDto, ExchangeFilteri
     public List<ExchangeView> getExchangeViews() {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
         return exchangeViewRepository.findAll();
+    }
+
+    private Exchange findById(Integer id) {
+        String value = Entity.EXCHANGE.getValue();
+        Exchange exchange = exchangeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, value)));
+
+        log.info(LogMessages.RESOURCE_FOUND, value);
+
+        return exchange;
     }
 
     private static void checkAccountsBeforeMoneyExchange(Account sellerAccount, Account buyerAccount) {
