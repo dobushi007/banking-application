@@ -32,7 +32,7 @@ public non-sealed class Account extends BaseEntity {
     private City city;
     @Enumerated(EnumType.STRING)
     private Currency currency;
-    private Double balance;
+    private double balance;
     private LocalDateTime closedAt;
     @OneToMany(mappedBy = "senderAccount", cascade = CascadeType.ALL)
     private List<RegularTransferOrder> regularTransferOrders = new ArrayList<>();

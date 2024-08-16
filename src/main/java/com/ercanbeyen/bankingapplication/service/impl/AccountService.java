@@ -194,6 +194,10 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         Account account = findById(id);
         checkIsAccountClosed(account);
 
+        if (account.getBalance() > 0) {
+            throw new ResourceConflictException("In order to close account, balance of the account must be zero. Withdraw or transfer the remaining money.");
+        }
+
         account.setClosedAt(LocalDateTime.now());
         accountRepository.save(account);
 
