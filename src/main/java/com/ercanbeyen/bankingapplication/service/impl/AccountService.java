@@ -44,8 +44,13 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     public List<AccountDto> getEntities(AccountFilteringOptions options) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
-        Predicate<Account> accountPredicate = account -> (options.getType() == null || options.getType() == account.getType())
-                && (options.getCreateTime() == null || options.getCreateTime().toLocalDate().isEqual(options.getCreateTime().toLocalDate()));
+        Predicate<Account> accountPredicate = account -> {
+            boolean typeFilter = (options.getType() == null || options.getType() == account.getType());
+            boolean timeFilter = (options.getCreateTime() == null || options.getCreateTime().toLocalDate().isEqual(options.getCreateTime().toLocalDate()));
+            boolean closedFilter = (options.getIsClosed() == null || options.getIsClosed() == (account.getClosedAt() != null));
+            return typeFilter && timeFilter && closedFilter;
+        };
+
         List<AccountDto> accountDtos = new ArrayList<>();
 
         accountRepository.findAll()
@@ -110,7 +115,6 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         Account account = findById(id);
-
         transactionService.updateBalanceOfSingleAccount(activityType, amount, account, null);
 
         return String.format(ResponseMessages.SUCCESS, activityType.getValue());
@@ -196,7 +200,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         return String.format(ResponseMessages.SUCCESS, AccountActivityType.ACCOUNT_CLOSE.getValue());
     }
 
-    public String getTotalAccounts(City city, AccountType type, Currency currency) {
+    public String getTotalActiveAccounts(City city, AccountType type, Currency currency) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         int count = accountRepository.getTotalAccountsByCityAndTypeAndCurrency(
@@ -204,6 +208,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
                 type.name(),
                 currency.name()
         );
+
         log.info("Total count: {}", count);
 
         return String.format("Total %s accounts in %s currency in %s is %d", type, currency, city, count);

@@ -153,16 +153,17 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
         return ResponseMessages.FILE_DELETE_SUCCESS;
     }
 
-    public List<AccountDto> getAccountsOfCustomer(Integer id, AccountFilteringOptions options) {
+    public List<AccountDto> getAccounts(Integer id, AccountFilteringOptions options) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         Customer customer = findById(id);
-
         Predicate<Account> accountPredicate = account -> (account.getCustomer().getNationalId().equals(customer.getNationalId()))
                 && (options.getType() == null || options.getType() == account.getType())
-                && (options.getCreateTime() == null || options.getCreateTime().getYear() <= account.getCreatedAt().getYear());
+                && (options.getCreateTime() == null || options.getCreateTime().getYear() <= account.getCreatedAt().getYear())
+                && (account.getClosedAt() == null);
 
-        Comparator<Account> accountComparator = Comparator.comparing(Account::getCreatedAt).reversed();
+        Comparator<Account> accountComparator = Comparator.comparing(Account::getCreatedAt)
+                .reversed();
 
         List<Account> accounts = customer.getAccounts()
                 .stream()
@@ -176,7 +177,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
         return accountDtos;
     }
 
-    public List<AccountActivityDto> getAccountActivitiesOfCustomer(Integer id, AccountActivityFilteringOptions options) {
+    public List<AccountActivityDto> getAccountActivities(Integer id, AccountActivityFilteringOptions options) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         Customer customer = findById(id);
@@ -189,8 +190,8 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
 
         /* Get all transactions of each account */
         accountIds.forEach(accountId -> {
-            getAccountActivitiesOfCustomer(accountId, true, options, accountActivityDtos);
-            getAccountActivitiesOfCustomer(accountId, false, options, accountActivityDtos);
+            getAccountActivities(accountId, true, options, accountActivityDtos);
+            getAccountActivities(accountId, false, options, accountActivityDtos);
         });
 
         Comparator<AccountActivityDto> transactionDtoComparator = Comparator.comparing(AccountActivityDto::createdAt).reversed();
@@ -256,7 +257,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
         return customer;
     }
 
-    private void getAccountActivitiesOfCustomer(Integer accountId, boolean isSender, AccountActivityFilteringOptions options, List<AccountActivityDto> accountActivityDtos) {
+    private void getAccountActivities(Integer accountId, boolean isSender, AccountActivityFilteringOptions options, List<AccountActivityDto> accountActivityDtos) {
         AccountActivityFilteringOptions accountActivityFilteringOptions = isSender ?
                 new AccountActivityFilteringOptions(options.type(), accountId, null, options.minimumAmount(), options.createAt()) :
                 new AccountActivityFilteringOptions(options.type(), null, accountId, options.minimumAmount(), options.createAt());

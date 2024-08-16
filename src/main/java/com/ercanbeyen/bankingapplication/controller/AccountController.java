@@ -81,7 +81,7 @@ public class AccountController extends BaseController<AccountDto, AccountFilteri
             @RequestParam("city") City city,
             @RequestParam("type") AccountType type,
             @RequestParam("currency") Currency currency) {
-        MessageResponse<String> response = new MessageResponse<>(accountService.getTotalAccounts(city, type, currency));
+        MessageResponse<String> response = new MessageResponse<>(accountService.getTotalActiveAccounts(city, type, currency));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
