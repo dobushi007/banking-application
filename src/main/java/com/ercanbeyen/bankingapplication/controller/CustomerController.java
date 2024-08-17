@@ -54,12 +54,12 @@ public class CustomerController extends BaseController<CustomerDto, CustomerFilt
 
     @GetMapping("/{id}/accounts")
     public ResponseEntity<List<AccountDto>> getAccounts(@PathVariable("id") Integer id, AccountFilteringOptions options) {
-        return ResponseEntity.ok(customerService.getAccountsOfCustomer(id, options));
+        return ResponseEntity.ok(customerService.getAccounts(id, options));
     }
 
     @GetMapping("/{id}/transactions")
     public ResponseEntity<List<AccountActivityDto>> getAccountActivities(@PathVariable("id") Integer id, AccountActivityFilteringOptions options) {
-        return ResponseEntity.ok(customerService.getAccountActivitiesOfCustomer(id, options));
+        return ResponseEntity.ok(customerService.getAccountActivities(id, options));
     }
 
     @GetMapping("/{id}/notifications")

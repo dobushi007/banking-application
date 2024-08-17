@@ -9,6 +9,7 @@ import com.ercanbeyen.bankingapplication.dto.request.ExchangeRequest;
 import com.ercanbeyen.bankingapplication.dto.request.TransferRequest;
 import com.ercanbeyen.bankingapplication.entity.Account;
 import com.ercanbeyen.bankingapplication.entity.Customer;
+import com.ercanbeyen.bankingapplication.exception.ResourceConflictException;
 import com.ercanbeyen.bankingapplication.exception.ResourceNotFoundException;
 import com.ercanbeyen.bankingapplication.mapper.AccountMapper;
 import com.ercanbeyen.bankingapplication.option.AccountFilteringOptions;
@@ -23,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -42,8 +44,13 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     public List<AccountDto> getEntities(AccountFilteringOptions options) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
-        Predicate<Account> accountPredicate = account -> (options.getType() == null || options.getType() == account.getType())
-                && (options.getCreateTime() == null || options.getCreateTime().toLocalDate().isEqual(options.getCreateTime().toLocalDate()));
+        Predicate<Account> accountPredicate = account -> {
+            boolean typeFilter = (options.getType() == null || options.getType() == account.getType());
+            boolean timeFilter = (options.getCreateTime() == null || options.getCreateTime().toLocalDate().isEqual(options.getCreateTime().toLocalDate()));
+            boolean closedFilter = (options.getIsClosed() == null || options.getIsClosed() == (account.getClosedAt() != null));
+            return typeFilter && timeFilter && closedFilter;
+        };
+
         List<AccountDto> accountDtos = new ArrayList<>();
 
         accountRepository.findAll()
@@ -57,10 +64,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
     @Override
     public AccountDto getEntity(Integer id) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
-
         Account account = findById(id);
-        log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
-
         return accountMapper.entityToDto(account);
     }
 
@@ -69,9 +73,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         Account account = accountMapper.dtoToEntity(request);
-
         Customer customer = customerService.findByNationalId(request.getCustomerNationalId());
-        log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
 
         account.setCustomer(customer);
         Account savedAccount = accountRepository.save(account);
@@ -85,8 +87,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         Account account = findById(id);
-        log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
-
+        checkIsAccountClosed(account);
         AccountUtils.checkCurrencies(account.getCurrency(), request.getCurrency());
 
         account.setCity(request.getCity());
@@ -114,8 +115,6 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         Account account = findById(id);
-        log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
-
         transactionService.updateBalanceOfSingleAccount(activityType, amount, account, null);
 
         return String.format(ResponseMessages.SUCCESS, activityType.getValue());
@@ -125,7 +124,7 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         Account account = findById(id);
-        log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
+        checkIsAccountClosed(account);
 
         if (!AccountUtils.checkAccountForPeriodicMoneyAdd(account.getType(), account.getUpdatedAt(), account.getDepositPeriod())) {
             log.warn("Deposit period is not completed");
@@ -150,10 +149,10 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         Integer receiverAccountId = request.receiverAccountId();
 
         Account senderAccount = findById(senderAccountId);
-        log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
+        checkIsAccountClosed(senderAccount);
 
         Account receiverAccount = findById(receiverAccountId);
-        log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
+        checkIsAccountClosed(receiverAccount);
 
         Double amount = request.amount();
         Currency currency = senderAccount.getCurrency();
@@ -171,15 +170,14 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         return String.format(ResponseMessages.SUCCESS, AccountActivityType.MONEY_TRANSFER.getValue());
     }
 
-    @Transactional
     public String exchangeMoney(ExchangeRequest request) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
-        Account buyerAccount = findById(request.buyerId());
-        log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
-
         Account sellerAccount = findById(request.sellerId());
-        log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
+        checkIsAccountClosed(sellerAccount);
+
+        Account buyerAccount = findById(request.buyerId());
+        checkIsAccountClosed(buyerAccount);
 
         Double requestedAmount = request.amount();
         AccountUtils.checkBalance(sellerAccount.getBalance(), requestedAmount);
@@ -189,12 +187,24 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         return String.format(ResponseMessages.SUCCESS, AccountActivityType.MONEY_EXCHANGE.getValue());
     }
 
-    public Account findById(Integer id) {
-        return accountRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.ACCOUNT.getValue())));
+    @Transactional
+    public String closeAccount(Integer id) {
+        log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
+
+        Account account = findById(id);
+        checkIsAccountClosed(account);
+
+        if (account.getBalance() > 0) {
+            throw new ResourceConflictException("In order to close account, balance of the account must be zero. Withdraw or transfer the remaining money.");
+        }
+
+        account.setClosedAt(LocalDateTime.now());
+        accountRepository.save(account);
+
+        return String.format(ResponseMessages.SUCCESS, AccountActivityType.ACCOUNT_CLOSE.getValue());
     }
 
-    public String getTotalAccounts(City city, AccountType type, Currency currency) {
+    public String getTotalActiveAccounts(City city, AccountType type, Currency currency) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         int count = accountRepository.getTotalAccountsByCityAndTypeAndCurrency(
@@ -202,7 +212,9 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
                 type.name(),
                 currency.name()
         );
+
         log.info("Total count: {}", count);
+
         return String.format("Total %s accounts in %s currency in %s is %d", type, currency, city, count);
     }
 
@@ -216,8 +228,28 @@ public class AccountService implements BaseService<AccountDto, AccountFilteringO
         }
     }
 
+    public Account findById(Integer id) {
+        String value = Entity.ACCOUNT.getValue();
+        Account account = accountRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, value)));
+
+        log.info(LogMessages.RESOURCE_FOUND, value);
+
+        return account;
+    }
+
     private static void checkAccountsBeforeMoneyTransfer(Account senderAccount, Account receiverAccount, Double amount) {
         AccountUtils.checkCurrencies(senderAccount.getCurrency(), receiverAccount.getCurrency());
         AccountUtils.checkBalance(senderAccount.getBalance(), amount);
+    }
+
+    private static void checkIsAccountClosed(Account account) {
+        LocalDateTime closedAt = account.getClosedAt();
+
+        if (closedAt != null) {
+            throw new ResourceConflictException(String.format("Account is improper for activities. It has already been closed at %s", closedAt));
+        }
+
+        log.info("Account has not been closed");
     }
 }

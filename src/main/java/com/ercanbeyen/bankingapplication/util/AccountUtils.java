@@ -26,7 +26,20 @@ public class AccountUtils {
 
     public void checkRequest(AccountDto accountDto) {
         checkAccountType(accountDto);
-        checkDepositPeriod(accountDto);
+
+        AccountType accountType = accountDto.getType();
+
+        if (accountType == AccountType.DEPOSIT) {
+            checkValidityOfDepositPeriod(accountDto.getDepositPeriod());
+        } else {
+            log.warn("{} account does not have deposit period", accountType);
+        }
+
+        Double balance = accountDto.getBalance();
+
+        if (balance != null && balance != 0) {
+            throw new ResourceConflictException("Not any balance value should be assigned directly from request");
+        }
     }
 
     public void checkMoneyTransferRequest(TransferRequest request) {
@@ -103,17 +116,6 @@ public class AccountUtils {
             String exceptionMessage = accountType + " account does not " + message;
             throw new ResourceExpectationFailedException(exceptionMessage);
         }
-    }
-
-    private void checkDepositPeriod(AccountDto accountDto) {
-        AccountType accountType = accountDto.getType();
-
-        if (accountType == AccountType.CURRENT) {
-          log.warn("{} account does not have deposit period", accountType);
-          return;
-      }
-
-      checkValidityOfDepositPeriod(accountDto.getDepositPeriod());
     }
 
     private static void checkValidityOfDepositPeriod(Integer depositPeriod) {

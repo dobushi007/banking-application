@@ -3,12 +3,12 @@ package com.ercanbeyen.bankingapplication.dto;
 import com.ercanbeyen.bankingapplication.constant.enums.AccountType;
 import com.ercanbeyen.bankingapplication.constant.enums.City;
 import com.ercanbeyen.bankingapplication.constant.enums.Currency;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 import org.hibernate.validator.constraints.Range;
+
+import java.time.LocalDateTime;
 
 @Data
 public non-sealed class AccountDto extends BaseDto {
@@ -17,10 +17,9 @@ public non-sealed class AccountDto extends BaseDto {
     private String customerNationalId;
     private City city;
     private Currency currency;
-    @NotNull(message = "Balance should not be null")
-    @Min(value = 0, message = "Minimum balance should be {value}")
     private Double balance;
     private AccountType type;
+    private LocalDateTime closedAt;
     /* Deposit Account fields */
     @Range(min = 0, max = 100, message = "Interest ratio is not between {min} and {max}")
     private Double interestRatio;

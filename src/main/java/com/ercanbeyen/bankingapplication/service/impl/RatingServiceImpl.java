@@ -39,16 +39,12 @@ public class RatingServiceImpl implements RatingService {
                 .forEach(rating -> ratingDtos.add(ratingMapper.entityToDto(rating)));
 
         return ratingDtos;
-
     }
 
     @Override
     public RatingDto getRating(UUID id) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
-
         Rating rating = findById(id);
-        log.info(LogMessages.RESOURCE_FOUND, Entity.RATING.getValue());
-
         return ratingMapper.entityToDto(rating);
     }
 
@@ -81,7 +77,6 @@ public class RatingServiceImpl implements RatingService {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         Rating rating = findById(id);
-        log.info(LogMessages.RESOURCE_FOUND, Entity.RATING.getValue());
 
         rating.setRate(ratingDto.rate());
         rating.setReason(ratingDto.reason());
@@ -119,8 +114,13 @@ public class RatingServiceImpl implements RatingService {
     }
 
     private Rating findById(UUID id) {
-        return ratingRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.RATING.getValue())));
+        String value = Entity.RATING.getValue();
+        Rating rating = ratingRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, value)));
+
+        log.info(LogMessages.RESOURCE_FOUND, value);
+
+        return rating;
     }
 
     private void checkRatingBeforeCreate(RatingDto ratingDto) {

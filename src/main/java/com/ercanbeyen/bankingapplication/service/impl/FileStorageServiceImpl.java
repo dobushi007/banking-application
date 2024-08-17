@@ -91,7 +91,12 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     private File findById(String id) {
-        return fileRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.FILE.getValue())));
+        String value = Entity.FILE.getValue();
+        File file = fileRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, value)));
+
+        log.info(LogMessages.RESOURCE_FOUND, value);
+
+        return file;
     }
 }

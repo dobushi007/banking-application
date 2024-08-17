@@ -70,12 +70,18 @@ public class AccountController extends BaseController<AccountDto, AccountFilteri
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @PatchMapping("/{id}/close")
+    public ResponseEntity<MessageResponse<String>> closeAccount(@PathVariable("id") Integer id) {
+        MessageResponse<String> response = new MessageResponse<>(accountService.closeAccount(id));
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/total")
     public ResponseEntity<MessageResponse<String>> getTotalAccounts(
             @RequestParam("city") City city,
             @RequestParam("type") AccountType type,
             @RequestParam("currency") Currency currency) {
-        MessageResponse<String> response = new MessageResponse<>(accountService.getTotalAccounts(city, type, currency));
+        MessageResponse<String> response = new MessageResponse<>(accountService.getTotalActiveAccounts(city, type, currency));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

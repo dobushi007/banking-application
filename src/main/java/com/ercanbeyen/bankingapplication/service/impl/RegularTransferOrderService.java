@@ -51,10 +51,7 @@ public class RegularTransferOrderService implements BaseService<RegularTransferO
     @Override
     public RegularTransferOrderDto getEntity(Integer id) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
-
         RegularTransferOrder regularTransferOrder = findById(id);
-        log.info(LogMessages.RESOURCE_FOUND, Entity.REGULAR_TRANSFER_ORDER.getValue());
-
         return regularTransferOrderMapper.entityToDto(regularTransferOrder);
     }
 
@@ -74,7 +71,6 @@ public class RegularTransferOrderService implements BaseService<RegularTransferO
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         RegularTransferOrder regularTransferOrder = findById(id);
-        log.info(LogMessages.RESOURCE_FOUND, Entity.REGULAR_TRANSFER_ORDER);
 
         List<Account> accounts = getAccountsFromRegularTransferDto(request);
         regularTransferOrder.setSenderAccount(accounts.getFirst());
@@ -92,10 +88,7 @@ public class RegularTransferOrderService implements BaseService<RegularTransferO
     @Override
     public void deleteEntity(Integer id) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
-
         RegularTransferOrder regularTransferOrder = findById(id);
-        log.info(LogMessages.RESOURCE_FOUND, Entity.REGULAR_TRANSFER_ORDER);
-
         regularTransferOrderRepository.delete(regularTransferOrder);
         log.info(LogMessages.RESOURCE_DELETE_SUCCESS, Entity.REGULAR_TRANSFER_ORDER.getValue(), id);
     }
@@ -129,7 +122,12 @@ public class RegularTransferOrderService implements BaseService<RegularTransferO
     }
 
     private RegularTransferOrder findById(Integer id) {
-        return regularTransferOrderRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.REGULAR_TRANSFER_ORDER)));
+        String value = Entity.REGULAR_TRANSFER_ORDER.getValue();
+        RegularTransferOrder regularTransferOrder = regularTransferOrderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, value)));
+
+        log.info(LogMessages.RESOURCE_FOUND, value);
+
+        return regularTransferOrder;
     }
 }

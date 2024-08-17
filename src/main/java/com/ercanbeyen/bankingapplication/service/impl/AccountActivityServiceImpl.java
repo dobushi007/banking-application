@@ -58,7 +58,6 @@ public class AccountActivityServiceImpl implements AccountActivityService {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         AccountActivity accountActivity = findById(id);
-        log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT);
 
         return accountActivityMapper.entityToDto(accountActivity);
     }
@@ -90,7 +89,12 @@ public class AccountActivityServiceImpl implements AccountActivityService {
     }
 
     private AccountActivity findById(String id) {
-        return accountActivityRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.ACCOUNT_ACTIVITY.getValue())));
+        String value = Entity.ACCOUNT_ACTIVITY.getValue();
+        AccountActivity accountActivity = accountActivityRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, value)));
+
+        log.info(LogMessages.RESOURCE_FOUND, value);
+
+        return accountActivity;
     }
 }

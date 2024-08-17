@@ -76,10 +76,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
     @Override
     public CustomerDto getEntity(Integer id) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
-
         Customer customer = findById(id);
-        log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
-
         return customerMapper.entityToDto(customer);
     }
 
@@ -104,7 +101,6 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         Customer customer = findById(id);
-        log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
 
         checkCustomerUniqueness(request.getNationalId(), request.getPhoneNumber(), request.getEmail());
         log.info(LogMessages.RESOURCE_UNIQUE, Entity.CUSTOMER.getValue());
@@ -125,10 +121,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
     @Override
     public void deleteEntity(Integer id) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
-
         Customer customer = findById(id);
-        log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
-
         customerRepository.delete(customer);
     }
 
@@ -145,10 +138,7 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
 
     public File downloadProfilePhoto(Integer id) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
-
         Customer customer = findById(id);
-        log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
-
         return customer.getProfilePhoto()
                 .orElseThrow(() -> new ResourceNotFoundException(ResponseMessages.NOT_FOUND));
     }
@@ -157,25 +147,23 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         Customer customer = findById(id);
-        log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
-
         customer.setProfilePhoto(null); // Profile photo deletion
         customerRepository.save(customer);
 
         return ResponseMessages.FILE_DELETE_SUCCESS;
     }
 
-    public List<AccountDto> getAccountsOfCustomer(Integer id, AccountFilteringOptions options) {
+    public List<AccountDto> getAccounts(Integer id, AccountFilteringOptions options) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         Customer customer = findById(id);
-        log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
-
         Predicate<Account> accountPredicate = account -> (account.getCustomer().getNationalId().equals(customer.getNationalId()))
                 && (options.getType() == null || options.getType() == account.getType())
-                && (options.getCreateTime() == null || options.getCreateTime().getYear() <= account.getCreatedAt().getYear());
+                && (options.getCreateTime() == null || options.getCreateTime().getYear() <= account.getCreatedAt().getYear())
+                && (account.getClosedAt() == null);
 
-        Comparator<Account> accountComparator = Comparator.comparing(Account::getCreatedAt).reversed();
+        Comparator<Account> accountComparator = Comparator.comparing(Account::getCreatedAt)
+                .reversed();
 
         List<Account> accounts = customer.getAccounts()
                 .stream()
@@ -189,12 +177,10 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
         return accountDtos;
     }
 
-    public List<AccountActivityDto> getAccountActivitiesOfCustomer(Integer id, AccountActivityFilteringOptions options) {
+    public List<AccountActivityDto> getAccountActivities(Integer id, AccountActivityFilteringOptions options) {
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         Customer customer = findById(id);
-        log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
-
         List<AccountActivityDto> accountActivityDtos = new ArrayList<>();
 
         List<Integer> accountIds = customer.getAccounts()
@@ -204,8 +190,8 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
 
         /* Get all transactions of each account */
         accountIds.forEach(accountId -> {
-            getAccountActivitiesOfCustomer(accountId, true, options, accountActivityDtos);
-            getAccountActivitiesOfCustomer(accountId, false, options, accountActivityDtos);
+            getAccountActivities(accountId, true, options, accountActivityDtos);
+            getAccountActivities(accountId, false, options, accountActivityDtos);
         });
 
         Comparator<AccountActivityDto> transactionDtoComparator = Comparator.comparing(AccountActivityDto::createdAt).reversed();
@@ -219,8 +205,6 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         Customer customer = findById(id);
-        log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
-
         List<NotificationDto> notificationDtos = new ArrayList<>();
 
         customer.getNotifications()
@@ -233,8 +217,6 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
         log.info(LogMessages.ECHO, LoggingUtils.getCurrentClassName(), LoggingUtils.getCurrentMethodName());
 
         Customer customer = findById(customerId);
-        log.info(LogMessages.RESOURCE_FOUND, Entity.CUSTOMER.getValue());
-
         Account account = customer.getAccount(accountId)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.ACCOUNT.getValue())));
         log.info(LogMessages.RESOURCE_FOUND, Entity.ACCOUNT.getValue());
@@ -266,11 +248,16 @@ public class CustomerService implements BaseService<CustomerDto, CustomerFilteri
     }
 
     private Customer findById(Integer id) {
-        return customerRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, Entity.CUSTOMER.getValue())));
+        String value = Entity.CUSTOMER.getValue();
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(ResponseMessages.NOT_FOUND, value)));
+
+        log.info(LogMessages.RESOURCE_FOUND, value);
+
+        return customer;
     }
 
-    private void getAccountActivitiesOfCustomer(Integer accountId, boolean isSender, AccountActivityFilteringOptions options, List<AccountActivityDto> accountActivityDtos) {
+    private void getAccountActivities(Integer accountId, boolean isSender, AccountActivityFilteringOptions options, List<AccountActivityDto> accountActivityDtos) {
         AccountActivityFilteringOptions accountActivityFilteringOptions = isSender ?
                 new AccountActivityFilteringOptions(options.type(), accountId, null, options.minimumAmount(), options.createAt()) :
                 new AccountActivityFilteringOptions(options.type(), null, accountId, options.minimumAmount(), options.createAt());
